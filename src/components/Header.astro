@@ -1,0 +1,118 @@
+---
+// src/components/Header.astro — marca + buscador ⌘K + tema.
+// La navegación entre módulos vive en la home (índice) y en el command palette.
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="header">
+  <div class="header__inner boxed">
+    <a class="header__brand" href="/">Navaja</a>
+
+    <div class="header__right">
+      <button
+        type="button"
+        class="header__search"
+        data-command-open
+        aria-label="Buscar módulos"
+        aria-keyshortcuts="Meta+K Control+K"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <span class="header__search-label">Buscar</span>
+        <kbd class="header__kbd">⌘K</kbd>
+      </button>
+
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 20;
+    border-block-end: 1px solid var(--border);
+    background-color: color-mix(in oklab, var(--background) 80%, transparent);
+    backdrop-filter: blur(10px);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-s);
+    block-size: 4rem;
+  }
+
+  .header__brand {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+
+  .header__right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+  }
+
+  .header__search {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-xs);
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    background-color: color-mix(in oklab, var(--muted) 55%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .header__search:hover {
+    color: var(--foreground);
+    background-color: var(--muted);
+  }
+
+  .header__search:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .header__search svg {
+    inline-size: 1rem;
+    block-size: 1rem;
+    flex: none;
+  }
+
+  .header__search-label,
+  .header__kbd {
+    display: none;
+  }
+
+  .header__kbd {
+    font-family: inherit;
+    font-size: var(--text-2xs);
+    padding-block: 0.1rem;
+    padding-inline: 0.35rem;
+    color: var(--muted-foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 4px);
+  }
+
+  @media (min-width: 640px) {
+    .header__search-label,
+    .header__kbd {
+      display: inline-block;
+    }
+  }
+</style>

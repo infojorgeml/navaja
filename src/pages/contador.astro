@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import CharCounter from '../components/CharCounter.astro';
+
+const title = 'Contador de caracteres';
+const description =
+  'Escribe o pega una frase y cuenta sus caracteres y palabras al instante.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <CharCounter />
+  </Page>
+</BaseLayout>

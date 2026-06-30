@@ -1,0 +1,45 @@
+---
+// src/layouts/BaseLayout.astro
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CommandPalette from '../components/CommandPalette.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClientRouter />
+    {/* Aplica el tema antes de pintar y lo re-aplica tras cada transición (evita FOUC) */}
+    <script is:inline>
+      (() => {
+        const apply = () => {
+          try {
+            const stored = localStorage.getItem('theme');
+            const dark = stored
+              ? stored === 'dark'
+              : matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', dark);
+          } catch (e) {}
+        };
+        apply();
+        document.addEventListener('astro:after-swap', apply);
+      })();
+    </script>
+  </head>
+  <body>
+    <Header />
+    <slot />
+    <Footer />
+    <CommandPalette />
+  </body>
+</html>

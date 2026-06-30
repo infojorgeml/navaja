@@ -1,0 +1,31 @@
+# build output
+dist/
+.output/
+.vercel/
+
+# dependencies
+node_modules/
+
+# generated types
+.astro/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS
+.DS_Store
+
+# Notas de trabajo personales (no forman parte del producto Navaja)
+/rol/
+/base-astro.md
+/Builder.md
+/Grower.md
+/Maintainer.md
+/Prototype.md
+/Sweeper.md

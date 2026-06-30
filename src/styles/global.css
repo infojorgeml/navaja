@@ -1,0 +1,286 @@
+/* src/styles/global.css */
+@import "tailwindcss";
+
+/* Activa la variante `dark:` mediante la clase .dark (estrategia de shadcn/ui) */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   TIPOGRAFÍA + ESPACIADO FLUIDO (base-astro.md §4)
+   Una sola fuente de tokens. Genera utilidades text-*, p-*, gap-*…
+   ============================================================ */
+@theme {
+  --font-sans: var(--font-body, ui-sans-serif, system-ui, sans-serif);
+
+  /* Escala tipográfica compacta (Utopia 320→1240, base 15→16) */
+  --text-2xs: clamp(0.6875rem, 0.677rem + 0.054vw, 0.719rem);  /* ~11 → 11.5 */
+  --text-xs:  clamp(0.75rem, 0.728rem + 0.109vw, 0.8125rem);   /* 12 → 13 */
+  --text-sm:  clamp(0.8125rem, 0.791rem + 0.109vw, 0.875rem);  /* 13 → 14 */
+  --text-base:clamp(0.9375rem, 0.916rem + 0.109vw, 1rem);      /* 15 → 16 */
+  --text-lg:  clamp(1.0625rem, 1.030rem + 0.163vw, 1.156rem);  /* 17 → 18.5 */
+  --text-xl:  clamp(1.1875rem, 1.144rem + 0.217vw, 1.3125rem); /* 19 → 21 */
+  --text-2xl: clamp(1.375rem, 1.310rem + 0.326vw, 1.5625rem);  /* 22 → 25 */
+  --text-3xl: clamp(1.625rem, 1.538rem + 0.435vw, 1.875rem);   /* 26 → 30 */
+  --text-4xl: clamp(1.875rem, 1.723rem + 0.761vw, 2.3125rem);  /* 30 → 37 */
+
+  --text-2xs--line-height: 1.4;
+  --text-xs--line-height: 1.5;
+  --text-sm--line-height: 1.5;
+  --text-base--line-height: 1.6;
+  --text-lg--line-height: 1.5;
+  --text-xl--line-height: 1.4;
+  --text-2xl--line-height: 1.25;
+  --text-3xl--line-height: 1.2;
+  --text-4xl--line-height: 1.1;
+
+  /* Escala de espaciado */
+  --spacing-3xs: clamp(0.250rem, 0.239rem + 0.054vw, 0.281rem);
+  --spacing-2xs: clamp(0.500rem, 0.478rem + 0.109vw, 0.563rem);
+  --spacing-xs:  clamp(0.750rem, 0.717rem + 0.163vw, 0.844rem);
+  --spacing-s:   clamp(1.000rem, 0.957rem + 0.217vw, 1.125rem);
+  --spacing-m:   clamp(1.500rem, 1.435rem + 0.326vw, 1.688rem);
+  --spacing-l:   clamp(2.000rem, 1.913rem + 0.435vw, 2.250rem);
+  --spacing-xl:  clamp(3.000rem, 2.870rem + 0.652vw, 3.375rem);
+  --spacing-2xl: clamp(4.000rem, 3.826rem + 0.870vw, 4.500rem);
+  --spacing-3xl: clamp(6.000rem, 5.739rem + 1.304vw, 6.750rem);
+}
+
+/* ============================================================
+   TOKENS DE COLOR (sistema oklch — modo claro)
+   ============================================================ */
+:root {
+  --radius: 0.45rem;
+  color-scheme: light;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.148 0.004 228.8);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.148 0.004 228.8);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.148 0.004 228.8);
+  --primary: oklch(0.457 0.24 277.023);
+  --primary-foreground: oklch(0.962 0.018 272.314);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.963 0.002 197.1);
+  --muted-foreground: oklch(0.56 0.021 213.5);
+  --accent: oklch(0.963 0.002 197.1);
+  --accent-foreground: oklch(0.218 0.008 223.9);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.925 0.005 214.3);
+  --input: oklch(0.925 0.005 214.3);
+  --ring: oklch(0.723 0.014 214.4);
+
+  /* Dimensiones de componente (base-astro.md, principio 4) */
+  --measure: 65ch;
+  --boxed-max: 87.5rem;
+  --chart-1: oklch(0.872 0.007 219.6);
+  --chart-2: oklch(0.56 0.021 213.5);
+  --chart-3: oklch(0.45 0.017 213.2);
+  --chart-4: oklch(0.378 0.015 216);
+  --chart-5: oklch(0.275 0.011 216.9);
+  --sidebar: oklch(0.987 0.002 197.1);
+  --sidebar-foreground: oklch(0.148 0.004 228.8);
+  --sidebar-primary: oklch(0.511 0.262 276.966);
+  --sidebar-primary-foreground: oklch(0.962 0.018 272.314);
+  --sidebar-accent: oklch(0.963 0.002 197.1);
+  --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
+  --sidebar-border: oklch(0.925 0.005 214.3);
+  --sidebar-ring: oklch(0.723 0.014 214.4);
+}
+
+/* Modo oscuro: activado por la clase .dark en <html> */
+.dark {
+  color-scheme: dark;
+
+  --background: oklch(0.148 0.004 228.8);
+  --foreground: oklch(0.987 0.002 197.1);
+  --card: oklch(0.218 0.008 223.9);
+  --card-foreground: oklch(0.987 0.002 197.1);
+  --popover: oklch(0.218 0.008 223.9);
+  --popover-foreground: oklch(0.987 0.002 197.1);
+  --primary: oklch(0.398 0.195 277.366);
+  --primary-foreground: oklch(0.962 0.018 272.314);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.275 0.011 216.9);
+  --muted-foreground: oklch(0.723 0.014 214.4);
+  --accent: oklch(0.275 0.011 216.9);
+  --accent-foreground: oklch(0.987 0.002 197.1);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.56 0.021 213.5);
+  --chart-1: oklch(0.872 0.007 219.6);
+  --chart-2: oklch(0.56 0.021 213.5);
+  --chart-3: oklch(0.45 0.017 213.2);
+  --chart-4: oklch(0.378 0.015 216);
+  --chart-5: oklch(0.275 0.011 216.9);
+  --sidebar: oklch(0.218 0.008 223.9);
+  --sidebar-foreground: oklch(0.987 0.002 197.1);
+  --sidebar-primary: oklch(0.585 0.233 277.117);
+  --sidebar-primary-foreground: oklch(0.962 0.018 272.314);
+  --sidebar-accent: oklch(0.275 0.011 216.9);
+  --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.56 0.021 213.5);
+}
+
+/* Mapea los tokens a utilidades de Tailwind (bg-card, text-muted-foreground,
+   border-border…). Con `inline` referencian la var, así cambian con .dark. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ============================================================
+   UTILIDADES (base-astro.md §4)
+   ============================================================ */
+@utility boxed {
+  max-inline-size: var(--boxed-max);
+  margin-inline: auto;
+  padding-inline: var(--spacing-m);
+}
+
+@utility measure {
+  max-inline-size: var(--measure);
+}
+
+@utility flow {
+  & > * + * { margin-block-start: var(--flow-space, var(--spacing-m)); }
+}
+
+@utility auto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--auto-grid-min, 20rem)), 1fr));
+  gap: var(--spacing-m);
+}
+
+/* ============================================================
+   COMPONENTES
+   ============================================================ */
+@layer components {
+  /* Tarjeta contenedora reutilizable (estética shadcn) */
+  .card {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 6px);
+    padding: var(--spacing-l);
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 0.04),
+      0 4px 12px oklch(0 0 0 / 0.05);
+  }
+
+  @media (min-width: 640px) {
+    .card {
+      padding: var(--spacing-xl);
+    }
+  }
+
+  /* Botón reutilizable — primario por defecto */
+  .btn {
+    padding-block: var(--spacing-s);
+    padding-inline: var(--spacing-m);
+    font: inherit;
+    font-size: var(--text-base);
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.05s ease;
+  }
+  .btn:hover {
+    opacity: 0.9;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Variante secundaria (acciones de apoyo, p. ej. "Copiar") */
+  .btn--secondary {
+    color: var(--secondary-foreground);
+    background-color: var(--secondary);
+    border-color: var(--border);
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  /* El color de borde por defecto usa el token (no añade bordes por sí solo) */
+  * {
+    border-color: var(--border);
+  }
+  body {
+    min-block-size: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 { font-size: var(--text-4xl); }
+  h2 { font-size: var(--text-2xl); }
+  h3 { font-size: var(--text-xl); }
+  h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
+  p { text-wrap: pretty; }
+}
+
+/* Respeta la preferencia de movimiento reducido en TODO (red de seguridad) */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

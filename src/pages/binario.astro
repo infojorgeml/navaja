@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import BinaryConverter from '../components/BinaryConverter.astro';
+
+const title = 'Texto ↔ Binario';
+const description =
+  'Convierte texto a código binario y binario a texto al instante, en ambos sentidos.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <BinaryConverter />
+  </Page>
+</BaseLayout>

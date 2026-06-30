@@ -1,0 +1,28 @@
+---
+// src/components/BaseHead.astro
+import { Font } from 'astro:assets';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+// `Astro.site` solo existe si defines `site` en astro.config.mjs (ver base-astro.md §3).
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<title>{title}</title>
+<meta name="description" content={description} />
+{canonical && <link rel="canonical" href={canonical} />}
+
+{/* Tipografía self-hosted (base-astro.md §5): autoaloja + fallback optimizado + preload */}
+<Font cssVariable="--font-body" preload />
+
+{/* Open Graph mínimo */}
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+{canonical && <meta property="og:url" content={canonical} />}

@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import LoremGenerator from '../components/LoremGenerator.astro';
+
+const title = 'Lorem Ipsum';
+const description =
+  'Genera texto de relleno al instante: elige párrafos, frases o palabras y cópialo.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <LoremGenerator />
+  </Page>
+</BaseLayout>

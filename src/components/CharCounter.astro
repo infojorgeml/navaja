@@ -1,0 +1,172 @@
+---
+// src/components/CharCounter.astro — contador de caracteres y palabras (isla cliente)
+---
+
+<div class="counter flow">
+  <div class="counter__field flow">
+    <label class="counter__label" for="phrase">Escribe tu frase</label>
+    <textarea
+      id="phrase"
+      class="counter__input"
+      rows="6"
+      placeholder="Escribe o pega aquí tu texto…"
+      autocomplete="off"
+      spellcheck="false"></textarea>
+  </div>
+
+  <dl class="counter__stats" aria-live="polite">
+    <div class="counter__stat">
+      <dt>Caracteres</dt>
+      <dd data-stat="chars">0</dd>
+    </div>
+    <div class="counter__stat">
+      <dt>Sin espacios</dt>
+      <dd data-stat="charsNoSpaces">0</dd>
+    </div>
+    <div class="counter__stat">
+      <dt>Palabras</dt>
+      <dd data-stat="words">0</dd>
+    </div>
+  </dl>
+</div>
+
+<style>
+  /* Dimensiones de componente con nombre propio (base-astro.md, principio 4) */
+  .counter {
+    --field-min-block: 9rem;
+    --stat-min: 7rem;
+  }
+
+  .counter__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .counter__label {
+    display: block;
+    font-size: var(--text-base);
+    font-weight: 600;
+  }
+
+  .counter__input {
+    inline-size: 100%;
+    min-block-size: var(--field-min-block);
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .counter__input::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .counter__input:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .counter__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--stat-min)), 1fr));
+    gap: var(--spacing-s);
+    margin: 0;
+  }
+
+  .counter__stat {
+    padding-block: var(--spacing-m);
+    padding-inline: var(--spacing-s);
+    text-align: center;
+    background-color: var(--muted);
+    border-radius: var(--radius);
+  }
+
+  .counter__stat dt {
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-foreground);
+  }
+
+  .counter__stat dd {
+    margin: 0;
+    margin-block-start: var(--spacing-2xs);
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
+  }
+</style>
+
+<script>
+  import { animate, stagger } from 'motion';
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const nf = new Intl.NumberFormat('es-ES');
+
+  function initCounter() {
+    const input = document.getElementById('phrase') as HTMLTextAreaElement | null;
+    const outChars = document.querySelector<HTMLElement>('[data-stat="chars"]');
+    const outNoSpaces = document.querySelector<HTMLElement>('[data-stat="charsNoSpaces"]');
+    const outWords = document.querySelector<HTMLElement>('[data-stat="words"]');
+    if (!input) return;
+
+    const prev = { chars: 0, charsNoSpaces: 0, words: 0 };
+    const controls: Record<string, any> = { chars: null, charsNoSpaces: null, words: null };
+
+    // Anima la cifra desde el valor anterior al nuevo (count-up).
+    function setNum(key: string, el: HTMLElement | null, from: number, to: number) {
+      if (!el) return;
+      controls[key]?.stop?.();
+      if (reduce || from === to) {
+        el.textContent = nf.format(to);
+        return;
+      }
+      controls[key] = animate(from, to, {
+        duration: 0.4,
+        ease: 'easeOut',
+        onUpdate: (v: number) => {
+          el.textContent = nf.format(Math.round(v));
+        },
+      });
+    }
+
+    function update() {
+      const value = input!.value;
+      // [...value] cuenta por code point (cuenta bien emojis fuera del BMP).
+      const chars = [...value].length;
+      const charsNoSpaces = [...value.replace(/\s/g, '')].length;
+      const words = value.trim() ? value.trim().split(/\s+/).length : 0;
+
+      setNum('chars', outChars, prev.chars, chars);
+      setNum('charsNoSpaces', outNoSpaces, prev.charsNoSpaces, charsNoSpaces);
+      setNum('words', outWords, prev.words, words);
+
+      prev.chars = chars;
+      prev.charsNoSpaces = charsNoSpaces;
+      prev.words = words;
+    }
+
+    input.addEventListener('input', update);
+    update(); // estado inicial (por si el navegador restaura texto)
+
+    // Entrada de las tarjetas de resultado con stagger
+    const cards = document.querySelectorAll('.counter__stat');
+    if (!reduce && cards.length) {
+      animate(
+        cards,
+        { opacity: [0, 1], y: [8, 0] },
+        { duration: 0.4, ease: 'easeOut', delay: stagger(0.08) }
+      );
+    }
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initCounter);
+</script>

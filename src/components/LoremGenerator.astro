@@ -1,0 +1,207 @@
+---
+// src/components/LoremGenerator.astro — generador de texto Lorem Ipsum (isla cliente)
+---
+
+<div class="lorem flow">
+  <div class="lorem__controls">
+    <label class="lorem__field">
+      <span class="lorem__label">Cantidad</span>
+      <input type="number" id="lorem-amount" class="lorem__input" min="1" max="100" value="3" />
+    </label>
+    <label class="lorem__field">
+      <span class="lorem__label">Unidad</span>
+      <select id="lorem-unit" class="lorem__input">
+        <option value="paragraphs">Párrafos</option>
+        <option value="sentences">Frases</option>
+        <option value="words">Palabras</option>
+      </select>
+    </label>
+    <label class="lorem__check">
+      <input type="checkbox" id="lorem-classic" checked />
+      <span>Empezar con «Lorem ipsum…»</span>
+    </label>
+  </div>
+
+  <div class="lorem__actions">
+    <button type="button" class="btn" id="lorem-generate">Generar</button>
+    <button type="button" class="btn btn--secondary" id="lorem-copy">Copiar</button>
+    <span class="lorem__copied" data-copied hidden>¡Copiado!</span>
+  </div>
+
+  <textarea
+    id="lorem-output"
+    class="lorem__output"
+    rows="12"
+    readonly
+    placeholder="Aquí aparecerá el texto generado…"></textarea>
+</div>
+
+<style>
+  .lorem__controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--spacing-s);
+    align-items: end;
+  }
+
+  .lorem__field {
+    display: grid;
+    gap: var(--spacing-3xs);
+  }
+
+  .lorem__label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .lorem__input {
+    inline-size: 100%;
+    padding-block: var(--spacing-2xs);
+    padding-inline: var(--spacing-xs);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .lorem__input:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .lorem__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-base);
+  }
+
+  .lorem__check input {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .lorem__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .lorem__copied {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .lorem__output {
+    inline-size: 100%;
+    min-block-size: 14rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    line-height: 1.7;
+    color: var(--foreground);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    white-space: pre-wrap;
+  }
+</style>
+
+<script>
+  const WORDS = [
+    'lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do',
+    'eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim',
+    'ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','aliquip',
+    'ex','ea','commodo','consequat','duis','aute','irure','in','reprehenderit','voluptate',
+    'velit','esse','cillum','eu','fugiat','nulla','pariatur','excepteur','sint','occaecat',
+    'cupidatat','non','proident','sunt','culpa','qui','officia','deserunt','mollit','anim',
+    'id','est','laborum',
+  ];
+  const LEAD = 'lorem ipsum dolor sit amet consectetur adipiscing elit';
+
+  const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const pick = () => WORDS[rand(0, WORDS.length - 1)];
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  function sentence(): string {
+    const n = rand(6, 14);
+    const parts: string[] = [];
+    for (let i = 0; i < n; i++) parts.push(pick());
+    // coma ocasional en frases largas
+    if (n > 8 && Math.random() < 0.6) {
+      const at = rand(2, n - 3);
+      parts[at] = parts[at] + ',';
+    }
+    return cap(parts.join(' ')) + '.';
+  }
+
+  function paragraph(): string {
+    const n = rand(3, 6);
+    const parts: string[] = [];
+    for (let i = 0; i < n; i++) parts.push(sentence());
+    return parts.join(' ');
+  }
+
+  function initLorem() {
+    const amountEl = document.getElementById('lorem-amount') as HTMLInputElement | null;
+    const unitEl = document.getElementById('lorem-unit') as HTMLSelectElement | null;
+    const classicEl = document.getElementById('lorem-classic') as HTMLInputElement | null;
+    const output = document.getElementById('lorem-output') as HTMLTextAreaElement | null;
+    const genBtn = document.getElementById('lorem-generate');
+    const copyBtn = document.getElementById('lorem-copy');
+    const copied = document.querySelector<HTMLElement>('[data-copied]');
+    if (!amountEl || !unitEl || !classicEl || !output || !genBtn) return;
+
+    function generate() {
+      let amount = parseInt(amountEl!.value, 10);
+      if (!Number.isFinite(amount) || amount < 1) amount = 1;
+      if (amount > 100) amount = 100;
+      const classic = classicEl!.checked;
+      let result = '';
+
+      if (unitEl!.value === 'words') {
+        const arr: string[] = [];
+        for (let i = 0; i < amount; i++) arr.push(pick());
+        if (classic) {
+          const lead = LEAD.split(' ');
+          for (let i = 0; i < Math.min(lead.length, amount); i++) arr[i] = lead[i];
+        }
+        result = cap(arr.join(' ')) + '.';
+      } else if (unitEl!.value === 'sentences') {
+        const arr: string[] = [];
+        for (let i = 0; i < amount; i++) arr.push(sentence());
+        if (classic) arr[0] = cap(LEAD) + '.';
+        result = arr.join(' ');
+      } else {
+        const arr: string[] = [];
+        for (let i = 0; i < amount; i++) arr.push(paragraph());
+        if (classic) arr[0] = cap(LEAD) + '. ' + arr[0];
+        result = arr.join('\n\n');
+      }
+      output!.value = result;
+    }
+
+    genBtn.addEventListener('click', generate);
+    copyBtn?.addEventListener('click', async () => {
+      if (!output!.value) return;
+      try {
+        await navigator.clipboard.writeText(output!.value);
+        if (copied) {
+          copied.hidden = false;
+          setTimeout(() => (copied.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    generate(); // un ejemplo inicial al cargar
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initLorem);
+</script>

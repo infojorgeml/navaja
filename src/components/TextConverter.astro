@@ -1,0 +1,144 @@
+---
+// src/components/TextConverter.astro — convierte texto entre varios formatos (isla cliente)
+---
+
+<div class="converter flow">
+  <div class="converter__panels">
+    <div class="converter__field flow">
+      <label class="converter__label" for="conv-input">Texto original</label>
+      <textarea
+        id="conv-input"
+        class="converter__area"
+        rows="8"
+        placeholder="Escribe o pega aquí el texto que deseas convertir…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="converter__field flow">
+      <label class="converter__label" for="conv-output">Resultado</label>
+      <textarea
+        id="conv-output"
+        class="converter__area converter__area--output"
+        rows="8"
+        placeholder="Aquí aparecerá el texto convertido…"
+        readonly></textarea>
+    </div>
+  </div>
+
+  <div class="converter__actions" role="group" aria-label="Tipo de conversión">
+    <button type="button" class="btn" data-transform="sentence">Mayúscula tras punto</button>
+    <button type="button" class="btn" data-transform="lower">Todo minúsculas</button>
+    <button type="button" class="btn" data-transform="upper">Todo MAYÚSCULAS</button>
+    <button type="button" class="btn" data-transform="title">Capitalizar texto</button>
+  </div>
+</div>
+
+<style>
+  .converter__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .converter__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .converter__label {
+    display: block;
+    font-size: var(--text-base);
+    font-weight: 600;
+  }
+
+  .converter__area {
+    inline-size: 100%;
+    min-block-size: 12rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .converter__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .converter__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .converter__area--output {
+    background-color: var(--muted);
+    cursor: default;
+  }
+
+  .converter__actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--spacing-s);
+  }
+
+  /* Los botones usan la clase .btn global (ver global.css) */
+</style>
+
+<script>
+  const transforms: Record<string, (t: string) => string> = {
+    lower: (t) => t.toLowerCase(),
+    upper: (t) => t.toUpperCase(),
+    // Capitaliza la primera letra de cada palabra (resto en minúscula).
+    // Salta signos de apertura (¿ ¡ " ' « () para que "¿hola" → "¿Hola".
+    title: (t) =>
+      t
+        .toLowerCase()
+        .replace(/(^|\s)([¿¡"'«(]*)(\p{L})/gu, (_m, sep, open, ch) => sep + open + ch.toUpperCase()),
+    // "Sentence case": minúsculas + capitaliza el inicio de cada oración
+    // (al principio, tras . ! ? o tras salto de línea), saltando signos de apertura.
+    sentence: (t) =>
+      t
+        .toLowerCase()
+        .replace(
+          /(^\s*|[.!?]\s+|\n\s*)([¿¡"'«(]*)(\p{L})/gu,
+          (_m, sep, open, ch) => sep + open + ch.toUpperCase()
+        ),
+  };
+
+  function initConverter() {
+    const input = document.getElementById('conv-input') as HTMLTextAreaElement | null;
+    const output = document.getElementById('conv-output') as HTMLTextAreaElement | null;
+    const buttons = document.querySelectorAll<HTMLButtonElement>('[data-transform]');
+    if (!input || !output) return;
+
+    let last: string | null = null;
+
+    function apply(kind: string) {
+      const fn = transforms[kind];
+      if (!fn) return;
+      last = kind;
+      output!.value = fn(input!.value);
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const kind = btn.dataset.transform;
+        if (kind) apply(kind);
+      });
+    });
+
+    // Si ya se eligió una conversión, se re-aplica en vivo mientras se escribe
+    input.addEventListener('input', () => {
+      if (last && input.value.trim()) apply(last);
+      else if (!input.value.trim()) output.value = '';
+    });
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initConverter);
+</script>

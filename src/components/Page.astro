@@ -1,0 +1,48 @@
+---
+// src/components/Page.astro — shell de página reutilizable (cabecera + contenido centrado)
+interface Props {
+  title: string;
+  lead?: string;
+  size?: 'narrow' | 'wide';
+}
+const { title, lead, size = 'narrow' } = Astro.props;
+---
+
+<main class="page" data-size={size}>
+  <div class="page__inner flow">
+    <div class="page__head flow">
+      <h1>{title}</h1>
+      {lead && <p class="page__lead">{lead}</p>}
+    </div>
+    <slot />
+  </div>
+</main>
+
+<style>
+  .page {
+    flex: 1;
+    padding-block: var(--spacing-xl);
+    padding-inline: var(--spacing-m);
+  }
+
+  .page__inner {
+    margin-inline: auto;
+  }
+
+  .page[data-size='narrow'] .page__inner {
+    max-inline-size: 40rem;
+  }
+
+  .page[data-size='wide'] .page__inner {
+    max-inline-size: 60rem;
+  }
+
+  .page__head {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .page__lead {
+    color: var(--muted-foreground);
+    font-size: var(--text-lg);
+  }
+</style>

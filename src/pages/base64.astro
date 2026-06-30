@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import Base64Converter from '../components/Base64Converter.astro';
+
+const title = 'Texto ↔ Base64';
+const description = 'Codifica y descodifica Base64 al instante, en ambos sentidos.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <Base64Converter />
+  </Page>
+</BaseLayout>

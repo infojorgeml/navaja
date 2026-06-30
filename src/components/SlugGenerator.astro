@@ -1,0 +1,157 @@
+---
+// src/components/SlugGenerator.astro — convierte texto en slug de URL en vivo (isla cliente)
+---
+
+<div class="slug flow">
+  <div class="slug__field flow">
+    <label class="slug__label" for="slug-input">Texto</label>
+    <textarea
+      id="slug-input"
+      class="slug__area"
+      rows="3"
+      placeholder="Ej.: ¿Cómo hacer café con leche?"
+      autocomplete="off"
+      spellcheck="false"></textarea>
+  </div>
+
+  <div class="slug__sep">
+    <span class="slug__label">Separador</span>
+    <label class="slug__radio"><input type="radio" name="slug-sep" value="-" checked /> <span>Guion (-)</span></label>
+    <label class="slug__radio"><input type="radio" name="slug-sep" value="_" /> <span>Guion bajo (_)</span></label>
+  </div>
+
+  <div class="slug__field flow">
+    <label class="slug__label" for="slug-output">Slug</label>
+    <input id="slug-output" class="slug__out" type="text" readonly value="" aria-label="Slug generado" />
+  </div>
+
+  <div class="slug__actions">
+    <button type="button" class="btn" data-action="copy">Copiar slug</button>
+    <span class="slug__msg" data-msg hidden>¡Copiado!</span>
+  </div>
+</div>
+
+<style>
+  .slug__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .slug__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .slug__area,
+  .slug__out {
+    inline-size: 100%;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .slug__area {
+    resize: vertical;
+    min-block-size: 5rem;
+  }
+
+  .slug__out {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .slug__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .slug__area:focus-visible,
+  .slug__out:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .slug__sep {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .slug__radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .slug__radio input {
+    accent-color: var(--primary);
+  }
+
+  .slug__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .slug__msg {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initSlug() {
+    const input = document.getElementById('slug-input') as HTMLTextAreaElement | null;
+    const output = document.getElementById('slug-output') as HTMLInputElement | null;
+    const seps = document.querySelectorAll<HTMLInputElement>('input[name="slug-sep"]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    const copyBtn = document.querySelector<HTMLButtonElement>('[data-action="copy"]');
+    if (!input || !output) return;
+
+    function currentSep(): string {
+      for (const s of seps) if (s.checked) return s.value;
+      return '-';
+    }
+
+    function slugify(text: string, sep: string): string {
+      return text
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '') // quita acentos (marcas diacríticas)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, sep) // no alfanumérico → separador
+        .replace(/^[-_]+|[-_]+$/g, ''); // recorta separadores de los extremos
+    }
+
+    function update() {
+      output!.value = slugify(input!.value, currentSep());
+    }
+
+    input.addEventListener('input', update);
+    seps.forEach((s) => s.addEventListener('change', update));
+
+    copyBtn?.addEventListener('click', async () => {
+      if (!output!.value) return;
+      try {
+        await navigator.clipboard.writeText(output!.value);
+        if (msg) {
+          msg.hidden = false;
+          setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    update();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initSlug);
+</script>

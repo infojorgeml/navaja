@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import TextConverter from '../components/TextConverter.astro';
+
+const title = 'Conversor de texto';
+const description =
+  'Pega tu texto y transfórmalo: mayúscula tras punto, todo minúsculas, todo MAYÚSCULAS o capitalizar.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <TextConverter />
+  </Page>
+</BaseLayout>

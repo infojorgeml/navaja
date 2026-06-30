@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import { modules } from '../lib/modules';
+
+const title = 'Herramientas';
+const description = 'Una colección de utilidades de texto, rápidas y sin distracciones.';
+---
+
+<BaseLayout title="Navaja — Utilidades de texto" description={description}>
+  <Page title={title} lead={description} size="wide">
+    <ul class="modules" role="list">
+      {
+        modules.map((m) => (
+          <li>
+            <a class="module" href={m.href}>
+              <span class="module__text">
+                <span class="module__title">{m.label}</span>
+                <span class="module__desc">{m.description}</span>
+              </span>
+              <svg
+                class="module__arrow"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Page>
+</BaseLayout>
+
+<style>
+  .modules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .module {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-s);
+    block-size: 100%;
+    padding: var(--spacing-m);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--foreground);
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .module:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px oklch(0 0 0 / 0.08);
+  }
+
+  .module:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .module__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3xs);
+  }
+
+  .module__title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .module__desc {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .module__arrow {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    flex: none;
+    color: var(--muted-foreground);
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .module:hover .module__arrow {
+    transform: translateX(3px);
+    color: var(--primary);
+  }
+</style>

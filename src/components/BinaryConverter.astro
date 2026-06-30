@@ -1,0 +1,161 @@
+---
+// src/components/BinaryConverter.astro — convierte texto ↔ binario en vivo (isla cliente)
+---
+
+<div class="binconv flow">
+  <div class="binconv__panels">
+    <div class="binconv__field flow">
+      <label class="binconv__label" for="bin-text">Texto</label>
+      <textarea
+        id="bin-text"
+        class="binconv__area"
+        rows="7"
+        placeholder="Escribe o pega texto…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="binconv__field flow">
+      <label class="binconv__label" for="bin-binary">Binario</label>
+      <textarea
+        id="bin-binary"
+        class="binconv__area binconv__area--mono"
+        rows="7"
+        placeholder="01001000 01101111 01101100 01100001…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="binconv__actions">
+    <button type="button" class="btn" data-action="copy-binary">Copiar binario</button>
+    <button type="button" class="btn btn--secondary" data-action="copy-text">Copiar texto</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <span class="binconv__msg" data-msg hidden></span>
+  </div>
+</div>
+
+<style>
+  .binconv__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .binconv__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .binconv__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .binconv__area {
+    inline-size: 100%;
+    min-block-size: 11rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .binconv__area--mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+
+  .binconv__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .binconv__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .binconv__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .binconv__msg {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initBinaryConverter() {
+    const textEl = document.getElementById('bin-text') as HTMLTextAreaElement | null;
+    const binEl = document.getElementById('bin-binary') as HTMLTextAreaElement | null;
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!textEl || !binEl) return;
+
+    const enc = new TextEncoder();
+    const dec = new TextDecoder('utf-8', { fatal: false });
+
+    // Texto → binario: UTF-8 byte a byte, en grupos de 8 bits separados por espacio.
+    function textToBinary(text: string): string {
+      return [...enc.encode(text)].map((b) => b.toString(2).padStart(8, '0')).join(' ');
+    }
+
+    // Binario → texto: se queda solo con 0/1, agrupa de 8 en 8 y decodifica UTF-8.
+    function binaryToText(binary: string): string {
+      const bits = binary.replace(/[^01]/g, '');
+      if (!bits) return '';
+      const bytes: number[] = [];
+      for (let i = 0; i + 8 <= bits.length; i += 8) {
+        bytes.push(parseInt(bits.slice(i, i + 8), 2));
+      }
+      return dec.decode(new Uint8Array(bytes));
+    }
+
+    // Asignar .value NO dispara el evento 'input', así que no hay bucle entre ambos campos.
+    textEl.addEventListener('input', () => {
+      binEl.value = textToBinary(textEl.value);
+    });
+    binEl.addEventListener('input', () => {
+      textEl.value = binaryToText(binEl.value);
+    });
+
+    function flash(text: string) {
+      if (!msg) return;
+      msg.textContent = text;
+      msg.hidden = false;
+      setTimeout(() => (msg.hidden = true), 1500);
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.action;
+        if (action === 'clear') {
+          textEl.value = '';
+          binEl.value = '';
+          textEl.focus();
+          return;
+        }
+        const value = action === 'copy-binary' ? binEl.value : textEl.value;
+        if (!value) return;
+        try {
+          await navigator.clipboard.writeText(value);
+          flash(action === 'copy-binary' ? '¡Binario copiado!' : '¡Texto copiado!');
+        } catch {}
+      });
+    });
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initBinaryConverter);
+</script>

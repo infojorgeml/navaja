@@ -1,0 +1,14 @@
+---
+// src/components/Section.astro — banda full-width con ritmo vertical
+interface Props {
+  space?: 'm' | 'l' | 'xl' | '2xl';
+  class?: string;
+  as?: string;
+}
+const { space = 'xl', class: cls = '', as: Tag = 'section' } = Astro.props;
+const pad = { m: 'py-m', l: 'py-l', xl: 'py-xl', '2xl': 'py-2xl' }[space];
+---
+
+<Tag class:list={[pad, cls]}>
+  <slot />
+</Tag>

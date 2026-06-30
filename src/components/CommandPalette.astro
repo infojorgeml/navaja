@@ -1,0 +1,246 @@
+---
+// src/components/CommandPalette.astro — buscador de módulos (⌘K). Se monta una vez en BaseLayout.
+import { modules } from '../lib/modules';
+---
+
+<dialog id="command-palette" class="cmdk" aria-label="Buscar módulos">
+  <div class="cmdk__panel">
+    <div class="cmdk__search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        type="text"
+        id="cmdk-input"
+        class="cmdk__input"
+        placeholder="Buscar módulo…"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        aria-controls="cmdk-list"
+      />
+      <kbd class="cmdk__esc">esc</kbd>
+    </div>
+
+    <ul class="cmdk__list" id="cmdk-list" role="listbox" aria-label="Módulos">
+      {
+        modules.map((m) => (
+          <li
+            class="cmdk__item"
+            role="option"
+            data-href={m.href}
+            data-label={m.label.toLowerCase()}
+            data-keywords={m.keywords.join(' ')}
+          >
+            <a href={m.href} class="cmdk__link" tabindex="-1">
+              <span class="cmdk__item-label">{m.label}</span>
+              <span class="cmdk__item-desc">{m.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="cmdk__empty" id="cmdk-empty" hidden>Sin resultados</p>
+  </div>
+</dialog>
+
+<style>
+  .cmdk {
+    margin: 12vh auto auto;
+    inline-size: min(92vw, 32rem);
+    max-block-size: 70vh;
+    padding: 0;
+    color: var(--popover-foreground);
+    background-color: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow: 0 12px 48px oklch(0 0 0 / 0.3);
+    overflow: hidden;
+  }
+
+  .cmdk::backdrop {
+    background-color: oklch(0 0 0 / 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  .cmdk__panel {
+    display: flex;
+    flex-direction: column;
+    max-block-size: 70vh;
+  }
+
+  .cmdk__search {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    padding-inline: var(--spacing-s);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .cmdk__search svg {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    color: var(--muted-foreground);
+    flex: none;
+  }
+
+  .cmdk__input {
+    flex: 1;
+    padding-block: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+
+  .cmdk__esc {
+    font-family: inherit;
+    font-size: var(--text-2xs);
+    padding-block: 0.1rem;
+    padding-inline: 0.35rem;
+    color: var(--muted-foreground);
+    background-color: var(--muted);
+    border-radius: calc(var(--radius) - 4px);
+  }
+
+  .cmdk__list {
+    list-style: none;
+    margin: 0;
+    padding: var(--spacing-2xs);
+    overflow-y: auto;
+  }
+
+  .cmdk__link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding-block: var(--spacing-xs);
+    padding-inline: var(--spacing-s);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--foreground);
+  }
+
+  .cmdk__item.is-selected .cmdk__link,
+  .cmdk__link:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .cmdk__item-label {
+    font-weight: 600;
+  }
+
+  .cmdk__item-desc {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .cmdk__empty {
+    padding: var(--spacing-m);
+    margin: 0;
+    text-align: center;
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initCommandPalette() {
+    const dialog = document.getElementById('command-palette') as HTMLDialogElement | null;
+    const input = document.getElementById('cmdk-input') as HTMLInputElement | null;
+    const list = document.getElementById('cmdk-list');
+    const empty = document.getElementById('cmdk-empty');
+    if (!dialog || !input || !list) return;
+
+    const items = Array.from(list.querySelectorAll<HTMLElement>('.cmdk__item'));
+    let selected = 0;
+
+    const visible = () => items.filter((it) => !it.hidden);
+
+    function setSelected(idx: number) {
+      const vis = visible();
+      if (!vis.length) return;
+      selected = (idx + vis.length) % vis.length;
+      items.forEach((it) => it.classList.remove('is-selected'));
+      vis[selected].classList.add('is-selected');
+      vis[selected].scrollIntoView({ block: 'nearest' });
+    }
+
+    function filter(q: string) {
+      const query = q.trim().toLowerCase();
+      items.forEach((it) => {
+        const hay = (it.dataset.label || '') + ' ' + (it.dataset.keywords || '');
+        it.hidden = query !== '' && !hay.includes(query);
+      });
+      if (empty) empty.hidden = visible().length > 0;
+      setSelected(0);
+    }
+
+    function open() {
+      if (dialog!.open) return;
+      input!.value = '';
+      filter('');
+      dialog!.showModal();
+      requestAnimationFrame(() => input!.focus());
+    }
+
+    function close() {
+      if (dialog!.open) dialog!.close();
+    }
+
+    input.addEventListener('input', () => filter(input.value));
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelected(selected + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelected(selected - 1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const target = visible()[selected];
+        const link = target?.querySelector<HTMLAnchorElement>('a');
+        if (link) {
+          close();
+          link.click();
+        }
+      }
+    });
+
+    // Click en el backdrop (fuera del panel) cierra
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) close();
+    });
+    // Click en un módulo: cerrar (la navegación la hace el propio <a>)
+    list.addEventListener('click', () => close());
+
+    // Exponer la apertura para los disparadores globales
+    (window as any).__herraOpenCommand = open;
+  }
+
+  // Disparadores globales: se registran una sola vez y sobreviven a las navegaciones.
+  if (!(window as any).__herraCommandBound) {
+    (window as any).__herraCommandBound = true;
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        (window as any).__herraOpenCommand?.();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement)?.closest?.('[data-command-open]');
+      if (trigger) {
+        e.preventDefault();
+        (window as any).__herraOpenCommand?.();
+      }
+    });
+  }
+
+  // Con View Transitions, re-vincular el diálogo en cada carga/navegación.
+  document.addEventListener('astro:page-load', initCommandPalette);
+</script>

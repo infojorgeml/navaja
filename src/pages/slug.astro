@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import SlugGenerator from '../components/SlugGenerator.astro';
+
+const title = 'Slug de URL';
+const description = 'Convierte cualquier texto en un slug limpio y legible para URLs.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <SlugGenerator />
+  </Page>
+</BaseLayout>

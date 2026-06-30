@@ -1,0 +1,179 @@
+---
+// src/components/Base64Converter.astro — convierte texto ↔ Base64 en vivo (isla cliente)
+---
+
+<div class="b64 flow">
+  <div class="b64__panels">
+    <div class="b64__field flow">
+      <label class="b64__label" for="b64-text">Texto</label>
+      <textarea
+        id="b64-text"
+        class="b64__area"
+        rows="7"
+        placeholder="Escribe o pega texto…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="b64__field flow">
+      <label class="b64__label" for="b64-out">Base64</label>
+      <textarea
+        id="b64-out"
+        class="b64__area b64__area--mono"
+        rows="7"
+        placeholder="SG9sYSDwn5GL…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="b64__actions">
+    <button type="button" class="btn" data-action="copy-b64">Copiar Base64</button>
+    <button type="button" class="btn btn--secondary" data-action="copy-text">Copiar texto</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <span class="b64__msg" data-msg hidden></span>
+  </div>
+</div>
+
+<style>
+  .b64__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .b64__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .b64__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .b64__area {
+    inline-size: 100%;
+    min-block-size: 11rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .b64__area--mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    word-break: break-all;
+  }
+
+  .b64__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .b64__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .b64__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .b64__msg {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .b64__msg[data-error] {
+    color: var(--destructive);
+  }
+</style>
+
+<script>
+  function initBase64() {
+    const textEl = document.getElementById('b64-text') as HTMLTextAreaElement | null;
+    const outEl = document.getElementById('b64-out') as HTMLTextAreaElement | null;
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!textEl || !outEl) return;
+
+    const enc = new TextEncoder();
+    const dec = new TextDecoder('utf-8', { fatal: false });
+
+    function textToBase64(text: string): string {
+      const bytes = enc.encode(text);
+      let bin = '';
+      for (const b of bytes) bin += String.fromCharCode(b);
+      return btoa(bin);
+    }
+
+    // Devuelve null si el Base64 no es válido.
+    function base64ToText(b64: string): string | null {
+      const clean = b64.replace(/\s/g, '');
+      if (!clean) return '';
+      try {
+        const bin = atob(clean);
+        const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+        return dec.decode(bytes);
+      } catch {
+        return null;
+      }
+    }
+
+    function showMsg(text: string, isError = false) {
+      if (!msg) return;
+      msg.textContent = text;
+      if (isError) msg.dataset.error = '';
+      else delete msg.dataset.error;
+      msg.hidden = !text;
+    }
+
+    textEl.addEventListener('input', () => {
+      outEl.value = textToBase64(textEl.value);
+      showMsg('');
+    });
+
+    outEl.addEventListener('input', () => {
+      const result = base64ToText(outEl.value);
+      if (result === null) {
+        showMsg('Base64 no válido', true);
+      } else {
+        textEl.value = result;
+        showMsg('');
+      }
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.action;
+        if (action === 'clear') {
+          textEl.value = '';
+          outEl.value = '';
+          showMsg('');
+          textEl.focus();
+          return;
+        }
+        const value = action === 'copy-b64' ? outEl.value : textEl.value;
+        if (!value) return;
+        try {
+          await navigator.clipboard.writeText(value);
+          showMsg(action === 'copy-b64' ? '¡Base64 copiado!' : '¡Texto copiado!');
+          setTimeout(() => showMsg(''), 1500);
+        } catch {}
+      });
+    });
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initBase64);
+</script>
