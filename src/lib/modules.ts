@@ -49,4 +49,10 @@ export const modules: ModuleEntry[] = [
     description: 'Convierte texto en slug de URL',
     keywords: ['slug', 'url', 'seo', 'permalink', 'amigable'],
   },
+  {
+    href: '/naming',
+    label: 'Naming',
+    description: 'Genera nombres de negocio',
+    keywords: ['naming', 'nombres', 'nombre', 'negocio', 'empresa', 'marca', 'startup', 'generador', 'ideas'],
+  },
 ];

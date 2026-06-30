@@ -1,0 +1,248 @@
+---
+// src/components/NamingGenerator.astro — combina una palabra base con prefijos
+// y sufijos fijos para dar 16 ideas de nombre de negocio (isla cliente, sin IA)
+---
+
+<div class="naming flow">
+  <div class="naming__field flow">
+    <label class="naming__label" for="naming-input">Palabra base</label>
+    <input
+      id="naming-input"
+      class="naming__input"
+      type="text"
+      placeholder="Ej.: web, taco, viaje…"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+    />
+  </div>
+
+  <p class="naming__empty" data-empty>
+    Escribe una palabra y verás 16 ideas de nombre. Pulsa cualquiera para copiarla.
+  </p>
+
+  <div class="naming__results" data-results hidden>
+    <section class="naming__group">
+      <h2 class="naming__group-title">Con prefijo</h2>
+      <ul class="naming__list" data-list="prefix" role="list"></ul>
+    </section>
+    <section class="naming__group">
+      <h2 class="naming__group-title">Con sufijo</h2>
+      <ul class="naming__list" data-list="suffix" role="list"></ul>
+    </section>
+  </div>
+
+  <div class="naming__actions">
+    <button type="button" class="btn" data-action="copy-all" hidden>Copiar todos</button>
+    <span class="naming__msg" data-msg hidden>¡Copiado!</span>
+  </div>
+</div>
+
+<style>
+  .naming__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .naming__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .naming__input {
+    inline-size: 100%;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .naming__input::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .naming__input:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .naming__empty {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  .naming__results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  .naming__group-title {
+    margin: 0 0 var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  .naming__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2xs);
+  }
+
+  /* Resultado = chip pill (estética OpenAI), pulsable para copiar.
+     Los chips se crean por JS, así que sus estilos van anclados al padre
+     estático `.naming__list` (que sí recibe el scope de Astro) + `:global()`
+     para alcanzar el nodo dinámico. */
+  .naming__list :global(.naming__result) {
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .naming__list :global(.naming__result:hover) {
+    border-color: var(--foreground);
+    background-color: var(--muted);
+  }
+
+  .naming__list :global(.naming__result.is-copied) {
+    border-color: var(--foreground);
+    background-color: var(--foreground);
+    color: var(--background);
+  }
+
+  .naming__list :global(.naming__result:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .naming__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .naming__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initNaming() {
+    const input = document.getElementById('naming-input') as HTMLInputElement | null;
+    const results = document.querySelector<HTMLElement>('[data-results]');
+    const empty = document.querySelector<HTMLElement>('[data-empty]');
+    const prefixList = document.querySelector<HTMLElement>('[data-list="prefix"]');
+    const suffixList = document.querySelector<HTMLElement>('[data-list="suffix"]');
+    const copyAllBtn = document.querySelector<HTMLButtonElement>('[data-action="copy-all"]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!input || !results || !empty || !prefixList || !suffixList) return;
+
+    const PREFIXES = ['Net', 'Nova', 'Neo', 'Link', 'Digi', 'Zen', 'Omni', 'Eco'];
+    const SUFFIXES = ['ly', 'ify', 'hub', 'lab', 'grid', 'flow', 'io', 'zone'];
+
+    let msgTimer = 0;
+
+    // Primera palabra, sin acentos, solo [a-z0-9]. Ej.: "Café con leche" → "cafe".
+    function normalize(raw: string): string {
+      return (raw.trim().split(/\s+/)[0] || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function cap(s: string): string {
+      return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+    }
+
+    function chip(name: string): HTMLLIElement {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'naming__result';
+      btn.textContent = name;
+      li.appendChild(btn);
+      return li;
+    }
+
+    function showMsg() {
+      if (!msg) return;
+      msg.hidden = false;
+      clearTimeout(msgTimer);
+      msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+    }
+
+    function currentNames(): string[] {
+      return Array.from(results!.querySelectorAll<HTMLButtonElement>('.naming__result')).map(
+        (b) => b.textContent || ''
+      );
+    }
+
+    function render() {
+      const word = normalize(input!.value);
+
+      if (!word) {
+        results!.hidden = true;
+        empty!.hidden = false;
+        if (copyAllBtn) copyAllBtn.hidden = true;
+        prefixList!.replaceChildren();
+        suffixList!.replaceChildren();
+        return;
+      }
+
+      prefixList!.replaceChildren(...PREFIXES.map((p) => chip(cap(p.toLowerCase() + word))));
+      suffixList!.replaceChildren(...SUFFIXES.map((s) => chip(cap(word + s))));
+
+      empty!.hidden = true;
+      results!.hidden = false;
+      if (copyAllBtn) copyAllBtn.hidden = false;
+    }
+
+    async function copy(text: string) {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        showMsg();
+      } catch {}
+    }
+
+    input.addEventListener('input', render);
+
+    // Delegación: pulsar un chip copia su nombre (+ feedback breve en el propio chip).
+    results.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLButtonElement>('.naming__result');
+      if (!btn) return;
+      copy(btn.textContent || '');
+      btn.classList.add('is-copied');
+      setTimeout(() => btn.classList.remove('is-copied'), 600);
+    });
+
+    copyAllBtn?.addEventListener('click', () => copy(currentNames().join('\n')));
+
+    render();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initNaming);
+</script>

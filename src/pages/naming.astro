@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import NamingGenerator from '../components/NamingGenerator.astro';
+
+const title = 'Naming';
+const description = 'Genera nombres de negocio combinando prefijos y sufijos.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <NamingGenerator />
+  </Page>
+</BaseLayout>
