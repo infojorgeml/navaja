@@ -1,11 +1,19 @@
 // astro.config.mjs
 import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import sitemap from '@astrojs/sitemap';
 
 // Base esencial (ver base-astro.md). Cuando el proyecto lo necesite, aquí se
 // añaden: `site` + adapter de Vercel + sitemap (§3, §8) y PWA (§7).
 export default defineConfig({
   output: 'static', // SSG. SSR solo por ruta con `export const prerender = false`
+
+  // URL canónica del sitio. Activa <link rel="canonical"> y el sitemap.
+  // URL provisional de Vercel; sustituir por el dominio definitivo cuando lo haya.
+  site: 'https://navaja-ochre.vercel.app',
+
+  // Genera sitemap-index.xml + sitemap-0.xml en build (referéncialos en robots.txt).
+  integrations: [sitemap()],
 
   // Puerto fijo propio de este proyecto (poco común, para no chocar con otros Astro en 4321).
   // Respeta PORT del entorno si se define; en local `npm run dev` usa 5690.

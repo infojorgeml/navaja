@@ -47,9 +47,10 @@ import ThemeToggle from './ThemeToggle.astro';
     block-size: 4rem;
   }
 
+  /* Wordmark: el único momento en peso 600 del sistema (OpenAI design.md). */
   .header__brand {
-    font-size: 0.875rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 600;
     letter-spacing: -0.02em;
     color: var(--foreground);
     text-decoration: none;
@@ -61,25 +62,26 @@ import ThemeToggle from './ThemeToggle.astro';
     gap: var(--spacing-2xs);
   }
 
+  /* Buscador como mini-pill estilo input de OpenAI: lienzo + hairline, full-round. */
   .header__search {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2xs);
     padding-block: var(--spacing-3xs);
-    padding-inline: var(--spacing-xs);
+    padding-inline: var(--spacing-s);
     font: inherit;
     font-size: 0.875rem;
     color: var(--muted-foreground);
-    background-color: color-mix(in oklab, var(--muted) 55%, transparent);
+    background-color: var(--background);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: 9999px; /* pill */
     cursor: pointer;
-    transition: color 0.15s ease, background-color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .header__search:hover {
     color: var(--foreground);
-    background-color: var(--muted);
+    border-color: var(--foreground);
   }
 
   .header__search:focus-visible {

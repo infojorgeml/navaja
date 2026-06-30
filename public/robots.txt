@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://navaja-ochre.vercel.app/sitemap-index.xml
