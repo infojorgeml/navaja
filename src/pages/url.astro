@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import UrlConverter from '../components/UrlConverter.astro';
+
+const title = 'URL encode';
+const description = 'Codifica y descodifica texto para usarlo en URLs.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <UrlConverter />
+  </Page>
+</BaseLayout>

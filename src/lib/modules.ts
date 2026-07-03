@@ -55,4 +55,22 @@ export const modules: ModuleEntry[] = [
     description: 'Genera nombres de negocio',
     keywords: ['naming', 'nombres', 'nombre', 'negocio', 'empresa', 'marca', 'startup', 'generador', 'ideas'],
   },
+  {
+    href: '/diff',
+    label: 'Diff',
+    description: 'Compara dos textos',
+    keywords: ['diff', 'comparar', 'comparador', 'diferencias', 'cambios', 'texto', 'lineas'],
+  },
+  {
+    href: '/json',
+    label: 'JSON',
+    description: 'Formatea y valida JSON',
+    keywords: ['json', 'formatear', 'minificar', 'validar', 'pretty', 'prettify', 'parse'],
+  },
+  {
+    href: '/url',
+    label: 'URL encode',
+    description: 'Codifica y descodifica URLs',
+    keywords: ['url', 'encode', 'decode', 'codificar', 'descodificar', 'uri', 'percent', 'porcentaje'],
+  },
 ];

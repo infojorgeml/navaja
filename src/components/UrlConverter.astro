@@ -1,0 +1,219 @@
+---
+// src/components/UrlConverter.astro — codifica/descodifica URLs en vivo (isla cliente)
+---
+
+<div class="url flow">
+  <div class="url__panels">
+    <div class="url__field flow">
+      <label class="url__label" for="url-text">Texto</label>
+      <textarea
+        id="url-text"
+        class="url__area"
+        rows="7"
+        placeholder="Escribe o pega texto… ej.: ¿cómo hacer café?"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="url__field flow">
+      <label class="url__label" for="url-out">URL codificada</label>
+      <textarea
+        id="url-out"
+        class="url__area url__area--mono"
+        rows="7"
+        placeholder="%C2%BFc%C3%B3mo%20hacer%20caf%C3%A9%3F"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="url__mode">
+    <span class="url__label">Modo</span>
+    <label class="url__radio">
+      <input type="radio" name="url-mode" value="component" checked />
+      <span>Componente (codifica todo)</span>
+    </label>
+    <label class="url__radio">
+      <input type="radio" name="url-mode" value="full" />
+      <span>URL completa (respeta / ? & =)</span>
+    </label>
+  </div>
+
+  <div class="url__actions">
+    <button type="button" class="btn" data-action="copy-url">Copiar codificada</button>
+    <button type="button" class="btn btn--secondary" data-action="copy-text">Copiar texto</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <span class="url__msg" data-msg hidden></span>
+  </div>
+</div>
+
+<style>
+  .url__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .url__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .url__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .url__area {
+    inline-size: 100%;
+    min-block-size: 11rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .url__area--mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    word-break: break-all;
+  }
+
+  .url__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .url__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .url__mode {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .url__mode .url__label {
+    display: inline;
+  }
+
+  .url__radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .url__radio input {
+    accent-color: var(--primary);
+  }
+
+  .url__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .url__msg {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .url__msg[data-error] {
+    color: var(--destructive);
+  }
+</style>
+
+<script>
+  function initUrl() {
+    const textEl = document.getElementById('url-text') as HTMLTextAreaElement | null;
+    const outEl = document.getElementById('url-out') as HTMLTextAreaElement | null;
+    const modes = document.querySelectorAll<HTMLInputElement>('input[name="url-mode"]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!textEl || !outEl) return;
+
+    function fullMode(): boolean {
+      for (const m of modes) if (m.checked) return m.value === 'full';
+      return false;
+    }
+
+    function encode(text: string): string {
+      // `encodeURI` respeta los caracteres con significado en una URL (/ ? & = #);
+      // `encodeURIComponent` codifica todo (para valores de parámetros).
+      return fullMode() ? encodeURI(text) : encodeURIComponent(text);
+    }
+
+    // Devuelve null si la secuencia % no es válida.
+    function decode(encoded: string): string | null {
+      try {
+        return fullMode() ? decodeURI(encoded) : decodeURIComponent(encoded);
+      } catch {
+        return null;
+      }
+    }
+
+    function showMsg(text: string, isError = false) {
+      if (!msg) return;
+      msg.textContent = text;
+      if (isError) msg.dataset.error = '';
+      else delete msg.dataset.error;
+      msg.hidden = !text;
+    }
+
+    textEl.addEventListener('input', () => {
+      outEl.value = encode(textEl.value);
+      showMsg('');
+    });
+
+    outEl.addEventListener('input', () => {
+      const result = decode(outEl.value);
+      if (result === null) {
+        showMsg('Secuencia % no válida', true);
+      } else {
+        textEl.value = result;
+        showMsg('');
+      }
+    });
+
+    // Al cambiar de modo, re-codifica desde el texto (fuente de verdad).
+    modes.forEach((m) =>
+      m.addEventListener('change', () => {
+        outEl.value = encode(textEl.value);
+        showMsg('');
+      })
+    );
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.action;
+        if (action === 'clear') {
+          textEl.value = '';
+          outEl.value = '';
+          showMsg('');
+          textEl.focus();
+          return;
+        }
+        const value = action === 'copy-url' ? outEl.value : textEl.value;
+        if (!value) return;
+        try {
+          await navigator.clipboard.writeText(value);
+          showMsg(action === 'copy-url' ? '¡URL copiada!' : '¡Texto copiado!');
+          setTimeout(() => showMsg(''), 1500);
+        } catch {}
+      });
+    });
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initUrl);
+</script>

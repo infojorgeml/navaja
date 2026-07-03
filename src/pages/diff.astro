@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import DiffChecker from '../components/DiffChecker.astro';
+
+const title = 'Diff';
+const description = 'Compara dos textos y ve las diferencias línea a línea.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <DiffChecker />
+  </Page>
+</BaseLayout>

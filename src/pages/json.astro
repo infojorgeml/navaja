@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import JsonFormatter from '../components/JsonFormatter.astro';
+
+const title = 'JSON';
+const description = 'Formatea, minifica y valida JSON al instante.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <JsonFormatter />
+  </Page>
+</BaseLayout>

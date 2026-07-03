@@ -1,0 +1,323 @@
+---
+// src/components/DiffChecker.astro — compara dos textos línea a línea (isla cliente).
+// Diff por LCS con recorte de prefijo/sufijo común para acotar memoria.
+---
+
+<div class="diff flow">
+  <div class="diff__panels">
+    <div class="diff__field flow">
+      <label class="diff__label" for="diff-a">Original</label>
+      <textarea
+        id="diff-a"
+        class="diff__area"
+        rows="8"
+        placeholder="Pega el texto original…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="diff__field flow">
+      <label class="diff__label" for="diff-b">Modificado</label>
+      <textarea
+        id="diff-b"
+        class="diff__area"
+        rows="8"
+        placeholder="Pega el texto modificado…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <p class="diff__status" data-status>Pega dos textos y verás las diferencias línea a línea.</p>
+
+  <div class="diff__result flow" data-result hidden>
+    <ul class="diff__output" data-output role="list" aria-label="Diferencias"></ul>
+
+    <div class="diff__actions">
+      <button type="button" class="btn" data-action="copy-diff">Copiar diff</button>
+      <span class="diff__msg" data-msg hidden>¡Copiado!</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Tonos de diff: verde/rojo de la paleta de producto (openai.design.md §Syntax).
+     Único sitio de la app donde aparecen — son semánticos, no de marca. */
+  .diff {
+    --diff-add: #027f41;
+    --diff-del: var(--destructive);
+  }
+
+  :global(.dark) .diff {
+    --diff-add: #34c273; /* más luminoso para el lienzo oscuro */
+    --diff-del: #ff5c73;
+  }
+
+  .diff__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .diff__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .diff__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .diff__area {
+    inline-size: 100%;
+    min-block-size: 12rem;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .diff__area::placeholder {
+    color: var(--muted-foreground);
+    font-family: inherit;
+  }
+
+  .diff__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .diff__status {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .diff__status :global(strong) {
+    font-weight: 500;
+  }
+
+  .diff__status :global(.diff__count--add) {
+    color: var(--diff-add);
+  }
+
+  .diff__status :global(.diff__count--del) {
+    color: var(--diff-del);
+  }
+
+  /* Salida: tarjeta plana (hairline = elevación), líneas en mono. */
+  .diff__output {
+    list-style: none;
+    margin: 0;
+    padding: var(--spacing-2xs) 0;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  /* Las líneas se crean por JS → ancladas al padre estático + :global(). */
+  .diff__output :global(li) {
+    padding-inline: var(--spacing-s);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .diff__output :global(li::before) {
+    content: ' ';
+    display: inline-block;
+    inline-size: 1.2ch;
+    color: var(--muted-foreground);
+  }
+
+  .diff__output :global(li.diff__line--add) {
+    background-color: color-mix(in oklab, var(--diff-add) 12%, transparent);
+    color: var(--diff-add);
+  }
+
+  .diff__output :global(li.diff__line--add::before) {
+    content: '+';
+    color: var(--diff-add);
+  }
+
+  .diff__output :global(li.diff__line--del) {
+    background-color: color-mix(in oklab, var(--diff-del) 12%, transparent);
+    color: var(--diff-del);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+
+  .diff__output :global(li.diff__line--del::before) {
+    content: '−';
+    color: var(--diff-del);
+  }
+
+  .diff__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .diff__msg {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  type Op = { t: ' ' | '+' | '-'; s: string };
+
+  function initDiff() {
+    const aEl = document.getElementById('diff-a') as HTMLTextAreaElement | null;
+    const bEl = document.getElementById('diff-b') as HTMLTextAreaElement | null;
+    const statusEl = document.querySelector<HTMLElement>('[data-status]');
+    const resultEl = document.querySelector<HTMLElement>('[data-result]');
+    const outputEl = document.querySelector<HTMLElement>('[data-output]');
+    const copyBtn = document.querySelector<HTMLButtonElement>('[data-action="copy-diff"]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!aEl || !bEl || !statusEl || !resultEl || !outputEl) return;
+
+    const HINT = 'Pega dos textos y verás las diferencias línea a línea.';
+    const MAX_LINES = 1500; // cota de la matriz LCS tras recortar lo común
+    let ops: Op[] = [];
+    let timer = 0;
+
+    // LCS clásico sobre líneas, con recorte de prefijo/sufijo común
+    // (los casos reales suelen compartir casi todo → matriz pequeña).
+    function diffLines(a: string[], b: string[]): Op[] | null {
+      let start = 0;
+      while (start < a.length && start < b.length && a[start] === b[start]) start++;
+      let endA = a.length;
+      let endB = b.length;
+      while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) {
+        endA--;
+        endB--;
+      }
+
+      const midA = a.slice(start, endA);
+      const midB = b.slice(start, endB);
+      if (midA.length > MAX_LINES || midB.length > MAX_LINES) return null;
+
+      const n = midA.length;
+      const m = midB.length;
+      const dp: Uint32Array[] = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+      for (let i = n - 1; i >= 0; i--) {
+        for (let j = m - 1; j >= 0; j--) {
+          dp[i][j] = midA[i] === midB[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+
+      const out: Op[] = a.slice(0, start).map((s) => ({ t: ' ' as const, s }));
+      let i = 0;
+      let j = 0;
+      while (i < n && j < m) {
+        if (midA[i] === midB[j]) {
+          out.push({ t: ' ', s: midA[i] });
+          i++;
+          j++;
+        } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+          out.push({ t: '-', s: midA[i] });
+          i++;
+        } else {
+          out.push({ t: '+', s: midB[j] });
+          j++;
+        }
+      }
+      while (i < n) out.push({ t: '-', s: midA[i++] });
+      while (j < m) out.push({ t: '+', s: midB[j++] });
+      for (const s of a.slice(endA)) out.push({ t: ' ', s });
+      return out;
+    }
+
+    function setStatus(html: string) {
+      statusEl!.innerHTML = html;
+    }
+
+    function render() {
+      const a = aEl!.value;
+      const b = bEl!.value;
+
+      if (!a && !b) {
+        resultEl!.hidden = true;
+        outputEl!.replaceChildren();
+        ops = [];
+        setStatus(HINT);
+        return;
+      }
+
+      if (a === b) {
+        resultEl!.hidden = true;
+        outputEl!.replaceChildren();
+        ops = [];
+        setStatus('Los textos son idénticos.');
+        return;
+      }
+
+      const result = diffLines(a.split('\n'), b.split('\n'));
+      if (result === null) {
+        resultEl!.hidden = true;
+        outputEl!.replaceChildren();
+        ops = [];
+        setStatus(`Demasiadas líneas distintas para comparar (máx. ${MAX_LINES}).`);
+        return;
+      }
+
+      ops = result;
+      const added = ops.filter((o) => o.t === '+').length;
+      const removed = ops.filter((o) => o.t === '-').length;
+      setStatus(
+        `<strong class="diff__count--add">+${added}</strong> añadidas · ` +
+          `<strong class="diff__count--del">−${removed}</strong> eliminadas`
+      );
+
+      outputEl!.replaceChildren(
+        ...ops.map((op) => {
+          const li = document.createElement('li');
+          if (op.t === '+') li.className = 'diff__line--add';
+          else if (op.t === '-') li.className = 'diff__line--del';
+          li.textContent = op.s || ' ';
+          return li;
+        })
+      );
+      resultEl!.hidden = false;
+    }
+
+    // Debounce corto: el LCS puede ser costoso en textos grandes.
+    function schedule() {
+      clearTimeout(timer);
+      timer = window.setTimeout(render, 150);
+    }
+
+    aEl.addEventListener('input', schedule);
+    bEl.addEventListener('input', schedule);
+
+    copyBtn?.addEventListener('click', async () => {
+      if (!ops.length) return;
+      const text = ops.map((op) => `${op.t === ' ' ? ' ' : op.t} ${op.s}`).join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        if (msg) {
+          msg.hidden = false;
+          setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    render();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initDiff);
+</script>

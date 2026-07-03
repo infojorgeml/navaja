@@ -1,0 +1,178 @@
+---
+// src/components/JsonFormatter.astro — formatea, minifica y valida JSON (isla cliente)
+---
+
+<div class="json flow">
+  <div class="json__field flow">
+    <label class="json__label" for="json-input">JSON</label>
+    <textarea
+      id="json-input"
+      class="json__area"
+      rows="12"
+      placeholder='{"nombre": "Navaja", "modulos": 11}'
+      autocomplete="off"
+      spellcheck="false"></textarea>
+  </div>
+
+  <p class="json__status" data-status hidden></p>
+
+  <div class="json__actions">
+    <button type="button" class="btn" data-action="format">Formatear</button>
+    <button type="button" class="btn btn--secondary" data-action="minify">Minificar</button>
+    <button type="button" class="btn btn--secondary" data-action="copy">Copiar</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <span class="json__msg" data-msg hidden>¡Copiado!</span>
+  </div>
+</div>
+
+<style>
+  .json__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .json__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .json__area {
+    inline-size: 100%;
+    min-block-size: 16rem;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .json__area::placeholder {
+    color: var(--muted-foreground);
+    font-family: inherit;
+  }
+
+  .json__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  /* Borde en tinta de error cuando el JSON no parsea */
+  .json__area[data-invalid] {
+    border-color: var(--destructive);
+  }
+
+  .json__status {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .json__status[data-error] {
+    color: var(--destructive);
+  }
+
+  .json__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .json__msg {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initJson() {
+    const input = document.getElementById('json-input') as HTMLTextAreaElement | null;
+    const status = document.querySelector<HTMLElement>('[data-status]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!input || !status) return;
+
+    // Intenta añadir "línea X, columna Y" a partir de la posición que
+    // incluye el mensaje del motor ("… at position N").
+    function describeError(e: unknown, text: string): string {
+      const raw = e instanceof Error ? e.message : 'JSON no válido';
+      const match = raw.match(/position (\d+)/);
+      if (!match) return raw;
+      const pos = Math.min(parseInt(match[1], 10), text.length);
+      const before = text.slice(0, pos);
+      const line = before.split('\n').length;
+      const col = pos - before.lastIndexOf('\n');
+      return `${raw} (línea ${line}, columna ${col})`;
+    }
+
+    // Valida y devuelve el valor parseado, o undefined si no es válido/está vacío.
+    function validate(): unknown {
+      const text = input!.value;
+      if (!text.trim()) {
+        status!.hidden = true;
+        delete input!.dataset.invalid;
+        return undefined;
+      }
+      try {
+        const parsed = JSON.parse(text);
+        status!.textContent = 'JSON válido';
+        delete status!.dataset.error;
+        status!.hidden = false;
+        delete input!.dataset.invalid;
+        return parsed;
+      } catch (e) {
+        status!.textContent = describeError(e, text);
+        status!.dataset.error = '';
+        status!.hidden = false;
+        input!.dataset.invalid = '';
+        return undefined;
+      }
+    }
+
+    function transform(indent: number | undefined) {
+      const parsed = validate();
+      // `undefined` solo ocurre con entrada vacía o error de parseo (JSON no
+      // puede representar undefined); el estado ya muestra el error.
+      if (parsed === undefined) {
+        if (!input!.value.trim()) input!.focus();
+        return;
+      }
+      input!.value = JSON.stringify(parsed, null, indent);
+      validate();
+    }
+
+    input.addEventListener('input', validate);
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.action;
+        if (action === 'format') {
+          transform(2);
+        } else if (action === 'minify') {
+          transform(undefined);
+        } else if (action === 'clear') {
+          input!.value = '';
+          validate();
+          input!.focus();
+        } else if (action === 'copy') {
+          if (!input!.value) return;
+          try {
+            await navigator.clipboard.writeText(input!.value);
+            if (msg) {
+              msg.hidden = false;
+              setTimeout(() => (msg.hidden = true), 1500);
+            }
+          } catch {}
+        }
+      });
+    });
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initJson);
+</script>
