@@ -73,4 +73,22 @@ export const modules: ModuleEntry[] = [
     description: 'Codifica y descodifica URLs',
     keywords: ['url', 'encode', 'decode', 'codificar', 'descodificar', 'uri', 'percent', 'porcentaje'],
   },
+  {
+    href: '/limpiador',
+    label: 'Limpiador',
+    description: 'Limpia espacios y caracteres invisibles',
+    keywords: ['limpiador', 'limpiar', 'espacios', 'saltos', 'invisibles', 'zero-width', 'pdf', 'clean'],
+  },
+  {
+    href: '/ordenar',
+    label: 'Ordenar líneas',
+    description: 'Ordena listas y quita duplicados',
+    keywords: ['ordenar', 'lineas', 'alfabetico', 'aleatorio', 'duplicados', 'sort', 'lista', 'barajar'],
+  },
+  {
+    href: '/extractor',
+    label: 'Extractor',
+    description: 'Extrae emails, URLs o números',
+    keywords: ['extractor', 'extraer', 'emails', 'correos', 'urls', 'enlaces', 'numeros', 'regex'],
+  },
 ];

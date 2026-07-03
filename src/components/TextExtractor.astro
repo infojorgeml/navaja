@@ -1,0 +1,223 @@
+---
+// src/components/TextExtractor.astro — extrae emails, URLs o números de un texto (isla cliente)
+---
+
+<div class="extractor flow">
+  <div class="extractor__field flow">
+    <label class="extractor__label" for="extractor-input">Texto</label>
+    <textarea
+      id="extractor-input"
+      class="extractor__area"
+      rows="8"
+      placeholder="Pega aquí cualquier texto: un correo, un log, una página…"
+      autocomplete="off"
+      spellcheck="false"></textarea>
+  </div>
+
+  <div class="extractor__mode">
+    <span class="extractor__label">Extraer</span>
+    <label class="extractor__radio">
+      <input type="radio" name="extractor-mode" value="emails" checked />
+      <span>Emails</span>
+    </label>
+    <label class="extractor__radio">
+      <input type="radio" name="extractor-mode" value="urls" />
+      <span>URLs</span>
+    </label>
+    <label class="extractor__radio">
+      <input type="radio" name="extractor-mode" value="numbers" />
+      <span>Números</span>
+    </label>
+    <label class="extractor__check">
+      <input type="checkbox" id="extractor-dedupe" checked />
+      <span>Quitar duplicados</span>
+    </label>
+  </div>
+
+  <div class="extractor__field flow">
+    <label class="extractor__label" for="extractor-output">Resultado</label>
+    <textarea
+      id="extractor-output"
+      class="extractor__area extractor__area--mono"
+      rows="6"
+      readonly
+      placeholder="Aquí aparecerá lo encontrado, uno por línea…"></textarea>
+  </div>
+
+  <div class="extractor__actions">
+    <button type="button" class="btn" data-action="copy">Copiar resultado</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <span class="extractor__stat" data-stat hidden></span>
+    <span class="extractor__msg" data-msg hidden>¡Copiado!</span>
+  </div>
+</div>
+
+<style>
+  .extractor__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .extractor__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .extractor__area {
+    inline-size: 100%;
+    min-block-size: 10rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .extractor__area--mono {
+    min-block-size: 8rem;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    word-break: break-all;
+  }
+
+  .extractor__area::placeholder {
+    color: var(--muted-foreground);
+    font-family: inherit;
+  }
+
+  .extractor__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .extractor__mode {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .extractor__mode .extractor__label {
+    display: inline;
+  }
+
+  .extractor__radio,
+  .extractor__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .extractor__radio input,
+  .extractor__check input {
+    accent-color: var(--primary);
+  }
+
+  .extractor__check {
+    margin-inline-start: var(--spacing-s);
+  }
+
+  .extractor__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .extractor__stat,
+  .extractor__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initExtractor() {
+    const input = document.getElementById('extractor-input') as HTMLTextAreaElement | null;
+    const output = document.getElementById('extractor-output') as HTMLTextAreaElement | null;
+    const modes = document.querySelectorAll<HTMLInputElement>('input[name="extractor-mode"]');
+    const optDedupe = document.getElementById('extractor-dedupe') as HTMLInputElement | null;
+    const stat = document.querySelector<HTMLElement>('[data-stat]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!input || !output) return;
+
+    const PATTERNS: Record<string, RegExp> = {
+      emails: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
+      urls: /(?:https?:\/\/|www\.)[^\s<>"'`)\]}]+/g,
+      numbers: /-?\d+(?:[.,]\d+)*/g,
+    };
+
+    const LABELS: Record<string, [string, string]> = {
+      emails: ['email', 'emails'],
+      urls: ['URL', 'URLs'],
+      numbers: ['número', 'números'],
+    };
+
+    function currentMode(): string {
+      for (const m of modes) if (m.checked) return m.value;
+      return 'emails';
+    }
+
+    function extract() {
+      const text = input!.value;
+      const mode = currentMode();
+
+      if (!text.trim()) {
+        output!.value = '';
+        if (stat) stat.hidden = true;
+        return;
+      }
+
+      let found = text.match(PATTERNS[mode]) ?? [];
+      if (mode === 'urls') {
+        // Recorta la puntuación final que suele pegarse a las URLs en prosa.
+        found = found.map((u) => u.replace(/[.,;:!?)]+$/, ''));
+      }
+      if (optDedupe?.checked) found = [...new Set(found)];
+
+      output!.value = found.join('\n');
+      if (stat) {
+        const [sing, plur] = LABELS[mode];
+        stat.textContent = found.length
+          ? `${found.length} ${found.length === 1 ? sing : plur}`
+          : 'Sin resultados';
+        stat.hidden = false;
+      }
+    }
+
+    input.addEventListener('input', extract);
+    modes.forEach((m) => m.addEventListener('change', extract));
+    optDedupe?.addEventListener('change', extract);
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (btn.dataset.action === 'clear') {
+          input!.value = '';
+          extract();
+          input!.focus();
+          return;
+        }
+        if (!output!.value) return;
+        try {
+          await navigator.clipboard.writeText(output!.value);
+          if (msg) {
+            msg.hidden = false;
+            setTimeout(() => (msg.hidden = true), 1500);
+          }
+        } catch {}
+      });
+    });
+
+    extract();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initExtractor);
+</script>

@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import TextCleaner from '../components/TextCleaner.astro';
+
+const title = 'Limpiador de texto';
+const description = 'Quita espacios dobles, saltos de línea de más y caracteres invisibles.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <TextCleaner />
+  </Page>
+</BaseLayout>

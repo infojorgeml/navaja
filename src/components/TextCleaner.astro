@@ -1,0 +1,207 @@
+---
+// src/components/TextCleaner.astro — limpia texto pegado (PDFs, webs…) en vivo (isla cliente)
+---
+
+<div class="cleaner flow">
+  <div class="cleaner__panels">
+    <div class="cleaner__field flow">
+      <label class="cleaner__label" for="cleaner-input">Texto original</label>
+      <textarea
+        id="cleaner-input"
+        class="cleaner__area"
+        rows="8"
+        placeholder="Pega aquí el texto a limpiar…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="cleaner__field flow">
+      <label class="cleaner__label" for="cleaner-output">Texto limpio</label>
+      <textarea
+        id="cleaner-output"
+        class="cleaner__area"
+        rows="8"
+        readonly
+        placeholder="Aquí aparecerá el resultado…"></textarea>
+    </div>
+  </div>
+
+  <div class="cleaner__options">
+    <label class="cleaner__check">
+      <input type="checkbox" id="cleaner-spaces" checked />
+      <span>Espacios duplicados</span>
+    </label>
+    <label class="cleaner__check">
+      <input type="checkbox" id="cleaner-breaks" checked />
+      <span>Saltos de línea de más</span>
+    </label>
+    <label class="cleaner__check">
+      <input type="checkbox" id="cleaner-invisible" checked />
+      <span>Caracteres invisibles (zero-width, nbsp…)</span>
+    </label>
+    <label class="cleaner__check">
+      <input type="checkbox" id="cleaner-trim" checked />
+      <span>Espacios al inicio/final de línea</span>
+    </label>
+  </div>
+
+  <div class="cleaner__actions">
+    <button type="button" class="btn" data-action="copy">Copiar limpio</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar campos</button>
+    <span class="cleaner__stat" data-stat hidden></span>
+    <span class="cleaner__msg" data-msg hidden>¡Copiado!</span>
+  </div>
+</div>
+
+<style>
+  .cleaner__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .cleaner__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .cleaner__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .cleaner__area {
+    inline-size: 100%;
+    min-block-size: 12rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .cleaner__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .cleaner__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .cleaner__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--spacing-2xs) var(--spacing-m);
+  }
+
+  .cleaner__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .cleaner__check input {
+    inline-size: 1rem;
+    block-size: 1rem;
+    accent-color: var(--primary);
+  }
+
+  .cleaner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .cleaner__stat,
+  .cleaner__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initCleaner() {
+    const input = document.getElementById('cleaner-input') as HTMLTextAreaElement | null;
+    const output = document.getElementById('cleaner-output') as HTMLTextAreaElement | null;
+    const optSpaces = document.getElementById('cleaner-spaces') as HTMLInputElement | null;
+    const optBreaks = document.getElementById('cleaner-breaks') as HTMLInputElement | null;
+    const optInvisible = document.getElementById('cleaner-invisible') as HTMLInputElement | null;
+    const optTrim = document.getElementById('cleaner-trim') as HTMLInputElement | null;
+    const stat = document.querySelector<HTMLElement>('[data-stat]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!input || !output) return;
+
+    // Invisibles habituales en texto de PDFs/webs: zero-width (U+200B–200D,
+    // U+2060, U+FEFF) y guion blando (U+00AD). Se eliminan sin dejar rastro.
+    const INVISIBLE = /[\u200B-\u200D\u2060\uFEFF\u00AD]/g;
+    // Espacios "raros" (nbsp, finos, ideográfico…) → espacio normal.
+    const ODD_SPACES = /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g;
+
+    function clean(text: string): string {
+      let t = text.replace(/\r\n?/g, '\n'); // normaliza finales de línea
+      if (optInvisible?.checked) {
+        t = t.replace(INVISIBLE, '').replace(ODD_SPACES, ' ');
+      }
+      if (optSpaces?.checked) {
+        t = t.replace(/[ \t]{2,}/g, ' ');
+      }
+      if (optTrim?.checked) {
+        t = t
+          .split('\n')
+          .map((line) => line.trim())
+          .join('\n');
+      }
+      if (optBreaks?.checked) {
+        // Conserva la separación de párrafos: 3+ saltos → 2.
+        t = t.replace(/\n{3,}/g, '\n\n');
+      }
+      if (optTrim?.checked) t = t.trim();
+      return t;
+    }
+
+    function update() {
+      const result = clean(input!.value);
+      output!.value = result;
+      if (stat) {
+        const removed = input!.value.length - result.length;
+        stat.textContent = removed > 0 ? `−${removed} caracteres` : '';
+        stat.hidden = !(removed > 0);
+      }
+    }
+
+    input.addEventListener('input', update);
+    [optSpaces, optBreaks, optInvisible, optTrim].forEach((o) => o?.addEventListener('change', update));
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (btn.dataset.action === 'clear') {
+          input!.value = '';
+          update();
+          input!.focus();
+          return;
+        }
+        if (!output!.value) return;
+        try {
+          await navigator.clipboard.writeText(output!.value);
+          if (msg) {
+            msg.hidden = false;
+            setTimeout(() => (msg.hidden = true), 1500);
+          }
+        } catch {}
+      });
+    });
+
+    update();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initCleaner);
+</script>

@@ -1,0 +1,263 @@
+---
+// src/components/LineSorter.astro — ordena líneas de texto en vivo (isla cliente)
+---
+
+<div class="sorter flow">
+  <div class="sorter__panels">
+    <div class="sorter__field flow">
+      <label class="sorter__label" for="sorter-input">Líneas</label>
+      <textarea
+        id="sorter-input"
+        class="sorter__area"
+        rows="8"
+        placeholder="Pega una lista, una entrada por línea…"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="sorter__field flow">
+      <label class="sorter__label" for="sorter-output">Resultado</label>
+      <textarea
+        id="sorter-output"
+        class="sorter__area"
+        rows="8"
+        readonly
+        placeholder="Aquí aparecerá la lista ordenada…"></textarea>
+    </div>
+  </div>
+
+  <div class="sorter__order">
+    <span class="sorter__label">Orden</span>
+    <label class="sorter__radio">
+      <input type="radio" name="sorter-order" value="az" checked />
+      <span>Alfabético (A→Z)</span>
+    </label>
+    <label class="sorter__radio">
+      <input type="radio" name="sorter-order" value="za" />
+      <span>Inverso (Z→A)</span>
+    </label>
+    <label class="sorter__radio">
+      <input type="radio" name="sorter-order" value="random" />
+      <span>Aleatorio</span>
+    </label>
+  </div>
+
+  <div class="sorter__options">
+    <label class="sorter__check">
+      <input type="checkbox" id="sorter-dedupe" />
+      <span>Quitar duplicados</span>
+    </label>
+    <label class="sorter__check">
+      <input type="checkbox" id="sorter-nocase" checked />
+      <span>Ignorar mayúsculas/minúsculas</span>
+    </label>
+    <label class="sorter__check">
+      <input type="checkbox" id="sorter-noempty" checked />
+      <span>Quitar líneas vacías</span>
+    </label>
+  </div>
+
+  <div class="sorter__actions">
+    <button type="button" class="btn" data-action="copy">Copiar resultado</button>
+    <button type="button" class="btn btn--secondary" data-action="shuffle" hidden>Barajar de nuevo</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <span class="sorter__stat" data-stat hidden></span>
+    <span class="sorter__msg" data-msg hidden>¡Copiado!</span>
+  </div>
+</div>
+
+<style>
+  .sorter__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .sorter__field {
+    --flow-space: var(--spacing-2xs);
+  }
+
+  .sorter__label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .sorter__area {
+    inline-size: 100%;
+    min-block-size: 12rem;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .sorter__area::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .sorter__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .sorter__order {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .sorter__order .sorter__label {
+    display: inline;
+  }
+
+  .sorter__radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .sorter__radio input {
+    accent-color: var(--primary);
+  }
+
+  .sorter__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2xs) var(--spacing-m);
+  }
+
+  .sorter__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .sorter__check input {
+    inline-size: 1rem;
+    block-size: 1rem;
+    accent-color: var(--primary);
+  }
+
+  .sorter__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .sorter__stat,
+  .sorter__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  function initSorter() {
+    const input = document.getElementById('sorter-input') as HTMLTextAreaElement | null;
+    const output = document.getElementById('sorter-output') as HTMLTextAreaElement | null;
+    const orders = document.querySelectorAll<HTMLInputElement>('input[name="sorter-order"]');
+    const optDedupe = document.getElementById('sorter-dedupe') as HTMLInputElement | null;
+    const optNoCase = document.getElementById('sorter-nocase') as HTMLInputElement | null;
+    const optNoEmpty = document.getElementById('sorter-noempty') as HTMLInputElement | null;
+    const shuffleBtn = document.querySelector<HTMLButtonElement>('[data-action="shuffle"]');
+    const stat = document.querySelector<HTMLElement>('[data-stat]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!input || !output) return;
+
+    function currentOrder(): string {
+      for (const o of orders) if (o.checked) return o.value;
+      return 'az';
+    }
+
+    function process() {
+      const raw = input!.value;
+      if (!raw.trim()) {
+        output!.value = '';
+        if (stat) stat.hidden = true;
+        if (shuffleBtn) shuffleBtn.hidden = true;
+        return;
+      }
+
+      let lines = raw.split('\n');
+      const total = lines.length;
+      if (optNoEmpty?.checked) lines = lines.filter((l) => l.trim() !== '');
+
+      if (optDedupe?.checked) {
+        const seen = new Set<string>();
+        lines = lines.filter((l) => {
+          const key = optNoCase?.checked ? l.toLowerCase() : l;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      const order = currentOrder();
+      if (order === 'az' || order === 'za') {
+        // `numeric` ordena "item2" antes que "item10" (orden natural).
+        const sensitivity = optNoCase?.checked ? 'base' : 'variant';
+        lines.sort((a, b) => a.localeCompare(b, 'es', { numeric: true, sensitivity }));
+        if (order === 'za') lines.reverse();
+      } else {
+        // Fisher-Yates (no hace falta crypto para barajar una lista)
+        for (let i = lines.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [lines[i], lines[j]] = [lines[j], lines[i]];
+        }
+      }
+
+      output!.value = lines.join('\n');
+      if (shuffleBtn) shuffleBtn.hidden = order !== 'random';
+      if (stat) {
+        const parts = [`${lines.length} líneas`];
+        if (lines.length !== total) parts.push(`de ${total}`);
+        stat.textContent = parts.join(' ');
+        stat.hidden = false;
+      }
+    }
+
+    input.addEventListener('input', process);
+    orders.forEach((o) => o.addEventListener('change', process));
+    [optDedupe, optNoCase, optNoEmpty].forEach((o) => o?.addEventListener('change', process));
+
+    document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.action;
+        if (action === 'shuffle') {
+          process();
+          return;
+        }
+        if (action === 'clear') {
+          input!.value = '';
+          process();
+          input!.focus();
+          return;
+        }
+        if (!output!.value) return;
+        try {
+          await navigator.clipboard.writeText(output!.value);
+          if (msg) {
+            msg.hidden = false;
+            setTimeout(() => (msg.hidden = true), 1500);
+          }
+        } catch {}
+      });
+    });
+
+    process();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initSorter);
+</script>

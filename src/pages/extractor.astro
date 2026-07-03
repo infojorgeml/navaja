@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import TextExtractor from '../components/TextExtractor.astro';
+
+const title = 'Extractor';
+const description = 'Extrae todos los emails, URLs o números de cualquier texto.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <TextExtractor />
+  </Page>
+</BaseLayout>

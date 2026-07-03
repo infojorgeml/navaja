@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import LineSorter from '../components/LineSorter.astro';
+
+const title = 'Ordenar líneas';
+const description = 'Ordena listas alfabéticamente, al revés o al azar, y quita duplicados.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Page title={title} lead={description} size="wide">
+    <LineSorter />
+  </Page>
+</BaseLayout>
