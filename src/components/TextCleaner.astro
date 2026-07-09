@@ -1,55 +1,58 @@
 ---
 // src/components/TextCleaner.astro — limpia texto pegado (PDFs, webs…) en vivo (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { removed: t('limpiador.removed') };
 ---
 
-<div class="cleaner flow">
+<div class="cleaner flow" data-i18n={JSON.stringify(strings)}>
   <div class="cleaner__panels">
     <div class="cleaner__field flow">
-      <label class="cleaner__label" for="cleaner-input">Texto original</label>
+      <label class="cleaner__label" for="cleaner-input">{t('limpiador.origLabel')}</label>
       <textarea
         id="cleaner-input"
         class="cleaner__area"
         rows="8"
-        placeholder="Pega aquí el texto a limpiar…"
+        placeholder={t('limpiador.origPh')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
 
     <div class="cleaner__field flow">
-      <label class="cleaner__label" for="cleaner-output">Texto limpio</label>
+      <label class="cleaner__label" for="cleaner-output">{t('limpiador.cleanLabel')}</label>
       <textarea
         id="cleaner-output"
         class="cleaner__area"
         rows="8"
         readonly
-        placeholder="Aquí aparecerá el resultado…"></textarea>
+        placeholder={t('limpiador.cleanPh')}></textarea>
     </div>
   </div>
 
   <div class="cleaner__options">
     <label class="cleaner__check">
       <input type="checkbox" id="cleaner-spaces" checked />
-      <span>Espacios duplicados</span>
+      <span>{t('limpiador.optSpaces')}</span>
     </label>
     <label class="cleaner__check">
       <input type="checkbox" id="cleaner-breaks" checked />
-      <span>Saltos de línea de más</span>
+      <span>{t('limpiador.optBreaks')}</span>
     </label>
     <label class="cleaner__check">
       <input type="checkbox" id="cleaner-invisible" checked />
-      <span>Caracteres invisibles (zero-width, nbsp…)</span>
+      <span>{t('limpiador.optInvisible')}</span>
     </label>
     <label class="cleaner__check">
       <input type="checkbox" id="cleaner-trim" checked />
-      <span>Espacios al inicio/final de línea</span>
+      <span>{t('limpiador.optTrim')}</span>
     </label>
   </div>
 
   <div class="cleaner__actions">
-    <button type="button" class="btn" data-action="copy">Copiar limpio</button>
-    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar campos</button>
+    <button type="button" class="btn" data-action="copy">{t('limpiador.copyClean')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('limpiador.clearFields')}</button>
     <span class="cleaner__stat" data-stat hidden></span>
-    <span class="cleaner__msg" data-msg hidden>¡Copiado!</span>
+    <span class="cleaner__msg" data-msg hidden>{t('common.copied')}</span>
   </div>
 </div>
 
@@ -139,6 +142,9 @@
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!input || !output) return;
 
+    const root = document.querySelector<HTMLElement>('.cleaner');
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
+
     // Invisibles habituales en texto de PDFs/webs: zero-width (U+200B–200D,
     // U+2060, U+FEFF) y guion blando (U+00AD). Se eliminan sin dejar rastro.
     const INVISIBLE = /[\u200B-\u200D\u2060\uFEFF\u00AD]/g;
@@ -172,7 +178,7 @@
       output!.value = result;
       if (stat) {
         const removed = input!.value.length - result.length;
-        stat.textContent = removed > 0 ? `−${removed} caracteres` : '';
+        stat.textContent = removed > 0 ? T.removed.replace('{n}', String(removed)) : '';
         stat.hidden = !(removed > 0);
       }
     }

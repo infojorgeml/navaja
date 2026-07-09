@@ -1,0 +1,265 @@
+---
+// src/components/Home.astro — hero (input-as-hero) + grid de módulos, locale-aware.
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { modules } from '../lib/modules';
+import { getLocale, useTranslations } from '../i18n/ui';
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const items = modules.map((m) => ({
+  href: getRelativeLocaleUrl(locale, m.slug),
+  label: t(`tool.${m.slug}.label`),
+  description: t(`tool.${m.slug}.desc`),
+}));
+// Chips de sugerencia bajo el lanzador (el resto vive en el grid y en ⌘K).
+const featured = items.slice(0, 4);
+---
+
+<main class="home">
+  {/* Above-fold OpenAI: lienzo casi vacío, el lanzador es el héroe (no un titular). */}
+  <section class="hero">
+    <p class="hero__eyebrow">{t('home.eyebrow', { n: modules.length })}</p>
+    <h1 class="hero__title">{t('home.title')}</h1>
+
+    {/* El ⌘K de Navaja es un lanzador real: el pill lo abre (data-command-open). */}
+    <button type="button" class="hero__launch" data-command-open aria-label={t('home.launchAria')}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <span class="hero__launch-text">{t('home.launch')}</span>
+      <kbd class="hero__kbd">⌘K</kbd>
+    </button>
+
+    <ul class="hero__chips" role="list">
+      {featured.map((m) => (
+        <li>
+          <a class="chip" href={m.href}>{m.label}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  {/* Below-fold: grid denso de tarjetas planas (la imaginería de OpenAI = aquí, las herramientas). */}
+  <section class="grid-section">
+    <h2 class="grid-section__title">{t('home.allTools')}</h2>
+    <ul class="modules" role="list">
+      {
+        items.map((m) => (
+          <li>
+            <a class="module" href={m.href}>
+              <span class="module__text">
+                <span class="module__title">{m.label}</span>
+                <span class="module__desc">{m.description}</span>
+              </span>
+              <svg
+                class="module__arrow"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</main>
+
+<style>
+  .home {
+    flex: 1;
+    inline-size: 100%;
+    max-inline-size: 60rem;
+    margin-inline: auto;
+    padding-inline: var(--spacing-m);
+  }
+
+  /* ---- Hero (input-as-hero) ---- */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-block: var(--spacing-3xl) var(--spacing-2xl);
+  }
+
+  .hero__eyebrow {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .hero__title {
+    margin-block: var(--spacing-2xs) var(--spacing-l);
+    font-size: var(--text-4xl);
+  }
+
+  /* Pill estilo input de OpenAI: lienzo + hairline, full-round, icono a la izda. */
+  .hero__launch {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    inline-size: min(100%, 36rem);
+    padding-block: var(--spacing-2xs);
+    padding-inline: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--muted-foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .hero__launch:hover {
+    border-color: var(--foreground);
+  }
+
+  .hero__launch:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent);
+  }
+
+  .hero__launch svg {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    flex: none;
+  }
+
+  .hero__launch-text {
+    flex: 1;
+    text-align: start;
+  }
+
+  .hero__kbd {
+    flex: none;
+    font-family: inherit;
+    font-size: var(--text-2xs);
+    padding-block: 0.1rem;
+    padding-inline: 0.4rem;
+    color: var(--muted-foreground);
+    background-color: var(--muted);
+    border-radius: 9999px;
+  }
+
+  .hero__chips {
+    list-style: none;
+    margin: var(--spacing-m) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-2xs);
+  }
+
+  /* Suggestion-chip: lienzo + hairline, pill. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .chip:hover {
+    border-color: var(--foreground);
+    background-color: var(--muted);
+  }
+
+  .chip:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* ---- Grid de herramientas ---- */
+  .grid-section {
+    padding-block-end: var(--spacing-2xl);
+  }
+
+  .grid-section__title {
+    margin: 0 0 var(--spacing-m);
+    font-size: var(--text-lg);
+    color: var(--muted-foreground);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .modules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--spacing-s);
+  }
+
+  /* Tarjeta plana: lienzo + hairline (la hairline es la elevación). */
+  .module {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-s);
+    block-size: 100%;
+    padding: var(--spacing-m);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--foreground);
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .module:hover {
+    border-color: var(--foreground); /* borde tinta en hover, sin sombra de color */
+    background-color: var(--muted);
+  }
+
+  .module:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .module__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3xs);
+  }
+
+  .module__title {
+    font-size: var(--text-base);
+    font-weight: 500;
+  }
+
+  .module__desc {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .module__arrow {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    flex: none;
+    color: var(--muted-foreground);
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .module:hover .module__arrow {
+    transform: translateX(3px);
+    color: var(--foreground);
+  }
+</style>

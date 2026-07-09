@@ -12,8 +12,24 @@ export default defineConfig({
   // URL provisional de Vercel; sustituir por el dominio definitivo cuando lo haya.
   site: 'https://navaja-ochre.vercel.app',
 
+  // Bilingüe: español por defecto en la raíz (/contador) e inglés en /en/.
+  // `prefixDefaultLocale: false` mantiene intactas las URLs españolas ya indexadas.
+  i18n: {
+    locales: ['es', 'en'],
+    defaultLocale: 'es',
+    routing: { prefixDefaultLocale: false },
+  },
+
   // Genera sitemap-index.xml + sitemap-0.xml en build (referéncialos en robots.txt).
-  integrations: [sitemap()],
+  // Con `i18n`, el sitemap añade <xhtml:link rel="alternate" hreflang> por página.
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale: 'es',
+        locales: { es: 'es-ES', en: 'en-US' },
+      },
+    }),
+  ],
 
   // Puerto fijo propio de este proyecto (poco común, para no chocar con otros Astro en 4321).
   // Respeta PORT del entorno si se define; en local `npm run dev` usa 5690.

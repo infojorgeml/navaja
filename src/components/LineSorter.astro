@@ -1,68 +1,71 @@
 ---
 // src/components/LineSorter.astro — ordena líneas de texto en vivo (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
 ---
 
-<div class="sorter flow">
+<div class="sorter flow" data-i18n={JSON.stringify(strings)}>
   <div class="sorter__panels">
     <div class="sorter__field flow">
-      <label class="sorter__label" for="sorter-input">Líneas</label>
+      <label class="sorter__label" for="sorter-input">{t('ordenar.linesLabel')}</label>
       <textarea
         id="sorter-input"
         class="sorter__area"
         rows="8"
-        placeholder="Pega una lista, una entrada por línea…"
+        placeholder={t('ordenar.linesPh')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
 
     <div class="sorter__field flow">
-      <label class="sorter__label" for="sorter-output">Resultado</label>
+      <label class="sorter__label" for="sorter-output">{t('common.result')}</label>
       <textarea
         id="sorter-output"
         class="sorter__area"
         rows="8"
         readonly
-        placeholder="Aquí aparecerá la lista ordenada…"></textarea>
+        placeholder={t('ordenar.outPh')}></textarea>
     </div>
   </div>
 
   <div class="sorter__order">
-    <span class="sorter__label">Orden</span>
+    <span class="sorter__label">{t('ordenar.order')}</span>
     <label class="sorter__radio">
       <input type="radio" name="sorter-order" value="az" checked />
-      <span>Alfabético (A→Z)</span>
+      <span>{t('ordenar.az')}</span>
     </label>
     <label class="sorter__radio">
       <input type="radio" name="sorter-order" value="za" />
-      <span>Inverso (Z→A)</span>
+      <span>{t('ordenar.za')}</span>
     </label>
     <label class="sorter__radio">
       <input type="radio" name="sorter-order" value="random" />
-      <span>Aleatorio</span>
+      <span>{t('ordenar.random')}</span>
     </label>
   </div>
 
   <div class="sorter__options">
     <label class="sorter__check">
       <input type="checkbox" id="sorter-dedupe" />
-      <span>Quitar duplicados</span>
+      <span>{t('ordenar.dedupe')}</span>
     </label>
     <label class="sorter__check">
       <input type="checkbox" id="sorter-nocase" checked />
-      <span>Ignorar mayúsculas/minúsculas</span>
+      <span>{t('ordenar.nocase')}</span>
     </label>
     <label class="sorter__check">
       <input type="checkbox" id="sorter-noempty" checked />
-      <span>Quitar líneas vacías</span>
+      <span>{t('ordenar.noempty')}</span>
     </label>
   </div>
 
   <div class="sorter__actions">
-    <button type="button" class="btn" data-action="copy">Copiar resultado</button>
-    <button type="button" class="btn btn--secondary" data-action="shuffle" hidden>Barajar de nuevo</button>
-    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <button type="button" class="btn" data-action="copy">{t('ordenar.copyResult')}</button>
+    <button type="button" class="btn btn--secondary" data-action="shuffle" hidden>{t('ordenar.shuffle')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('common.clear')}</button>
     <span class="sorter__stat" data-stat hidden></span>
-    <span class="sorter__msg" data-msg hidden>¡Copiado!</span>
+    <span class="sorter__msg" data-msg hidden>{t('common.copied')}</span>
   </div>
 </div>
 
@@ -175,6 +178,9 @@
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!input || !output) return;
 
+    const root = document.querySelector<HTMLElement>('.sorter');
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
+
     function currentOrder(): string {
       for (const o of orders) if (o.checked) return o.value;
       return 'az';
@@ -220,8 +226,8 @@
       output!.value = lines.join('\n');
       if (shuffleBtn) shuffleBtn.hidden = order !== 'random';
       if (stat) {
-        const parts = [`${lines.length} líneas`];
-        if (lines.length !== total) parts.push(`de ${total}`);
+        const parts = [T.lines.replace('{n}', String(lines.length))];
+        if (lines.length !== total) parts.push(T.ofTotal.replace('{total}', String(total)));
         stat.textContent = parts.join(' ');
         stat.hidden = false;
       }

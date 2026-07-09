@@ -1,31 +1,33 @@
 ---
 // src/components/LoremGenerator.astro — generador de texto Lorem Ipsum (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
 ---
 
 <div class="lorem flow">
   <div class="lorem__controls">
     <label class="lorem__field">
-      <span class="lorem__label">Cantidad</span>
+      <span class="lorem__label">{t('lorem.amount')}</span>
       <input type="number" id="lorem-amount" class="lorem__input" min="1" max="100" value="3" />
     </label>
     <label class="lorem__field">
-      <span class="lorem__label">Unidad</span>
+      <span class="lorem__label">{t('lorem.unit')}</span>
       <select id="lorem-unit" class="lorem__input">
-        <option value="paragraphs">Párrafos</option>
-        <option value="sentences">Frases</option>
-        <option value="words">Palabras</option>
+        <option value="paragraphs">{t('lorem.paragraphs')}</option>
+        <option value="sentences">{t('lorem.sentences')}</option>
+        <option value="words">{t('lorem.words')}</option>
       </select>
     </label>
     <label class="lorem__check">
       <input type="checkbox" id="lorem-classic" checked />
-      <span>Empezar con «Lorem ipsum…»</span>
+      <span>{t('lorem.classic')}</span>
     </label>
   </div>
 
   <div class="lorem__actions">
-    <button type="button" class="btn" id="lorem-generate">Generar</button>
-    <button type="button" class="btn btn--secondary" id="lorem-copy">Copiar</button>
-    <span class="lorem__copied" data-copied hidden>¡Copiado!</span>
+    <button type="button" class="btn" id="lorem-generate">{t('lorem.generate')}</button>
+    <button type="button" class="btn btn--secondary" id="lorem-copy">{t('common.copy')}</button>
+    <span class="lorem__copied" data-copied hidden>{t('common.copied')}</span>
   </div>
 
   <textarea
@@ -33,7 +35,7 @@
     class="lorem__output"
     rows="12"
     readonly
-    placeholder="Aquí aparecerá el texto generado…"></textarea>
+    placeholder={t('lorem.outPh')}></textarea>
 </div>
 
 <style>

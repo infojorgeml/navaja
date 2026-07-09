@@ -1,8 +1,11 @@
 ---
 // src/components/ThemeToggle.astro — alterna modo claro/oscuro y lo persiste
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const label = t('chrome.themeAria');
 ---
 
-<button id="theme-toggle" type="button" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">
+<button id="theme-toggle" type="button" class="theme-toggle" aria-label={label} title={label}>
   {/* Sol (visible en modo oscuro → ir a claro) */}
   <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="4"></circle>

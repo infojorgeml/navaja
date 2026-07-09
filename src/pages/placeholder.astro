@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import PlaceholderText from '../components/PlaceholderText.astro';
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.placeholder.title')} description={t('tool.placeholder.lead')}>
+  <Page title={t('tool.placeholder.title')} lead={t('tool.placeholder.lead')} size="wide">
+    <PlaceholderText />
+  </Page>
+</BaseLayout>

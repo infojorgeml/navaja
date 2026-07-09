@@ -1,54 +1,62 @@
 ---
 // src/components/TextExtractor.astro — extrae emails, URLs o números de un texto (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  emailSing: t('extractor.emailSing'), emailPlur: t('extractor.emailPlur'),
+  urlSing: t('extractor.urlSing'), urlPlur: t('extractor.urlPlur'),
+  numSing: t('extractor.numSing'), numPlur: t('extractor.numPlur'),
+  none: t('extractor.none'),
+};
 ---
 
-<div class="extractor flow">
+<div class="extractor flow" data-i18n={JSON.stringify(strings)}>
   <div class="extractor__field flow">
-    <label class="extractor__label" for="extractor-input">Texto</label>
+    <label class="extractor__label" for="extractor-input">{t('common.text')}</label>
     <textarea
       id="extractor-input"
       class="extractor__area"
       rows="8"
-      placeholder="Pega aquí cualquier texto: un correo, un log, una página…"
+      placeholder={t('extractor.ph')}
       autocomplete="off"
       spellcheck="false"></textarea>
   </div>
 
   <div class="extractor__mode">
-    <span class="extractor__label">Extraer</span>
+    <span class="extractor__label">{t('extractor.extract')}</span>
     <label class="extractor__radio">
       <input type="radio" name="extractor-mode" value="emails" checked />
-      <span>Emails</span>
+      <span>{t('extractor.emails')}</span>
     </label>
     <label class="extractor__radio">
       <input type="radio" name="extractor-mode" value="urls" />
-      <span>URLs</span>
+      <span>{t('extractor.urls')}</span>
     </label>
     <label class="extractor__radio">
       <input type="radio" name="extractor-mode" value="numbers" />
-      <span>Números</span>
+      <span>{t('extractor.numbers')}</span>
     </label>
     <label class="extractor__check">
       <input type="checkbox" id="extractor-dedupe" checked />
-      <span>Quitar duplicados</span>
+      <span>{t('extractor.dedupe')}</span>
     </label>
   </div>
 
   <div class="extractor__field flow">
-    <label class="extractor__label" for="extractor-output">Resultado</label>
+    <label class="extractor__label" for="extractor-output">{t('common.result')}</label>
     <textarea
       id="extractor-output"
       class="extractor__area extractor__area--mono"
       rows="6"
       readonly
-      placeholder="Aquí aparecerá lo encontrado, uno por línea…"></textarea>
+      placeholder={t('extractor.outPh')}></textarea>
   </div>
 
   <div class="extractor__actions">
-    <button type="button" class="btn" data-action="copy">Copiar resultado</button>
-    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <button type="button" class="btn" data-action="copy">{t('extractor.copyResult')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('common.clear')}</button>
     <span class="extractor__stat" data-stat hidden></span>
-    <span class="extractor__msg" data-msg hidden>¡Copiado!</span>
+    <span class="extractor__msg" data-msg hidden>{t('common.copied')}</span>
   </div>
 </div>
 
@@ -148,6 +156,9 @@
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!input || !output) return;
 
+    const root = document.querySelector<HTMLElement>('.extractor');
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
+
     const PATTERNS: Record<string, RegExp> = {
       emails: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
       urls: /(?:https?:\/\/|www\.)[^\s<>"'`)\]}]+/g,
@@ -155,9 +166,9 @@
     };
 
     const LABELS: Record<string, [string, string]> = {
-      emails: ['email', 'emails'],
-      urls: ['URL', 'URLs'],
-      numbers: ['número', 'números'],
+      emails: [T.emailSing, T.emailPlur],
+      urls: [T.urlSing, T.urlPlur],
+      numbers: [T.numSing, T.numPlur],
     };
 
     function currentMode(): string {
@@ -187,7 +198,7 @@
         const [sing, plur] = LABELS[mode];
         stat.textContent = found.length
           ? `${found.length} ${found.length === 1 ? sing : plur}`
-          : 'Sin resultados';
+          : T.none;
         stat.hidden = false;
       }
     }

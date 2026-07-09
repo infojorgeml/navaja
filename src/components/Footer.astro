@@ -1,15 +1,18 @@
 ---
 // src/components/Footer.astro — pie de página
+import { getLocale, useTranslations } from '../i18n/ui';
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
 const year = new Date().getFullYear();
 ---
 
 <footer class="footer">
   <div class="footer__inner boxed">
-    <p class="footer__left">© {year} Navaja. Todos los derechos reservados.</p>
+    <p class="footer__left">{t('footer.rights', { year })}</p>
     <p class="footer__right">
-      <span class="footer__os">Open source</span>
+      <span class="footer__os">{t('footer.os')}</span>
       <span class="footer__sep" aria-hidden="true">·</span>
-      <span>Creado por <a href="https://jorgeml.com/" target="_blank" rel="noopener noreferrer">JorgeML</a></span>
+      <span>{t('footer.by')} <a href="https://jorgeml.com/" target="_blank" rel="noopener noreferrer">JorgeML</a></span>
     </p>
   </div>
 </footer>

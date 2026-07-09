@@ -1,94 +1,26 @@
-// src/lib/modules.ts — registro único de módulos (lo consumen Header y CommandPalette)
+// src/lib/modules.ts — registro único de módulos (lo consumen Home y CommandPalette).
+// Solo metadatos neutros de idioma: el `slug` (para la ruta, localizada con
+// getRelativeLocaleUrl) y `keywords` para ⌘K (ES + EN mezclados para buscar en ambos).
+// Las etiquetas y descripciones visibles viven en src/i18n/ui.ts (clave `tool.<slug>.*`).
 export interface ModuleEntry {
-  href: string;
-  label: string;
-  description: string;
+  slug: string;
   keywords: string[];
 }
 
 export const modules: ModuleEntry[] = [
-  {
-    href: '/contador',
-    label: 'Contador',
-    description: 'Cuenta caracteres y palabras',
-    keywords: ['contador', 'caracteres', 'palabras', 'contar', 'longitud'],
-  },
-  {
-    href: '/conversor',
-    label: 'Conversor',
-    description: 'Mayúsculas, minúsculas, capitalizar',
-    keywords: ['conversor', 'mayusculas', 'minusculas', 'capitalizar', 'texto', 'transformar'],
-  },
-  {
-    href: '/lorem',
-    label: 'Lorem Ipsum',
-    description: 'Genera texto de relleno',
-    keywords: ['lorem', 'ipsum', 'relleno', 'placeholder', 'dummy', 'generar'],
-  },
-  {
-    href: '/binario',
-    label: 'Binario',
-    description: 'Convierte texto ↔ binario',
-    keywords: ['binario', 'binary', 'bits', 'ascii', 'utf-8', 'codificar', 'decodificar'],
-  },
-  {
-    href: '/password',
-    label: 'Contraseñas',
-    description: 'Genera contraseñas seguras',
-    keywords: ['contraseña', 'password', 'clave', 'segura', 'aleatoria', 'generar'],
-  },
-  {
-    href: '/base64',
-    label: 'Base64',
-    description: 'Codifica y descodifica Base64',
-    keywords: ['base64', 'codificar', 'descodificar', 'encode', 'decode'],
-  },
-  {
-    href: '/slug',
-    label: 'Slug',
-    description: 'Convierte texto en slug de URL',
-    keywords: ['slug', 'url', 'seo', 'permalink', 'amigable'],
-  },
-  {
-    href: '/naming',
-    label: 'Naming',
-    description: 'Genera nombres de negocio',
-    keywords: ['naming', 'nombres', 'nombre', 'negocio', 'empresa', 'marca', 'startup', 'generador', 'ideas'],
-  },
-  {
-    href: '/diff',
-    label: 'Diff',
-    description: 'Compara dos textos',
-    keywords: ['diff', 'comparar', 'comparador', 'diferencias', 'cambios', 'texto', 'lineas'],
-  },
-  {
-    href: '/json',
-    label: 'JSON',
-    description: 'Formatea y valida JSON',
-    keywords: ['json', 'formatear', 'minificar', 'validar', 'pretty', 'prettify', 'parse'],
-  },
-  {
-    href: '/url',
-    label: 'URL encode',
-    description: 'Codifica y descodifica URLs',
-    keywords: ['url', 'encode', 'decode', 'codificar', 'descodificar', 'uri', 'percent', 'porcentaje'],
-  },
-  {
-    href: '/limpiador',
-    label: 'Limpiador',
-    description: 'Limpia espacios y caracteres invisibles',
-    keywords: ['limpiador', 'limpiar', 'espacios', 'saltos', 'invisibles', 'zero-width', 'pdf', 'clean'],
-  },
-  {
-    href: '/ordenar',
-    label: 'Ordenar líneas',
-    description: 'Ordena listas y quita duplicados',
-    keywords: ['ordenar', 'lineas', 'alfabetico', 'aleatorio', 'duplicados', 'sort', 'lista', 'barajar'],
-  },
-  {
-    href: '/extractor',
-    label: 'Extractor',
-    description: 'Extrae emails, URLs o números',
-    keywords: ['extractor', 'extraer', 'emails', 'correos', 'urls', 'enlaces', 'numeros', 'regex'],
-  },
+  { slug: 'contador', keywords: ['contador', 'caracteres', 'palabras', 'contar', 'longitud', 'counter', 'characters', 'words', 'count', 'length'] },
+  { slug: 'conversor', keywords: ['conversor', 'mayusculas', 'minusculas', 'capitalizar', 'texto', 'transformar', 'converter', 'uppercase', 'lowercase', 'capitalize', 'case'] },
+  { slug: 'lorem', keywords: ['lorem', 'ipsum', 'relleno', 'placeholder', 'dummy', 'generar', 'filler', 'generate'] },
+  { slug: 'binario', keywords: ['binario', 'binary', 'bits', 'ascii', 'utf-8', 'codificar', 'decodificar', 'encode', 'decode'] },
+  { slug: 'password', keywords: ['contraseña', 'password', 'clave', 'segura', 'aleatoria', 'generar', 'secure', 'random', 'generate'] },
+  { slug: 'base64', keywords: ['base64', 'codificar', 'descodificar', 'encode', 'decode'] },
+  { slug: 'slug', keywords: ['slug', 'url', 'seo', 'permalink', 'amigable', 'friendly'] },
+  { slug: 'naming', keywords: ['naming', 'nombres', 'nombre', 'negocio', 'empresa', 'marca', 'startup', 'generador', 'ideas', 'names', 'business', 'brand'] },
+  { slug: 'diff', keywords: ['diff', 'comparar', 'comparador', 'diferencias', 'cambios', 'texto', 'lineas', 'compare', 'differences', 'changes', 'lines'] },
+  { slug: 'json', keywords: ['json', 'formatear', 'minificar', 'validar', 'pretty', 'prettify', 'parse', 'format', 'minify', 'validate'] },
+  { slug: 'url', keywords: ['url', 'encode', 'decode', 'codificar', 'descodificar', 'uri', 'percent', 'porcentaje'] },
+  { slug: 'limpiador', keywords: ['limpiador', 'limpiar', 'espacios', 'saltos', 'invisibles', 'zero-width', 'pdf', 'clean', 'cleaner', 'spaces', 'whitespace'] },
+  { slug: 'ordenar', keywords: ['ordenar', 'lineas', 'alfabetico', 'aleatorio', 'duplicados', 'sort', 'lista', 'barajar', 'lines', 'alphabetical', 'random', 'duplicates', 'shuffle'] },
+  { slug: 'extractor', keywords: ['extractor', 'extraer', 'emails', 'correos', 'urls', 'enlaces', 'numeros', 'regex', 'extract', 'links', 'numbers'] },
+  { slug: 'placeholder', keywords: ['placeholder', 'muestra', 'ejemplo', 'lorem', 'relleno', 'idiomas', 'alfabetos', 'arabe', 'chino', 'japones', 'coreano', 'unicode', 'rtl', 'sample', 'languages', 'scripts'] },
 ];

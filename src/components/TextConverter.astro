@@ -1,36 +1,38 @@
 ---
 // src/components/TextConverter.astro — convierte texto entre varios formatos (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
 ---
 
 <div class="converter flow">
   <div class="converter__panels">
     <div class="converter__field flow">
-      <label class="converter__label" for="conv-input">Texto original</label>
+      <label class="converter__label" for="conv-input">{t('conversor.origLabel')}</label>
       <textarea
         id="conv-input"
         class="converter__area"
         rows="8"
-        placeholder="Escribe o pega aquí el texto que deseas convertir…"
+        placeholder={t('conversor.origPh')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
 
     <div class="converter__field flow">
-      <label class="converter__label" for="conv-output">Resultado</label>
+      <label class="converter__label" for="conv-output">{t('common.result')}</label>
       <textarea
         id="conv-output"
         class="converter__area converter__area--output"
         rows="8"
-        placeholder="Aquí aparecerá el texto convertido…"
+        placeholder={t('conversor.outPh')}
         readonly></textarea>
     </div>
   </div>
 
-  <div class="converter__actions" role="group" aria-label="Tipo de conversión">
-    <button type="button" class="btn" data-transform="sentence">Mayúscula tras punto</button>
-    <button type="button" class="btn" data-transform="lower">Todo minúsculas</button>
-    <button type="button" class="btn" data-transform="upper">Todo MAYÚSCULAS</button>
-    <button type="button" class="btn" data-transform="title">Capitalizar texto</button>
+  <div class="converter__actions" role="group" aria-label={t('conversor.group')}>
+    <button type="button" class="btn" data-transform="sentence">{t('conversor.sentence')}</button>
+    <button type="button" class="btn" data-transform="lower">{t('conversor.lower')}</button>
+    <button type="button" class="btn" data-transform="upper">{t('conversor.upper')}</button>
+    <button type="button" class="btn" data-transform="title">{t('conversor.title')}</button>
   </div>
 </div>
 

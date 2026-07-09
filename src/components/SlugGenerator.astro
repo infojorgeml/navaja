@@ -1,33 +1,35 @@
 ---
 // src/components/SlugGenerator.astro — convierte texto en slug de URL en vivo (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
 ---
 
 <div class="slug flow">
   <div class="slug__field flow">
-    <label class="slug__label" for="slug-input">Texto</label>
+    <label class="slug__label" for="slug-input">{t('common.text')}</label>
     <textarea
       id="slug-input"
       class="slug__area"
       rows="3"
-      placeholder="Ej.: ¿Cómo hacer café con leche?"
+      placeholder={t('slug.ph')}
       autocomplete="off"
       spellcheck="false"></textarea>
   </div>
 
   <div class="slug__sep">
-    <span class="slug__label">Separador</span>
-    <label class="slug__radio"><input type="radio" name="slug-sep" value="-" checked /> <span>Guion (-)</span></label>
-    <label class="slug__radio"><input type="radio" name="slug-sep" value="_" /> <span>Guion bajo (_)</span></label>
+    <span class="slug__label">{t('slug.sep')}</span>
+    <label class="slug__radio"><input type="radio" name="slug-sep" value="-" checked /> <span>{t('slug.hyphen')}</span></label>
+    <label class="slug__radio"><input type="radio" name="slug-sep" value="_" /> <span>{t('slug.underscore')}</span></label>
   </div>
 
   <div class="slug__field flow">
-    <label class="slug__label" for="slug-output">Slug</label>
-    <input id="slug-output" class="slug__out" type="text" readonly value="" aria-label="Slug generado" />
+    <label class="slug__label" for="slug-output">{t('slug.slugLabel')}</label>
+    <input id="slug-output" class="slug__out" type="text" readonly value="" aria-label={t('slug.genAria')} />
   </div>
 
   <div class="slug__actions">
-    <button type="button" class="btn" data-action="copy">Copiar slug</button>
-    <span class="slug__msg" data-msg hidden>¡Copiado!</span>
+    <button type="button" class="btn" data-action="copy">{t('slug.copy')}</button>
+    <span class="slug__msg" data-msg hidden>{t('common.copied')}</span>
   </div>
 </div>
 

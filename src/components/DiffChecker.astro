@@ -1,41 +1,50 @@
 ---
 // src/components/DiffChecker.astro — compara dos textos línea a línea (isla cliente).
 // Diff por LCS con recorte de prefijo/sufijo común para acotar memoria.
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  hint: t('diff.hint'),
+  identical: t('diff.identical'),
+  tooMany: t('diff.tooMany'),
+  added: t('diff.added'),
+  removed: t('diff.removed'),
+};
 ---
 
-<div class="diff flow">
+<div class="diff flow" data-i18n={JSON.stringify(strings)}>
   <div class="diff__panels">
     <div class="diff__field flow">
-      <label class="diff__label" for="diff-a">Original</label>
+      <label class="diff__label" for="diff-a">{t('diff.original')}</label>
       <textarea
         id="diff-a"
         class="diff__area"
         rows="8"
-        placeholder="Pega el texto original…"
+        placeholder={t('diff.origPh')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
 
     <div class="diff__field flow">
-      <label class="diff__label" for="diff-b">Modificado</label>
+      <label class="diff__label" for="diff-b">{t('diff.modified')}</label>
       <textarea
         id="diff-b"
         class="diff__area"
         rows="8"
-        placeholder="Pega el texto modificado…"
+        placeholder={t('diff.modPh')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
   </div>
 
-  <p class="diff__status" data-status>Pega dos textos y verás las diferencias línea a línea.</p>
+  <p class="diff__status" data-status>{t('diff.hint')}</p>
 
   <div class="diff__result flow" data-result hidden>
-    <ul class="diff__output" data-output role="list" aria-label="Diferencias"></ul>
+    <ul class="diff__output" data-output role="list" aria-label={t('tool.diff.label')}></ul>
 
     <div class="diff__actions">
-      <button type="button" class="btn" data-action="copy-diff">Copiar diff</button>
-      <span class="diff__msg" data-msg hidden>¡Copiado!</span>
+      <button type="button" class="btn" data-action="copy-diff">{t('diff.copy')}</button>
+      <span class="diff__msg" data-msg hidden>{t('common.copied')}</span>
     </div>
   </div>
 </div>
@@ -189,7 +198,10 @@
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!aEl || !bEl || !statusEl || !resultEl || !outputEl) return;
 
-    const HINT = 'Pega dos textos y verás las diferencias línea a línea.';
+    const root = document.querySelector<HTMLElement>('.diff');
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
+
+    const HINT = T.hint;
     const MAX_LINES = 1500; // cota de la matriz LCS tras recortar lo común
     let ops: Op[] = [];
     let timer = 0;
@@ -261,7 +273,7 @@
         resultEl!.hidden = true;
         outputEl!.replaceChildren();
         ops = [];
-        setStatus('Los textos son idénticos.');
+        setStatus(T.identical);
         return;
       }
 
@@ -270,7 +282,7 @@
         resultEl!.hidden = true;
         outputEl!.replaceChildren();
         ops = [];
-        setStatus(`Demasiadas líneas distintas para comparar (máx. ${MAX_LINES}).`);
+        setStatus(T.tooMany.replace('{max}', String(MAX_LINES)));
         return;
       }
 
@@ -278,8 +290,8 @@
       const added = ops.filter((o) => o.t === '+').length;
       const removed = ops.filter((o) => o.t === '-').length;
       setStatus(
-        `<strong class="diff__count--add">+${added}</strong> añadidas · ` +
-          `<strong class="diff__count--del">−${removed}</strong> eliminadas`
+        `<strong class="diff__count--add">+${added}</strong> ${T.added} · ` +
+          `<strong class="diff__count--del">−${removed}</strong> ${T.removed}`
       );
 
       outputEl!.replaceChildren(

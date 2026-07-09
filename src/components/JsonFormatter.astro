@@ -1,15 +1,18 @@
 ---
 // src/components/JsonFormatter.astro — formatea, minifica y valida JSON (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { valid: t('json.valid'), pos: t('json.pos') };
 ---
 
-<div class="json flow">
+<div class="json flow" data-i18n={JSON.stringify(strings)}>
   <div class="json__field flow">
     <label class="json__label" for="json-input">JSON</label>
     <textarea
       id="json-input"
       class="json__area"
       rows="12"
-      placeholder='{"nombre": "Navaja", "modulos": 11}'
+      placeholder={t('json.ph')}
       autocomplete="off"
       spellcheck="false"></textarea>
   </div>
@@ -17,11 +20,11 @@
   <p class="json__status" data-status hidden></p>
 
   <div class="json__actions">
-    <button type="button" class="btn" data-action="format">Formatear</button>
-    <button type="button" class="btn btn--secondary" data-action="minify">Minificar</button>
-    <button type="button" class="btn btn--secondary" data-action="copy">Copiar</button>
-    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
-    <span class="json__msg" data-msg hidden>¡Copiado!</span>
+    <button type="button" class="btn" data-action="format">{t('json.format')}</button>
+    <button type="button" class="btn btn--secondary" data-action="minify">{t('json.minify')}</button>
+    <button type="button" class="btn btn--secondary" data-action="copy">{t('common.copy')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('common.clear')}</button>
+    <span class="json__msg" data-msg hidden>{t('common.copied')}</span>
   </div>
 </div>
 
@@ -92,10 +95,13 @@
 
 <script>
   function initJson() {
+    const root = document.querySelector<HTMLElement>('.json');
     const input = document.getElementById('json-input') as HTMLTextAreaElement | null;
     const status = document.querySelector<HTMLElement>('[data-status]');
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!input || !status) return;
+
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
 
     // Intenta añadir "línea X, columna Y" a partir de la posición que
     // incluye el mensaje del motor ("… at position N").
@@ -107,7 +113,7 @@
       const before = text.slice(0, pos);
       const line = before.split('\n').length;
       const col = pos - before.lastIndexOf('\n');
-      return `${raw} (línea ${line}, columna ${col})`;
+      return raw + T.pos.replace('{line}', String(line)).replace('{col}', String(col));
     }
 
     // Valida y devuelve el valor parseado, o undefined si no es válido/está vacío.
@@ -120,7 +126,7 @@
       }
       try {
         const parsed = JSON.parse(text);
-        status!.textContent = 'JSON válido';
+        status!.textContent = T.valid;
         delete status!.dataset.error;
         status!.hidden = false;
         delete input!.dataset.invalid;

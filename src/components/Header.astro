@@ -1,28 +1,42 @@
 ---
-// src/components/Header.astro — marca + buscador ⌘K + tema.
+// src/components/Header.astro — marca + buscador ⌘K + selector de idioma + tema.
 // La navegación entre módulos vive en la home (índice) y en el command palette.
+import { getRelativeLocaleUrl } from 'astro:i18n';
 import ThemeToggle from './ThemeToggle.astro';
+import { getLocale, useTranslations, basePath } from '../i18n/ui';
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const base = basePath(Astro.url.pathname);
+const esUrl = getRelativeLocaleUrl('es', base);
+const enUrl = getRelativeLocaleUrl('en', base);
+const brandUrl = getRelativeLocaleUrl(locale, '');
 ---
 
 <header class="header">
   <div class="header__inner boxed">
-    <a class="header__brand" href="/">Navaja</a>
+    <a class="header__brand" href={brandUrl}>Navaja</a>
 
     <div class="header__right">
       <button
         type="button"
         class="header__search"
         data-command-open
-        aria-label="Buscar módulos"
+        aria-label={t('chrome.searchAria')}
         aria-keyshortcuts="Meta+K Control+K"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.3-4.3"></path>
         </svg>
-        <span class="header__search-label">Buscar</span>
+        <span class="header__search-label">{t('chrome.search')}</span>
         <kbd class="header__kbd">⌘K</kbd>
       </button>
+
+      <div class="lang" role="group" aria-label={t('chrome.langAria')}>
+        <a class="lang__opt" href={esUrl} aria-current={locale === 'es' ? 'true' : 'false'} hreflang="es">ES</a>
+        <a class="lang__opt" href={enUrl} aria-current={locale === 'en' ? 'true' : 'false'} hreflang="en">EN</a>
+      </div>
 
       <ThemeToggle />
     </div>
@@ -109,6 +123,44 @@ import ThemeToggle from './ThemeToggle.astro';
     background-color: var(--background);
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) - 4px);
+  }
+
+  /* Selector de idioma: control segmentado en pill (activo = tinta). */
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+  }
+
+  .lang__opt {
+    display: inline-flex;
+    align-items: center;
+    padding-block: 0.15rem;
+    padding-inline: 0.5rem;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--muted-foreground);
+    text-decoration: none;
+    border-radius: 9999px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .lang__opt:hover {
+    color: var(--foreground);
+  }
+
+  .lang__opt[aria-current='true'] {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+  }
+
+  .lang__opt:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 
   @media (min-width: 640px) {

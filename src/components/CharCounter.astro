@@ -1,30 +1,32 @@
 ---
 // src/components/CharCounter.astro — contador de caracteres y palabras (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
 ---
 
 <div class="counter flow">
   <div class="counter__field flow">
-    <label class="counter__label" for="phrase">Escribe tu frase</label>
+    <label class="counter__label" for="phrase">{t('contador.fieldLabel')}</label>
     <textarea
       id="phrase"
       class="counter__input"
       rows="6"
-      placeholder="Escribe o pega aquí tu texto…"
+      placeholder={t('contador.ph')}
       autocomplete="off"
       spellcheck="false"></textarea>
   </div>
 
   <dl class="counter__stats" aria-live="polite">
     <div class="counter__stat">
-      <dt>Caracteres</dt>
+      <dt>{t('contador.chars')}</dt>
       <dd data-stat="chars">0</dd>
     </div>
     <div class="counter__stat">
-      <dt>Sin espacios</dt>
+      <dt>{t('contador.noSpaces')}</dt>
       <dd data-stat="charsNoSpaces">0</dd>
     </div>
     <div class="counter__stat">
-      <dt>Palabras</dt>
+      <dt>{t('contador.words')}</dt>
       <dd data-stat="words">0</dd>
     </div>
   </dl>
@@ -108,7 +110,8 @@
   import { animate, stagger } from 'motion';
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const nf = new Intl.NumberFormat('es-ES');
+  // Formato de miles según el idioma activo (<html lang>): es-ES o en-US.
+  const nf = new Intl.NumberFormat(document.documentElement.lang === 'en' ? 'en-US' : 'es-ES');
 
   function initCounter() {
     const input = document.getElementById('phrase') as HTMLTextAreaElement | null;

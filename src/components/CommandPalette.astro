@@ -1,9 +1,20 @@
 ---
 // src/components/CommandPalette.astro — buscador de módulos (⌘K). Se monta una vez en BaseLayout.
+import { getRelativeLocaleUrl } from 'astro:i18n';
 import { modules } from '../lib/modules';
+import { getLocale, useTranslations } from '../i18n/ui';
+
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const items = modules.map((m) => ({
+  href: getRelativeLocaleUrl(locale, m.slug),
+  label: t(`tool.${m.slug}.label`),
+  description: t(`tool.${m.slug}.desc`),
+  keywords: m.keywords,
+}));
 ---
 
-<dialog id="command-palette" class="cmdk" aria-label="Buscar módulos">
+<dialog id="command-palette" class="cmdk" aria-label={t('chrome.searchAria')}>
   <div class="cmdk__panel">
     <div class="cmdk__search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -14,7 +25,7 @@ import { modules } from '../lib/modules';
         type="text"
         id="cmdk-input"
         class="cmdk__input"
-        placeholder="Buscar módulo…"
+        placeholder={t('cmdk.placeholder')}
         autocomplete="off"
         autocapitalize="off"
         spellcheck="false"
@@ -23,9 +34,9 @@ import { modules } from '../lib/modules';
       <kbd class="cmdk__esc">esc</kbd>
     </div>
 
-    <ul class="cmdk__list" id="cmdk-list" role="listbox" aria-label="Módulos">
+    <ul class="cmdk__list" id="cmdk-list" role="listbox" aria-label={t('chrome.searchAria')}>
       {
-        modules.map((m) => (
+        items.map((m) => (
           <li
             class="cmdk__item"
             role="option"
@@ -42,7 +53,7 @@ import { modules } from '../lib/modules';
       }
     </ul>
 
-    <p class="cmdk__empty" id="cmdk-empty" hidden>Sin resultados</p>
+    <p class="cmdk__empty" id="cmdk-empty" hidden>{t('cmdk.empty')}</p>
   </div>
 </dialog>
 

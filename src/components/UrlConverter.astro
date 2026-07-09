@@ -1,22 +1,25 @@
 ---
 // src/components/UrlConverter.astro — codifica/descodifica URLs en vivo (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied'), invalid: t('url.invalid') };
 ---
 
-<div class="url flow">
+<div class="url flow" data-i18n={JSON.stringify(strings)}>
   <div class="url__panels">
     <div class="url__field flow">
-      <label class="url__label" for="url-text">Texto</label>
+      <label class="url__label" for="url-text">{t('common.text')}</label>
       <textarea
         id="url-text"
         class="url__area"
         rows="7"
-        placeholder="Escribe o pega texto… ej.: ¿cómo hacer café?"
+        placeholder={t('url.ph')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
 
     <div class="url__field flow">
-      <label class="url__label" for="url-out">URL codificada</label>
+      <label class="url__label" for="url-out">{t('url.encodedLabel')}</label>
       <textarea
         id="url-out"
         class="url__area url__area--mono"
@@ -28,21 +31,21 @@
   </div>
 
   <div class="url__mode">
-    <span class="url__label">Modo</span>
+    <span class="url__label">{t('url.mode')}</span>
     <label class="url__radio">
       <input type="radio" name="url-mode" value="component" checked />
-      <span>Componente (codifica todo)</span>
+      <span>{t('url.modeComponent')}</span>
     </label>
     <label class="url__radio">
       <input type="radio" name="url-mode" value="full" />
-      <span>URL completa (respeta / ? & =)</span>
+      <span>{t('url.modeFull')}</span>
     </label>
   </div>
 
   <div class="url__actions">
-    <button type="button" class="btn" data-action="copy-url">Copiar codificada</button>
-    <button type="button" class="btn btn--secondary" data-action="copy-text">Copiar texto</button>
-    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <button type="button" class="btn" data-action="copy-url">{t('url.copyEncoded')}</button>
+    <button type="button" class="btn btn--secondary" data-action="copy-text">{t('common.copyText')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('common.clear')}</button>
     <span class="url__msg" data-msg hidden></span>
   </div>
 </div>
@@ -136,11 +139,14 @@
 
 <script>
   function initUrl() {
+    const root = document.querySelector<HTMLElement>('.url');
     const textEl = document.getElementById('url-text') as HTMLTextAreaElement | null;
     const outEl = document.getElementById('url-out') as HTMLTextAreaElement | null;
     const modes = document.querySelectorAll<HTMLInputElement>('input[name="url-mode"]');
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!textEl || !outEl) return;
+
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
 
     function fullMode(): boolean {
       for (const m of modes) if (m.checked) return m.value === 'full';
@@ -178,7 +184,7 @@
     outEl.addEventListener('input', () => {
       const result = decode(outEl.value);
       if (result === null) {
-        showMsg('Secuencia % no válida', true);
+        showMsg(T.invalid, true);
       } else {
         textEl.value = result;
         showMsg('');
@@ -207,7 +213,7 @@
         if (!value) return;
         try {
           await navigator.clipboard.writeText(value);
-          showMsg(action === 'copy-url' ? '¡URL copiada!' : '¡Texto copiado!');
+          showMsg(action === 'copy-url' ? T.urlCopied : T.textCopied);
           setTimeout(() => showMsg(''), 1500);
         } catch {}
       });

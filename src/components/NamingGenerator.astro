@@ -1,16 +1,18 @@
 ---
 // src/components/NamingGenerator.astro — combina una palabra base con prefijos
 // y sufijos fijos para dar 16 ideas de nombre de negocio (isla cliente, sin IA)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
 ---
 
 <div class="naming flow">
   <div class="naming__field flow">
-    <label class="naming__label" for="naming-input">Palabra base</label>
+    <label class="naming__label" for="naming-input">{t('naming.baseWord')}</label>
     <input
       id="naming-input"
       class="naming__input"
       type="text"
-      placeholder="Ej.: web, taco, viaje…"
+      placeholder={t('naming.ph')}
       autocomplete="off"
       autocapitalize="off"
       spellcheck="false"
@@ -18,23 +20,23 @@
   </div>
 
   <p class="naming__empty" data-empty>
-    Escribe una palabra y verás 16 ideas de nombre. Pulsa cualquiera para copiarla.
+    {t('naming.empty')}
   </p>
 
   <div class="naming__results" data-results hidden>
     <section class="naming__group">
-      <h2 class="naming__group-title">Con prefijo</h2>
+      <h2 class="naming__group-title">{t('naming.withPrefix')}</h2>
       <ul class="naming__list" data-list="prefix" role="list"></ul>
     </section>
     <section class="naming__group">
-      <h2 class="naming__group-title">Con sufijo</h2>
+      <h2 class="naming__group-title">{t('naming.withSuffix')}</h2>
       <ul class="naming__list" data-list="suffix" role="list"></ul>
     </section>
   </div>
 
   <div class="naming__actions">
-    <button type="button" class="btn" data-action="copy-all" hidden>Copiar todos</button>
-    <span class="naming__msg" data-msg hidden>¡Copiado!</span>
+    <button type="button" class="btn" data-action="copy-all" hidden>{t('naming.copyAll')}</button>
+    <span class="naming__msg" data-msg hidden>{t('common.copied')}</span>
   </div>
 </div>
 

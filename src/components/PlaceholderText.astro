@@ -1,0 +1,238 @@
+---
+// src/components/PlaceholderText.astro — texto de muestra en 11 alfabetos (isla cliente).
+// Pestañas por idioma (nombre nativo), selector de párrafos, RTL para árabe/hebreo.
+import { sampleLangs } from '../lib/sampleTexts';
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { paraSing: t('placeholder.paraSing'), paraPlur: t('placeholder.paraPlur'), chars: t('placeholder.chars') };
+---
+
+<div class="ph flow" data-i18n={JSON.stringify(strings)}>
+  <div class="ph__tabs" role="tablist" aria-label={t('placeholder.langAria')} data-tablist>
+    {
+      sampleLangs.map((l, i) => (
+        <button
+          type="button"
+          role="tab"
+          class:list={['ph__tab', { 'is-active': i === 0 }]}
+          data-code={l.code}
+          lang={l.code}
+          dir={l.dir}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          {l.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="ph__bar">
+    <span class="ph__label">{t('placeholder.paragraphs')}</span>
+    <label class="ph__radio"><input type="radio" name="ph-count" value="1" /> <span>1</span></label>
+    <label class="ph__radio"><input type="radio" name="ph-count" value="2" checked /> <span>2</span></label>
+    <label class="ph__radio"><input type="radio" name="ph-count" value="3" /> <span>3</span></label>
+  </div>
+
+  <div class="ph__display" data-display dir="ltr" lang="en" aria-live="polite"></div>
+
+  <div class="ph__actions">
+    <button type="button" class="btn" data-action="copy">{t('placeholder.copy')}</button>
+    <span class="ph__meta" data-meta></span>
+    <span class="ph__msg" data-msg hidden>{t('common.copied')}</span>
+  </div>
+</div>
+
+<style>
+  .ph__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2xs);
+  }
+
+  /* Pestaña = pill (superficie interactiva). Activa = relleno tinta. */
+  .ph__tab {
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .ph__tab:hover {
+    border-color: var(--foreground);
+  }
+
+  .ph__tab.is-active {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .ph__tab:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .ph__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .ph__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .ph__radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+    font-size: var(--text-sm);
+  }
+
+  .ph__radio input {
+    accent-color: var(--primary);
+  }
+
+  /* Bloque de muestra: tarjeta plana. `dir`/`lang` los pone el JS por idioma. */
+  .ph__display {
+    padding: var(--spacing-l);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: var(--text-lg);
+    line-height: 1.9;
+    text-align: start; /* sigue a dir → derecha en árabe/hebreo */
+    min-block-size: 8rem;
+  }
+
+  /* Los párrafos se crean por JS → anclados al padre estático + :global(). */
+  .ph__display :global(p) {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .ph__display :global(p + p) {
+    margin-block-start: 0.9em;
+  }
+
+  .ph__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .ph__meta,
+  .ph__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  import { sampleLangs } from '../lib/sampleTexts';
+
+  function initPlaceholder() {
+    const tablist = document.querySelector<HTMLElement>('[data-tablist]');
+    const display = document.querySelector<HTMLElement>('[data-display]');
+    const counts = document.querySelectorAll<HTMLInputElement>('input[name="ph-count"]');
+    const copyBtn = document.querySelector<HTMLButtonElement>('[data-action="copy"]');
+    const meta = document.querySelector<HTMLElement>('[data-meta]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!tablist || !display) return;
+
+    const root = document.querySelector<HTMLElement>('.ph');
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
+
+    const byCode = new Map(sampleLangs.map((l) => [l.code, l]));
+    let active = sampleLangs[0].code;
+
+    function count(): number {
+      for (const c of counts) if (c.checked) return parseInt(c.value, 10);
+      return 2;
+    }
+
+    function currentParagraphs(): string[] {
+      const lang = byCode.get(active);
+      if (!lang) return [];
+      return lang.paragraphs.slice(0, Math.min(count(), lang.paragraphs.length));
+    }
+
+    function render() {
+      const lang = byCode.get(active);
+      if (!lang) return;
+      const paras = currentParagraphs();
+
+      display!.setAttribute('dir', lang.dir);
+      display!.setAttribute('lang', lang.code);
+      display!.replaceChildren(
+        ...paras.map((t) => {
+          const p = document.createElement('p');
+          p.textContent = t;
+          return p;
+        })
+      );
+
+      if (meta) {
+        const chars = paras.join('').length;
+        const word = paras.length === 1 ? T.paraSing : T.paraPlur;
+        meta.textContent = `${paras.length} ${word} · ${chars} ${T.chars}`;
+      }
+
+      tablist!.querySelectorAll<HTMLButtonElement>('[role="tab"]').forEach((tab) => {
+        const on = tab.dataset.code === active;
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        tab.classList.toggle('is-active', on);
+        tab.tabIndex = on ? 0 : -1;
+      });
+    }
+
+    tablist.addEventListener('click', (e) => {
+      const tab = (e.target as HTMLElement)?.closest<HTMLButtonElement>('[role="tab"]');
+      if (!tab || !tab.dataset.code) return;
+      active = tab.dataset.code;
+      render();
+    });
+
+    // Flechas ←/→ para moverse entre pestañas (patrón ARIA tablist).
+    tablist.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const idx = sampleLangs.findIndex((l) => l.code === active);
+      const step = e.key === 'ArrowRight' ? 1 : -1;
+      active = sampleLangs[(idx + step + sampleLangs.length) % sampleLangs.length].code;
+      render();
+      tablist!.querySelector<HTMLButtonElement>('.is-active')?.focus();
+    });
+
+    counts.forEach((c) => c.addEventListener('change', render));
+
+    copyBtn?.addEventListener('click', async () => {
+      const text = currentParagraphs().join('\n\n');
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        if (msg) {
+          msg.hidden = false;
+          setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    render();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initPlaceholder);
+</script>

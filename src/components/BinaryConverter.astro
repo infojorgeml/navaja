@@ -1,22 +1,25 @@
 ---
 // src/components/BinaryConverter.astro — convierte texto ↔ binario en vivo (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.textCopied') };
 ---
 
-<div class="binconv flow">
+<div class="binconv flow" data-i18n={JSON.stringify(strings)}>
   <div class="binconv__panels">
     <div class="binconv__field flow">
-      <label class="binconv__label" for="bin-text">Texto</label>
+      <label class="binconv__label" for="bin-text">{t('common.text')}</label>
       <textarea
         id="bin-text"
         class="binconv__area"
         rows="7"
-        placeholder="Escribe o pega texto…"
+        placeholder={t('binario.ph')}
         autocomplete="off"
         spellcheck="false"></textarea>
     </div>
 
     <div class="binconv__field flow">
-      <label class="binconv__label" for="bin-binary">Binario</label>
+      <label class="binconv__label" for="bin-binary">{t('binario.binary')}</label>
       <textarea
         id="bin-binary"
         class="binconv__area binconv__area--mono"
@@ -28,9 +31,9 @@
   </div>
 
   <div class="binconv__actions">
-    <button type="button" class="btn" data-action="copy-binary">Copiar binario</button>
-    <button type="button" class="btn btn--secondary" data-action="copy-text">Copiar texto</button>
-    <button type="button" class="btn btn--secondary" data-action="clear">Limpiar</button>
+    <button type="button" class="btn" data-action="copy-binary">{t('binario.copyBinary')}</button>
+    <button type="button" class="btn btn--secondary" data-action="copy-text">{t('common.copyText')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('common.clear')}</button>
     <span class="binconv__msg" data-msg hidden></span>
   </div>
 </div>
@@ -98,10 +101,13 @@
 
 <script>
   function initBinaryConverter() {
+    const root = document.querySelector<HTMLElement>('.binconv');
     const textEl = document.getElementById('bin-text') as HTMLTextAreaElement | null;
     const binEl = document.getElementById('bin-binary') as HTMLTextAreaElement | null;
     const msg = document.querySelector<HTMLElement>('[data-msg]');
     if (!textEl || !binEl) return;
+
+    const T = JSON.parse(root?.dataset.i18n || '{}') as Record<string, string>;
 
     const enc = new TextEncoder();
     const dec = new TextDecoder('utf-8', { fatal: false });
@@ -150,7 +156,7 @@
         if (!value) return;
         try {
           await navigator.clipboard.writeText(value);
-          flash(action === 'copy-binary' ? '¡Binario copiado!' : '¡Texto copiado!');
+          flash(action === 'copy-binary' ? T.binCopied : T.textCopied);
         } catch {}
       });
     });
