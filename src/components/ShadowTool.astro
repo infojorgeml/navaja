@@ -1,0 +1,469 @@
+---
+// src/components/ShadowTool.astro — editor visual de box-shadow por capas (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  layer: t('sombra.layer'),
+  removeLayer: t('sombra.removeLayer'),
+  x: t('sombra.x'),
+  y: t('sombra.y'),
+  blur: t('sombra.blur'),
+  spread: t('sombra.spread'),
+  color: t('sombra.color'),
+  opacity: t('sombra.opacity'),
+  inset: t('sombra.inset'),
+};
+---
+
+<div class="shadow flow" data-i18n={JSON.stringify(strings)}>
+  <div class="shadow__stage">
+    <div class="shadow__box" data-preview role="img" aria-label={t('sombra.preview')}></div>
+  </div>
+
+  <section class="shadow__section">
+    <h2 class="shadow__title">{t('sombra.layers')}</h2>
+    <div class="shadow__layers" data-layers></div>
+    <div class="shadow__actions">
+      <button type="button" class="btn btn--secondary" data-action="add">{t('sombra.addLayer')}</button>
+    </div>
+  </section>
+
+  <section class="shadow__section">
+    <h2 class="shadow__title">CSS</h2>
+    <code class="shadow__css" data-css></code>
+    <div class="shadow__actions">
+      <button type="button" class="btn" data-action="copy">{t('sombra.copyCss')}</button>
+      <span class="shadow__msg" data-msg hidden>{t('common.copied')}</span>
+    </div>
+  </section>
+</div>
+
+<style>
+  /* Escenario con superficie para que la sombra se aprecie. */
+  .shadow__stage {
+    display: grid;
+    place-items: center;
+    padding: var(--spacing-2xl) var(--spacing-m);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .shadow__box {
+    inline-size: 10rem;
+    block-size: 10rem;
+    background-color: var(--card);
+    border-radius: var(--radius);
+  }
+
+  .shadow__section {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .shadow__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  .shadow__layers {
+    display: grid;
+    gap: var(--spacing-s);
+  }
+
+  /* ---- Capas (creadas por JS → padre estático + :global()) ---- */
+  .shadow__layers :global(.shadow__layer) {
+    display: grid;
+    gap: var(--spacing-2xs);
+    padding: var(--spacing-s);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .shadow__layers :global(.shadow__head) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .shadow__layers :global(.shadow__name) {
+    flex: 1;
+    min-inline-size: 4rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .shadow__layers :global(.shadow__check) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+    font-size: var(--text-sm);
+  }
+
+  .shadow__layers :global(.shadow__check input) {
+    inline-size: 1rem;
+    block-size: 1rem;
+    accent-color: var(--primary);
+  }
+
+  .shadow__layers :global(.shadow__remove) {
+    inline-size: 2rem;
+    block-size: 2rem;
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    font: inherit;
+    font-size: var(--text-lg);
+    line-height: 1;
+    color: var(--muted-foreground);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .shadow__layers :global(.shadow__remove:hover:not(:disabled)) {
+    color: var(--foreground);
+    border-color: var(--foreground);
+  }
+
+  .shadow__layers :global(.shadow__remove:disabled) {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .shadow__layers :global(.shadow__grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: var(--spacing-2xs) var(--spacing-s);
+  }
+
+  .shadow__layers :global(.shadow__ctrl) {
+    display: grid;
+    gap: var(--spacing-3xs);
+  }
+
+  .shadow__layers :global(.shadow__ctrl-label) {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .shadow__layers :global(.shadow__ctrl-label b) {
+    font-weight: 500;
+    color: var(--foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .shadow__layers :global(.shadow__range) {
+    inline-size: 100%;
+    accent-color: var(--primary);
+  }
+
+  .shadow__layers :global(.shadow__color-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-2xs);
+  }
+
+  .shadow__layers :global(.shadow__picker) {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .shadow__layers :global(.shadow__picker::-webkit-color-swatch-wrapper) {
+    padding: 3px;
+  }
+
+  .shadow__layers :global(.shadow__picker::-webkit-color-swatch) {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .shadow__layers :global(.shadow__picker::-moz-color-swatch) {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .shadow__layers :global(.shadow__hex) {
+    inline-size: 7rem;
+    flex: none;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-2xs);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .shadow__layers :global(.shadow__alpha-wrap) {
+    flex: 1;
+    min-inline-size: 8rem;
+    display: grid;
+    gap: var(--spacing-3xs);
+  }
+
+  /* ---- Salida CSS ---- */
+  .shadow__css {
+    display: block;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+
+  .shadow__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .shadow__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  import { parseHex, toHex } from '../lib/color';
+
+  type Layer = {
+    x: number;
+    y: number;
+    blur: number;
+    spread: number;
+    color: string;
+    alpha: number; // 0–100
+    inset: boolean;
+  };
+
+  function initShadow() {
+    const root = document.querySelector<HTMLElement>('.shadow');
+    const preview = document.querySelector<HTMLElement>('[data-preview]');
+    const layersEl = document.querySelector<HTMLElement>('[data-layers]');
+    const cssEl = document.querySelector<HTMLElement>('[data-css]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !preview || !layersEl || !cssEl) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    let msgTimer = 0;
+
+    const num = (li: HTMLElement, name: string) =>
+      parseInt((li.querySelector(`[data-k="${name}"]`) as HTMLInputElement).value, 10) || 0;
+
+    function readLayers(): Layer[] {
+      return Array.from(layersEl!.querySelectorAll<HTMLElement>('.shadow__layer')).map((li) => ({
+        x: num(li, 'x'),
+        y: num(li, 'y'),
+        blur: num(li, 'blur'),
+        spread: num(li, 'spread'),
+        // El selector nativo siempre da un hex válido.
+        color: (li.querySelector('.shadow__picker') as HTMLInputElement).value.toUpperCase(),
+        alpha: num(li, 'alpha'),
+        inset: (li.querySelector('[data-k="inset"]') as HTMLInputElement).checked,
+      }));
+    }
+
+    function layerCss(l: Layer): string {
+      const rgb = parseHex(l.color) ?? [0, 0, 0];
+      // Sin transparencia se usa el hex: sale un CSS más limpio.
+      const color =
+        l.alpha >= 100
+          ? toHex(rgb)
+          : `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${parseFloat((l.alpha / 100).toFixed(2))})`;
+      return `${l.inset ? 'inset ' : ''}${l.x}px ${l.y}px ${l.blur}px ${l.spread}px ${color}`;
+    }
+
+    // Solo recalcula: no recrea las capas (no corta el arrastre de los sliders).
+    function update() {
+      const layers = readLayers();
+      const value = layers.map(layerCss).join(', ');
+      preview!.style.boxShadow = value;
+      cssEl!.textContent = `box-shadow: ${value};`;
+
+      layersEl!.querySelectorAll<HTMLElement>('.shadow__layer').forEach((li) => {
+        li.querySelectorAll<HTMLInputElement>('[data-k]').forEach((input) => {
+          if (input.type !== 'range') return;
+          const out = li.querySelector<HTMLElement>(`[data-out="${input.dataset.k}"]`);
+          if (out) out.textContent = input.dataset.k === 'alpha' ? `${input.value}%` : `${input.value}px`;
+        });
+      });
+    }
+
+    function ctrl(key: string, label: string, min: number, max: number, value: number, unit: string) {
+      const wrap = document.createElement('div');
+      wrap.className = 'shadow__ctrl';
+      const lab = document.createElement('label');
+      lab.className = 'shadow__ctrl-label';
+      lab.textContent = `${label} `;
+      const out = document.createElement('b');
+      out.dataset.out = key;
+      out.textContent = `${value}${unit}`;
+      lab.append(out);
+      const range = document.createElement('input');
+      range.type = 'range';
+      range.className = 'shadow__range';
+      range.dataset.k = key;
+      range.min = String(min);
+      range.max = String(max);
+      range.value = String(value);
+      range.setAttribute('aria-label', label);
+      wrap.append(lab, range);
+      return wrap;
+    }
+
+    function renderLayers(layers: Layer[]) {
+      layersEl!.replaceChildren(
+        ...layers.map((l, i) => {
+          const card = document.createElement('div');
+          card.className = 'shadow__layer';
+
+          // Cabecera: nombre + inset + quitar
+          const head = document.createElement('div');
+          head.className = 'shadow__head';
+          const name = document.createElement('span');
+          name.className = 'shadow__name';
+          name.textContent = `${T.layer} ${i + 1}`;
+
+          const insetLab = document.createElement('label');
+          insetLab.className = 'shadow__check';
+          const inset = document.createElement('input');
+          inset.type = 'checkbox';
+          inset.dataset.k = 'inset';
+          inset.checked = l.inset;
+          const insetTxt = document.createElement('span');
+          insetTxt.textContent = T.inset;
+          insetLab.append(inset, insetTxt);
+
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'shadow__remove';
+          del.dataset.remove = String(i);
+          del.setAttribute('aria-label', T.removeLayer);
+          del.title = T.removeLayer;
+          del.textContent = '×';
+          del.disabled = layers.length <= 1; // siempre al menos una capa
+
+          head.append(name, insetLab, del);
+
+          // Sliders de geometría
+          const grid = document.createElement('div');
+          grid.className = 'shadow__grid';
+          grid.append(
+            ctrl('x', T.x, -50, 50, l.x, 'px'),
+            ctrl('y', T.y, -50, 50, l.y, 'px'),
+            ctrl('blur', T.blur, 0, 100, l.blur, 'px'),
+            ctrl('spread', T.spread, -50, 50, l.spread, 'px')
+          );
+
+          // Color + opacidad
+          const colorRow = document.createElement('div');
+          colorRow.className = 'shadow__color-row';
+          const picker = document.createElement('input');
+          picker.type = 'color';
+          picker.className = 'shadow__picker';
+          picker.value = l.color.toLowerCase();
+          picker.setAttribute('aria-label', T.color);
+          const hex = document.createElement('input');
+          hex.type = 'text';
+          hex.className = 'shadow__hex';
+          hex.value = l.color.toUpperCase();
+          hex.autocomplete = 'off';
+          hex.spellcheck = false;
+          hex.setAttribute('aria-label', T.color);
+          const alphaWrap = document.createElement('div');
+          alphaWrap.className = 'shadow__alpha-wrap';
+          alphaWrap.append(ctrl('alpha', T.opacity, 0, 100, l.alpha, '%'));
+          colorRow.append(picker, hex, alphaWrap);
+
+          card.append(head, grid, colorRow);
+          return card;
+        })
+      );
+    }
+
+    function addLayer() {
+      const layers = readLayers();
+      const last = layers[layers.length - 1];
+      layers.push({
+        x: 0,
+        y: (last?.y ?? 4) * 2 || 8,
+        blur: (last?.blur ?? 12) * 2 || 24,
+        spread: 0,
+        color: last?.color ?? '#000000',
+        alpha: Math.max(4, Math.round((last?.alpha ?? 15) / 2)),
+        inset: false,
+      });
+      renderLayers(layers);
+      update();
+    }
+
+    layersEl.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      const card = el.closest<HTMLElement>('.shadow__layer');
+      if (!card) return;
+      if (el.classList.contains('shadow__picker')) {
+        (card.querySelector('.shadow__hex') as HTMLInputElement).value = el.value.toUpperCase();
+      } else if (el.classList.contains('shadow__hex')) {
+        const rgb = parseHex(el.value);
+        if (!rgb) return; // hex a medio escribir
+        (card.querySelector('.shadow__picker') as HTMLInputElement).value = toHex(rgb).toLowerCase();
+      }
+      update();
+    });
+
+    layersEl.addEventListener('change', update); // checkbox inset
+
+    layersEl.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-remove]');
+      if (!btn) return;
+      const layers = readLayers();
+      if (layers.length <= 1) return;
+      layers.splice(parseInt(btn.dataset.remove!, 10), 1);
+      renderLayers(layers);
+      update();
+    });
+
+    root.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-action]');
+      if (!btn) return;
+      if (btn.dataset.action === 'add') return addLayer();
+      if (btn.dataset.action === 'copy') {
+        try {
+          await navigator.clipboard.writeText(cssEl!.textContent || '');
+          if (msg) {
+            msg.hidden = false;
+            clearTimeout(msgTimer);
+            msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+          }
+        } catch {}
+      }
+    });
+
+    renderLayers([{ x: 0, y: 4, blur: 12, spread: 0, color: '#000000', alpha: 15, inset: false }]);
+    update();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initShadow);
+</script>

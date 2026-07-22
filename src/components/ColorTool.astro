@@ -1,0 +1,490 @@
+---
+// src/components/ColorTool.astro — conversiones de color, escala y contraste WCAG (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  invalid: t('color.invalid'),
+  base: t('color.base'),
+  normal: t('color.normal'),
+  large: t('color.large'),
+  pass: t('color.pass'),
+  fail: t('color.fail'),
+};
+---
+
+<div class="color flow" data-i18n={JSON.stringify(strings)}>
+  <div class="color__inputs">
+    <div class="color__field">
+      <label class="color__label" for="color-hex">{t('color.colorLabel')}</label>
+      <div class="color__row">
+        <input type="color" id="color-swatch" class="color__picker" value="#1e60e4" aria-hidden="true" tabindex="-1" />
+        <input
+          type="text"
+          id="color-hex"
+          class="color__hex"
+          value="#1E60E4"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </div>
+      <p class="color__err" data-err hidden>{t('color.invalid')}</p>
+    </div>
+
+    <div class="color__field">
+      <label class="color__label" for="color-bg-hex">{t('color.bgLabel')}</label>
+      <div class="color__row">
+        <input type="color" id="color-bg-swatch" class="color__picker" value="#ffffff" aria-hidden="true" tabindex="-1" />
+        <input
+          type="text"
+          id="color-bg-hex"
+          class="color__hex"
+          value="#FFFFFF"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+      </div>
+      <p class="color__err" data-err-bg hidden>{t('color.invalid')}</p>
+    </div>
+  </div>
+
+  <section class="color__section">
+    <h2 class="color__title">{t('color.formats')}</h2>
+    <ul class="color__formats" data-formats role="list"></ul>
+  </section>
+
+  <section class="color__section">
+    <h2 class="color__title">{t('color.scaleTitle')}</h2>
+    <ul class="color__scale" data-scale role="list"></ul>
+  </section>
+
+  <section class="color__section">
+    <h2 class="color__title">{t('color.contrastTitle')}</h2>
+    <div class="color__contrast">
+      <div class="color__preview" data-preview>
+        <p class="color__sample-lg">{t('color.sample')}</p>
+        <p class="color__sample-sm">{t('color.sample')}</p>
+      </div>
+      <div class="color__verdict">
+        <p class="color__ratio" data-ratio>—</p>
+        <ul class="color__badges" data-badges role="list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <p class="color__hint">
+    {t('color.copyHint')}
+    <span class="color__msg" data-msg hidden>{t('common.copied')}</span>
+  </p>
+</div>
+
+<style>
+  /* Verde/rojo semánticos (mismos que Diff): estado, no color de marca. */
+  .color {
+    --ok: #027f41;
+    --no: var(--destructive);
+  }
+
+  :global(.dark) .color {
+    --ok: #34c273;
+    --no: #ff5c73;
+  }
+
+  .color__inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .color__label {
+    display: block;
+    margin-block-end: var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .color__row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+  }
+
+  /* Selector nativo presentado como pastilla redonda. */
+  .color__picker {
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .color__picker::-webkit-color-swatch-wrapper {
+    padding: 3px;
+  }
+
+  .color__picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .color__picker::-moz-color-swatch {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .color__hex {
+    flex: 1;
+    min-inline-size: 0;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    text-transform: uppercase;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .color__hex:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .color__err {
+    margin: var(--spacing-3xs) 0 0;
+    font-size: var(--text-sm);
+    color: var(--no);
+  }
+
+  .color__title {
+    margin: 0 0 var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  /* ---- Formatos ---- */
+  .color__formats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-2xs);
+  }
+
+  /* Filas creadas por JS → padre estático + :global(). */
+  .color__formats :global(li) {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    padding: var(--spacing-2xs) var(--spacing-s);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .color__formats :global(.color__key) {
+    flex: none;
+    inline-size: 3.5rem;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-foreground);
+  }
+
+  .color__formats :global(.color__value) {
+    flex: 1;
+    min-inline-size: 0;
+    padding: 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    text-align: start;
+    color: var(--foreground);
+    background: none;
+    border: none;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  .color__formats :global(.color__value:hover) {
+    text-decoration: underline;
+  }
+
+  /* ---- Escala ---- */
+  .color__scale {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+    gap: var(--spacing-2xs);
+  }
+
+  .color__scale :global(li) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3xs);
+  }
+
+  .color__scale :global(.color__swatch) {
+    display: block;
+    inline-size: 100%;
+    block-size: 3.5rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .color__scale :global(.color__swatch--base) {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+  }
+
+  .color__scale :global(.color__swatch-hex) {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-2xs);
+    text-align: center;
+    color: var(--muted-foreground);
+  }
+
+  /* ---- Contraste ---- */
+  .color__contrast {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+    align-items: start;
+  }
+
+  .color__preview {
+    padding: var(--spacing-m);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .color__preview p {
+    margin: 0;
+  }
+
+  .color__sample-lg {
+    font-size: var(--text-2xl);
+    line-height: 1.3;
+    margin-block-end: var(--spacing-2xs) !important;
+  }
+
+  .color__sample-sm {
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .color__ratio {
+    margin: 0 0 var(--spacing-2xs);
+    font-size: var(--text-4xl);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .color__badges {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2xs);
+  }
+
+  .color__badges :global(li) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+    font-size: var(--text-sm);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+  }
+
+  .color__badges :global(li.is-pass) {
+    color: var(--ok);
+    border-color: color-mix(in oklab, var(--ok) 45%, transparent);
+    background-color: color-mix(in oklab, var(--ok) 10%, transparent);
+  }
+
+  .color__badges :global(li.is-fail) {
+    color: var(--no);
+    border-color: color-mix(in oklab, var(--no) 45%, transparent);
+    background-color: color-mix(in oklab, var(--no) 10%, transparent);
+  }
+
+  .color__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .color__msg {
+    margin-inline-start: var(--spacing-2xs);
+    color: var(--foreground);
+  }
+</style>
+
+<script>
+  import {
+    parseHex,
+    toHex,
+    formatRgb,
+    formatHsl,
+    formatOklch,
+    contrastRatio,
+    scale,
+    WCAG,
+  } from '../lib/color';
+
+  function initColor() {
+    const root = document.querySelector<HTMLElement>('.color');
+    const hexIn = document.getElementById('color-hex') as HTMLInputElement | null;
+    const hexSw = document.getElementById('color-swatch') as HTMLInputElement | null;
+    const bgIn = document.getElementById('color-bg-hex') as HTMLInputElement | null;
+    const bgSw = document.getElementById('color-bg-swatch') as HTMLInputElement | null;
+    const formatsEl = document.querySelector<HTMLElement>('[data-formats]');
+    const scaleEl = document.querySelector<HTMLElement>('[data-scale]');
+    const badgesEl = document.querySelector<HTMLElement>('[data-badges]');
+    const ratioEl = document.querySelector<HTMLElement>('[data-ratio]');
+    const previewEl = document.querySelector<HTMLElement>('[data-preview]');
+    const errEl = document.querySelector<HTMLElement>('[data-err]');
+    const errBgEl = document.querySelector<HTMLElement>('[data-err-bg]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !hexIn || !hexSw || !bgIn || !bgSw) return;
+    if (!formatsEl || !scaleEl || !badgesEl || !ratioEl || !previewEl) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    let msgTimer = 0;
+
+    function copyBtn(text: string, cls: string, label?: string): HTMLButtonElement {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = cls;
+      b.dataset.copy = text;
+      if (label !== undefined) b.textContent = label;
+      b.title = text;
+      return b;
+    }
+
+    function renderFormats(rgb: [number, number, number]) {
+      const rows: [string, string][] = [
+        ['HEX', toHex(rgb)],
+        ['RGB', formatRgb(rgb)],
+        ['HSL', formatHsl(rgb)],
+        ['OKLCH', formatOklch(rgb)],
+      ];
+      formatsEl!.replaceChildren(
+        ...rows.map(([key, value]) => {
+          const li = document.createElement('li');
+          const k = document.createElement('span');
+          k.className = 'color__key';
+          k.textContent = key;
+          li.append(k, copyBtn(value, 'color__value', value));
+          return li;
+        })
+      );
+    }
+
+    function renderScale(rgb: [number, number, number]) {
+      scaleEl!.replaceChildren(
+        ...scale(rgb).map((s) => {
+          const li = document.createElement('li');
+          const btn = copyBtn(s.hex, 'color__swatch' + (s.isBase ? ' color__swatch--base' : ''));
+          btn.style.backgroundColor = s.hex;
+          btn.setAttribute('aria-label', s.hex);
+          const label = document.createElement('span');
+          label.className = 'color__swatch-hex';
+          label.textContent = s.isBase ? T.base : s.hex;
+          li.append(btn, label);
+          return li;
+        })
+      );
+    }
+
+    function renderContrast(fg: [number, number, number], bg: [number, number, number]) {
+      const ratio = contrastRatio(fg, bg);
+      ratioEl!.textContent = `${ratio.toFixed(2)}:1`;
+
+      previewEl!.style.backgroundColor = toHex(bg);
+      previewEl!.style.color = toHex(fg);
+
+      const checks: [string, number][] = [
+        [`AA · ${T.normal}`, WCAG.aaNormal],
+        [`AAA · ${T.normal}`, WCAG.aaaNormal],
+        [`AA · ${T.large}`, WCAG.aaLarge],
+        [`AAA · ${T.large}`, WCAG.aaaLarge],
+      ];
+
+      badgesEl!.replaceChildren(
+        ...checks.map(([label, min]) => {
+          const ok = ratio >= min;
+          const li = document.createElement('li');
+          li.className = ok ? 'is-pass' : 'is-fail';
+          li.textContent = `${ok ? '✓' : '✕'} ${label}`;
+          li.title = `${label} — ${ok ? T.pass : T.fail} (${min}:1)`;
+          return li;
+        })
+      );
+    }
+
+    function render() {
+      const main = parseHex(hexIn!.value);
+      const bg = parseHex(bgIn!.value);
+
+      if (errEl) errEl.hidden = main !== null;
+      if (errBgEl) errBgEl.hidden = bg !== null;
+
+      if (main) {
+        hexSw!.value = toHex(main).toLowerCase();
+        renderFormats(main);
+        renderScale(main);
+      }
+      if (bg) bgSw!.value = toHex(bg).toLowerCase();
+      if (main && bg) renderContrast(main, bg);
+    }
+
+    hexIn.addEventListener('input', render);
+    bgIn.addEventListener('input', render);
+    // El selector nativo manda su valor al campo de texto y re-renderiza.
+    hexSw.addEventListener('input', () => {
+      hexIn!.value = hexSw!.value.toUpperCase();
+      render();
+    });
+    bgSw.addEventListener('input', () => {
+      bgIn!.value = bgSw!.value.toUpperCase();
+      render();
+    });
+
+    // Delegación: cualquier elemento con data-copy copia su valor.
+    root.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-copy]');
+      if (!btn?.dataset.copy) return;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        if (msg) {
+          msg.hidden = false;
+          clearTimeout(msgTimer);
+          msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    render();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initColor);
+</script>

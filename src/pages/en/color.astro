@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Page from '../../components/Page.astro';
+import ColorTool from '../../components/ColorTool.astro';
+import { getLocale, useTranslations } from '../../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.color.title')} description={t('tool.color.lead')}>
+  <Page title={t('tool.color.title')} lead={t('tool.color.lead')} size="wide">
+    <ColorTool />
+  </Page>
+</BaseLayout>

@@ -1,0 +1,480 @@
+---
+// src/components/GradientTool.astro — editor visual de degradados CSS (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  colorAria: t('gradiente.colorAria'),
+  posAria: t('gradiente.posAria'),
+  removeStop: t('gradiente.removeStop'),
+};
+---
+
+<div class="grad flow" data-i18n={JSON.stringify(strings)}>
+  <div class="grad__preview" data-preview role="img" aria-label={t('gradiente.preview')}></div>
+
+  <div class="grad__controls">
+    <div class="grad__field">
+      <span class="grad__label">{t('gradiente.type')}</span>
+      <div class="grad__opts">
+        <label class="grad__radio">
+          <input type="radio" name="grad-type" value="linear" checked />
+          <span>{t('gradiente.linear')}</span>
+        </label>
+        <label class="grad__radio">
+          <input type="radio" name="grad-type" value="radial" />
+          <span>{t('gradiente.radial')}</span>
+        </label>
+        <label class="grad__radio">
+          <input type="radio" name="grad-type" value="conic" />
+          <span>{t('gradiente.conic')}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="grad__field" data-angle-field>
+      <label class="grad__label" for="grad-angle">
+        {t('gradiente.angle')} <output class="grad__out" data-angle-val>90°</output>
+      </label>
+      <input type="range" id="grad-angle" class="grad__range" min="0" max="360" value="90" />
+    </div>
+
+    <div class="grad__field" data-shape-field hidden>
+      <span class="grad__label">{t('gradiente.shape')}</span>
+      <div class="grad__opts">
+        <label class="grad__radio">
+          <input type="radio" name="grad-shape" value="circle" checked />
+          <span>{t('gradiente.circle')}</span>
+        </label>
+        <label class="grad__radio">
+          <input type="radio" name="grad-shape" value="ellipse" />
+          <span>{t('gradiente.ellipse')}</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <section class="grad__section">
+    <h2 class="grad__title">{t('gradiente.stops')}</h2>
+    <ul class="grad__stops" data-stops role="list"></ul>
+    <div class="grad__actions">
+      <button type="button" class="btn btn--secondary" data-action="add">{t('gradiente.addStop')}</button>
+      <button type="button" class="btn btn--secondary" data-action="random">{t('gradiente.random')}</button>
+    </div>
+  </section>
+
+  <section class="grad__section">
+    <h2 class="grad__title">CSS</h2>
+    <code class="grad__css" data-css></code>
+    <div class="grad__actions">
+      <button type="button" class="btn" data-action="copy">{t('gradiente.copyCss')}</button>
+      <span class="grad__msg" data-msg hidden>{t('common.copied')}</span>
+    </div>
+  </section>
+</div>
+
+<style>
+  .grad__preview {
+    inline-size: 100%;
+    min-block-size: 14rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .grad__controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: var(--spacing-m);
+    align-items: start;
+  }
+
+  .grad__field {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  /* `hidden` debe ganar al display:grid de arriba. */
+  .grad__field[hidden] {
+    display: none;
+  }
+
+  .grad__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .grad__out {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+  }
+
+  .grad__opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-s);
+  }
+
+  .grad__radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+    font-size: var(--text-sm);
+  }
+
+  .grad__radio input,
+  .grad__range {
+    accent-color: var(--primary);
+  }
+
+  .grad__range {
+    inline-size: 100%;
+  }
+
+  .grad__title {
+    margin: 0 0 var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  .grad__section {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  /* ---- Paradas de color (filas creadas por JS → :global()) ---- */
+  .grad__stops {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .grad__stops :global(li) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    padding: var(--spacing-2xs);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .grad__stops :global(.grad__picker) {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .grad__stops :global(.grad__picker::-webkit-color-swatch-wrapper) {
+    padding: 3px;
+  }
+
+  .grad__stops :global(.grad__picker::-webkit-color-swatch) {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .grad__stops :global(.grad__picker::-moz-color-swatch) {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .grad__stops :global(.grad__hex) {
+    inline-size: 7rem;
+    flex: none;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-2xs);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .grad__stops :global(.grad__pos) {
+    flex: 1;
+    min-inline-size: 6rem;
+    accent-color: var(--primary);
+  }
+
+  .grad__stops :global(.grad__pos-val) {
+    flex: none;
+    inline-size: 3rem;
+    font-size: var(--text-sm);
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+  }
+
+  .grad__stops :global(.grad__remove) {
+    inline-size: 2rem;
+    block-size: 2rem;
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    font: inherit;
+    font-size: var(--text-lg);
+    line-height: 1;
+    color: var(--muted-foreground);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .grad__stops :global(.grad__remove:hover:not(:disabled)) {
+    color: var(--foreground);
+    border-color: var(--foreground);
+  }
+
+  .grad__stops :global(.grad__remove:disabled) {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ---- Salida CSS ---- */
+  .grad__css {
+    display: block;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+
+  .grad__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .grad__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  import { parseHex, toHex, hslToRgb, mixToward } from '../lib/color';
+
+  type Stop = { color: string; pos: number };
+
+  function initGradient() {
+    const root = document.querySelector<HTMLElement>('.grad');
+    const preview = document.querySelector<HTMLElement>('[data-preview]');
+    const stopsEl = document.querySelector<HTMLElement>('[data-stops]');
+    const cssEl = document.querySelector<HTMLElement>('[data-css]');
+    const angleEl = document.getElementById('grad-angle') as HTMLInputElement | null;
+    const angleVal = document.querySelector<HTMLElement>('[data-angle-val]');
+    const angleField = document.querySelector<HTMLElement>('[data-angle-field]');
+    const shapeField = document.querySelector<HTMLElement>('[data-shape-field]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !preview || !stopsEl || !cssEl || !angleEl) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    const types = document.querySelectorAll<HTMLInputElement>('input[name="grad-type"]');
+    const shapes = document.querySelectorAll<HTMLInputElement>('input[name="grad-shape"]');
+    let msgTimer = 0;
+
+    const currentType = () => {
+      for (const t of types) if (t.checked) return t.value;
+      return 'linear';
+    };
+    const currentShape = () => {
+      for (const s of shapes) if (s.checked) return s.value;
+      return 'circle';
+    };
+
+    // El selector nativo es la fuente de verdad del color: siempre da un hex válido.
+    function readStops(): Stop[] {
+      return Array.from(stopsEl!.querySelectorAll('li')).map((li) => ({
+        color: (li.querySelector('.grad__picker') as HTMLInputElement).value.toUpperCase(),
+        pos: parseInt((li.querySelector('.grad__pos') as HTMLInputElement).value, 10) || 0,
+      }));
+    }
+
+    function gradientCss(stops: Stop[]): string {
+      const list = [...stops]
+        .sort((a, b) => a.pos - b.pos)
+        .map((s) => `${s.color} ${s.pos}%`)
+        .join(', ');
+      const type = currentType();
+      if (type === 'radial') return `radial-gradient(${currentShape()} at center, ${list})`;
+      if (type === 'conic') return `conic-gradient(from ${angleEl!.value}deg, ${list})`;
+      return `linear-gradient(${angleEl!.value}deg, ${list})`;
+    }
+
+    // Solo recalcula: NO recrea las filas (así no se corta el arrastre del range).
+    function update() {
+      const g = gradientCss(readStops());
+      preview!.style.backgroundImage = g;
+      cssEl!.textContent = `background: ${g};`;
+      if (angleVal) angleVal.textContent = `${angleEl!.value}°`;
+
+      stopsEl!.querySelectorAll('li').forEach((li) => {
+        const pos = (li.querySelector('.grad__pos') as HTMLInputElement).value;
+        const lab = li.querySelector<HTMLElement>('.grad__pos-val');
+        if (lab) lab.textContent = `${pos}%`;
+      });
+
+      const type = currentType();
+      if (angleField) angleField.hidden = type === 'radial';
+      if (shapeField) shapeField.hidden = type !== 'radial';
+    }
+
+    function renderStops(stops: Stop[]) {
+      stopsEl!.replaceChildren(
+        ...stops.map((s, i) => {
+          const li = document.createElement('li');
+
+          const picker = document.createElement('input');
+          picker.type = 'color';
+          picker.className = 'grad__picker';
+          picker.value = s.color.toLowerCase();
+          picker.setAttribute('aria-label', T.colorAria);
+
+          const hex = document.createElement('input');
+          hex.type = 'text';
+          hex.className = 'grad__hex';
+          hex.value = s.color.toUpperCase();
+          hex.autocomplete = 'off';
+          hex.spellcheck = false;
+          hex.setAttribute('aria-label', T.colorAria);
+
+          const pos = document.createElement('input');
+          pos.type = 'range';
+          pos.className = 'grad__pos';
+          pos.min = '0';
+          pos.max = '100';
+          pos.value = String(s.pos);
+          pos.setAttribute('aria-label', T.posAria);
+
+          const posVal = document.createElement('span');
+          posVal.className = 'grad__pos-val';
+          posVal.textContent = `${s.pos}%`;
+
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'grad__remove';
+          del.dataset.remove = String(i);
+          del.setAttribute('aria-label', T.removeStop);
+          del.title = T.removeStop;
+          del.textContent = '×';
+          del.disabled = stops.length <= 2; // siempre al menos dos paradas
+
+          li.append(picker, hex, pos, posVal, del);
+          return li;
+        })
+      );
+    }
+
+    // Inserta en el hueco más grande, con el color interpolado entre sus vecinas
+    // (así la parada nueva no crea un tramo plano).
+    function addStop() {
+      const stops = readStops();
+      const sorted = [...stops].sort((a, b) => a.pos - b.pos);
+      let at = 0;
+      let widest = -1;
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const gap = sorted[i + 1].pos - sorted[i].pos;
+        if (gap > widest) {
+          widest = gap;
+          at = i;
+        }
+      }
+      const a = sorted[at];
+      const b = sorted[at + 1];
+      const ca = parseHex(a.color) ?? [0, 0, 0];
+      const cb = parseHex(b.color) ?? [255, 255, 255];
+      stops.push({
+        color: toHex(mixToward(ca, cb, 0.5)),
+        pos: Math.round((a.pos + b.pos) / 2),
+      });
+      renderStops(stops);
+      update();
+    }
+
+    function randomize() {
+      const h = Math.floor(Math.random() * 360);
+      const h2 = (h + 40 + Math.floor(Math.random() * 80)) % 360;
+      const c1 = toHex(hslToRgb(h, 70 + Math.random() * 20, 55 + Math.random() * 10));
+      const c2 = toHex(hslToRgb(h2, 70 + Math.random() * 20, 45 + Math.random() * 10));
+      renderStops([
+        { color: c1, pos: 0 },
+        { color: c2, pos: 100 },
+      ]);
+      update();
+    }
+
+    stopsEl.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      const li = el.closest('li');
+      if (!li) return;
+      if (el.classList.contains('grad__picker')) {
+        (li.querySelector('.grad__hex') as HTMLInputElement).value = el.value.toUpperCase();
+      } else if (el.classList.contains('grad__hex')) {
+        const rgb = parseHex(el.value);
+        if (!rgb) return; // hex a medio escribir: no toca nada todavía
+        (li.querySelector('.grad__picker') as HTMLInputElement).value = toHex(rgb).toLowerCase();
+      }
+      update();
+    });
+
+    stopsEl.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-remove]');
+      if (!btn) return;
+      const stops = readStops();
+      if (stops.length <= 2) return;
+      stops.splice(parseInt(btn.dataset.remove!, 10), 1);
+      renderStops(stops);
+      update();
+    });
+
+    angleEl.addEventListener('input', update);
+    types.forEach((t) => t.addEventListener('change', update));
+    shapes.forEach((s) => s.addEventListener('change', update));
+
+    root.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      if (action === 'add') return addStop();
+      if (action === 'random') return randomize();
+      if (action === 'copy') {
+        try {
+          await navigator.clipboard.writeText(cssEl!.textContent || '');
+          if (msg) {
+            msg.hidden = false;
+            clearTimeout(msgTimer);
+            msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+          }
+        } catch {}
+      }
+    });
+
+    // Arranque: dos paradas con los tonos de la paleta de producto del design system.
+    renderStops([
+      { color: '#1E60E4', pos: 0 },
+      { color: '#7A4FF5', pos: 100 },
+    ]);
+    update();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initGradient);
+</script>

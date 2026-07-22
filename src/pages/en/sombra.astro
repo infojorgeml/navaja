@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Page from '../../components/Page.astro';
+import ShadowTool from '../../components/ShadowTool.astro';
+import { getLocale, useTranslations } from '../../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.sombra.title')} description={t('tool.sombra.lead')}>
+  <Page title={t('tool.sombra.title')} lead={t('tool.sombra.lead')} size="wide">
+    <ShadowTool />
+  </Page>
+</BaseLayout>
