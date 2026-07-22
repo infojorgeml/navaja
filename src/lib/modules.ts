@@ -27,4 +27,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'gradiente', keywords: ['gradiente', 'gradient', 'degradado', 'css', 'lineal', 'linear', 'radial', 'conico', 'conic', 'fondo', 'background', 'generador', 'generator'] },
   { slug: 'sombra', keywords: ['sombra', 'shadow', 'box-shadow', 'css', 'desenfoque', 'blur', 'inset', 'interior', 'capas', 'layers', 'elevacion', 'elevation'] },
   { slug: 'regex', keywords: ['regex', 'regexp', 'expresion', 'expresiones', 'regular', 'patron', 'pattern', 'coincidencias', 'matches', 'grupos', 'groups', 'probador', 'tester', 'buscar'] },
+  { slug: 'timestamp', keywords: ['timestamp', 'unix', 'epoch', 'fecha', 'date', 'hora', 'time', 'iso', 'zona', 'horaria', 'timezone', 'utc', 'convertir', 'convert'] },
 ];

@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import TimestampTool from '../components/TimestampTool.astro';
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.timestamp.title')} description={t('tool.timestamp.lead')}>
+  <Page title={t('tool.timestamp.title')} lead={t('tool.timestamp.lead')} size="wide">
+    <TimestampTool />
+  </Page>
+</BaseLayout>

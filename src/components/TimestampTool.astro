@@ -1,0 +1,345 @@
+---
+// src/components/TimestampTool.astro — Unix ↔ fecha con zonas horarias (isla cliente).
+// Todo con Intl nativo: sin librerías de fechas.
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  detected: t('timestamp.detected'),
+  kindS: t('timestamp.kindS'),
+  kindMs: t('timestamp.kindMs'),
+  kindDate: t('timestamp.kindDate'),
+  invalid: t('timestamp.invalid'),
+  unixS: t('timestamp.unixS'),
+  unixMs: t('timestamp.unixMs'),
+  iso: t('timestamp.iso'),
+  utc: t('timestamp.utc'),
+  readable: t('timestamp.readable'),
+  relative: t('timestamp.relative'),
+  localTz: t('timestamp.localTz'),
+};
+---
+
+<div class="ts flow" data-i18n={JSON.stringify(strings)}>
+  <div class="ts__top">
+    <div class="ts__field">
+      <label class="ts__label" for="ts-input">{t('timestamp.input')}</label>
+      <div class="ts__row">
+        <input
+          type="text"
+          id="ts-input"
+          class="ts__input"
+          placeholder={t('timestamp.inputPh')}
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+        <button type="button" class="btn btn--secondary" data-action="now">{t('timestamp.now')}</button>
+      </div>
+      <p class="ts__detected" data-detected></p>
+    </div>
+
+    <div class="ts__field">
+      <label class="ts__label" for="ts-tz">{t('timestamp.tz')}</label>
+      <select id="ts-tz" class="ts__select" data-tz></select>
+      <p class="ts__detected" data-local-tz></p>
+    </div>
+  </div>
+
+  <ul class="ts__out" data-out role="list"></ul>
+
+  <p class="ts__hint">
+    {t('timestamp.copyHint')}
+    <span class="ts__msg" data-msg hidden>{t('common.copied')}</span>
+  </p>
+</div>
+
+<style>
+  .ts__top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+    align-items: start;
+  }
+
+  .ts__field {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .ts__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .ts__row {
+    display: flex;
+    gap: var(--spacing-2xs);
+  }
+
+  .ts__input {
+    flex: 1;
+    min-inline-size: 0;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .ts__input::placeholder {
+    font-family: var(--font-sans);
+    color: var(--muted-foreground);
+  }
+
+  .ts__input:focus-visible,
+  .ts__select:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .ts__select {
+    inline-size: 100%;
+    padding: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .ts__detected {
+    margin: 0;
+    min-block-size: 1.25rem;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .ts__detected[data-error] {
+    color: var(--destructive);
+  }
+
+  /* Filas de salida creadas por JS → padre estático + :global(). */
+  .ts__out {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .ts__out :global(li) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--spacing-2xs) var(--spacing-s);
+    padding: var(--spacing-2xs) var(--spacing-s);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .ts__out :global(.ts__key) {
+    flex: none;
+    inline-size: 7rem;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-foreground);
+  }
+
+  .ts__out :global(.ts__value) {
+    flex: 1;
+    min-inline-size: 0;
+    padding: 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    text-align: start;
+    color: var(--foreground);
+    background: none;
+    border: none;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  .ts__out :global(.ts__value:hover) {
+    text-decoration: underline;
+  }
+
+  .ts__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .ts__msg {
+    margin-inline-start: var(--spacing-2xs);
+    color: var(--foreground);
+  }
+</style>
+
+<script>
+  function initTimestamp() {
+    const root = document.querySelector<HTMLElement>('.ts');
+    const input = document.getElementById('ts-input') as HTMLInputElement | null;
+    const tzEl = document.querySelector<HTMLSelectElement>('[data-tz]');
+    const outEl = document.querySelector<HTMLElement>('[data-out]');
+    const detectedEl = document.querySelector<HTMLElement>('[data-detected]');
+    const localTzEl = document.querySelector<HTMLElement>('[data-local-tz]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !input || !tzEl || !outEl) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    const locale = document.documentElement.lang === 'en' ? 'en-US' : 'es-ES';
+    const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    let msgTimer = 0;
+
+    // Lista IANA nativa del navegador; si no está, una selección razonable.
+    function fillZones() {
+      let zones: string[] = [];
+      try {
+        zones = (Intl as any).supportedValuesOf?.('timeZone') ?? [];
+      } catch {}
+      if (!zones.length) {
+        zones = ['Europe/Madrid', 'Europe/London', 'America/New_York', 'America/Mexico_City', 'America/Argentina/Buenos_Aires', 'Asia/Tokyo', 'Australia/Sydney'];
+      }
+      const all = Array.from(new Set(['UTC', localTz, ...zones]));
+      tzEl!.replaceChildren(
+        ...all.map((z) => {
+          const o = document.createElement('option');
+          o.value = z;
+          o.textContent = z;
+          return o;
+        })
+      );
+      tzEl!.value = localTz;
+      if (localTzEl) localTzEl.textContent = T.localTz.replace('{tz}', localTz);
+    }
+
+    // 10 dígitos ≈ segundos, 13 ≈ milisegundos; si no, se intenta como fecha.
+    function parseInput(raw: string): { ms: number; kind: string } | null {
+      const v = raw.trim();
+      if (!v) return null;
+      if (/^-?\d+$/.test(v)) {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return null;
+        return Math.abs(n) >= 1e12 ? { ms: n, kind: T.kindMs } : { ms: n * 1000, kind: T.kindS };
+      }
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) return null;
+      return { ms: d.getTime(), kind: T.kindDate };
+    }
+
+    function relative(ms: number): string {
+      const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+      const diff = ms - Date.now();
+      const abs = Math.abs(diff);
+      const units: [Intl.RelativeTimeFormatUnit, number][] = [
+        ['year', 31536000000],
+        ['month', 2592000000],
+        ['week', 604800000],
+        ['day', 86400000],
+        ['hour', 3600000],
+        ['minute', 60000],
+      ];
+      for (const [unit, per] of units) {
+        if (abs >= per) return rtf.format(Math.round(diff / per), unit);
+      }
+      return rtf.format(Math.round(diff / 1000), 'second');
+    }
+
+    function row(key: string, value: string): HTMLLIElement {
+      const li = document.createElement('li');
+      const k = document.createElement('span');
+      k.className = 'ts__key';
+      k.textContent = key;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ts__value';
+      b.dataset.copy = value;
+      b.textContent = value;
+      li.append(k, b);
+      return li;
+    }
+
+    function setDetected(text: string, isError = false) {
+      if (!detectedEl) return;
+      detectedEl.textContent = text;
+      if (isError) detectedEl.dataset.error = '';
+      else delete detectedEl.dataset.error;
+    }
+
+    function render() {
+      const parsed = parseInput(input!.value);
+      if (!parsed) {
+        outEl!.replaceChildren();
+        setDetected(input!.value.trim() ? T.invalid : '', !!input!.value.trim());
+        return;
+      }
+
+      const date = new Date(parsed.ms);
+      if (Number.isNaN(date.getTime())) {
+        outEl!.replaceChildren();
+        setDetected(T.invalid, true);
+        return;
+      }
+
+      setDetected(`${T.detected}: ${parsed.kind}`);
+      const tz = tzEl!.value || 'UTC';
+
+      const readable = new Intl.DateTimeFormat(locale, {
+        dateStyle: 'full',
+        timeStyle: 'long',
+        timeZone: tz,
+      }).format(date);
+
+      const utc = new Intl.DateTimeFormat(locale, {
+        dateStyle: 'full',
+        timeStyle: 'long',
+        timeZone: 'UTC',
+      }).format(date);
+
+      outEl!.replaceChildren(
+        row(T.unixS, String(Math.floor(parsed.ms / 1000))),
+        row(T.unixMs, String(parsed.ms)),
+        row(T.iso, date.toISOString()),
+        row(`${T.readable} · ${tz}`, readable),
+        row(T.utc, utc),
+        row(T.relative, relative(parsed.ms))
+      );
+    }
+
+    input.addEventListener('input', render);
+    tzEl.addEventListener('change', render);
+
+    root.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+      if (target?.closest('[data-action="now"]')) {
+        input!.value = String(Math.floor(Date.now() / 1000));
+        render();
+        return;
+      }
+      const btn = target?.closest<HTMLElement>('[data-copy]');
+      if (!btn?.dataset.copy) return;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        if (msg) {
+          msg.hidden = false;
+          clearTimeout(msgTimer);
+          msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    fillZones();
+    input.value = String(Math.floor(Date.now() / 1000));
+    render();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initTimestamp);
+</script>

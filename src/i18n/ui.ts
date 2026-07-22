@@ -349,6 +349,29 @@ const es: Dict = {
   'regex.defaultPattern': '(?<usuario>[\\w.+-]+)@(?<dominio>[\\w.-]+\\.\\w+)',
   'regex.defaultText':
     'Escribe a ana.garcia@example.com o a soporte@navaja.es.\nPublicado el 2026-07-09 y actualizado el 2026-08-01.',
+
+  // Timestamp (tarjeta, página y componente)
+  'tool.timestamp.label': 'Timestamp',
+  'tool.timestamp.desc': 'Convierte timestamps y fechas',
+  'tool.timestamp.title': 'Timestamp ↔ fecha',
+  'tool.timestamp.lead': 'Convierte entre Unix, ISO y fecha legible, con zonas horarias.',
+  'timestamp.input': 'Timestamp o fecha',
+  'timestamp.inputPh': 'Ej.: 1767225600 o 2026-01-01T00:00:00Z',
+  'timestamp.now': 'Ahora',
+  'timestamp.tz': 'Zona horaria',
+  'timestamp.detected': 'Interpretado como',
+  'timestamp.kindS': 'Unix en segundos',
+  'timestamp.kindMs': 'Unix en milisegundos',
+  'timestamp.kindDate': 'fecha',
+  'timestamp.invalid': 'No se reconoce como fecha ni timestamp',
+  'timestamp.unixS': 'Unix (s)',
+  'timestamp.unixMs': 'Unix (ms)',
+  'timestamp.iso': 'ISO 8601',
+  'timestamp.utc': 'UTC',
+  'timestamp.readable': 'Legible',
+  'timestamp.relative': 'Relativo',
+  'timestamp.localTz': 'Tu zona: {tz}',
+  'timestamp.copyHint': 'Pulsa cualquier valor para copiarlo.',
 };
 
 const en: Dict = {
@@ -693,6 +716,29 @@ const en: Dict = {
   'regex.defaultPattern': '(?<user>[\\w.+-]+)@(?<domain>[\\w.-]+\\.\\w+)',
   'regex.defaultText':
     'Write to ana.garcia@example.com or soporte@navaja.es.\nPublished on 2026-07-09 and updated on 2026-08-01.',
+
+  // Timestamp (card, page and component)
+  'tool.timestamp.label': 'Timestamp',
+  'tool.timestamp.desc': 'Convert timestamps and dates',
+  'tool.timestamp.title': 'Timestamp ↔ date',
+  'tool.timestamp.lead': 'Convert between Unix, ISO and readable dates, with time zones.',
+  'timestamp.input': 'Timestamp or date',
+  'timestamp.inputPh': 'e.g. 1767225600 or 2026-01-01T00:00:00Z',
+  'timestamp.now': 'Now',
+  'timestamp.tz': 'Time zone',
+  'timestamp.detected': 'Detected as',
+  'timestamp.kindS': 'Unix seconds',
+  'timestamp.kindMs': 'Unix milliseconds',
+  'timestamp.kindDate': 'date',
+  'timestamp.invalid': 'Not a valid date or timestamp',
+  'timestamp.unixS': 'Unix (s)',
+  'timestamp.unixMs': 'Unix (ms)',
+  'timestamp.iso': 'ISO 8601',
+  'timestamp.utc': 'UTC',
+  'timestamp.readable': 'Readable',
+  'timestamp.relative': 'Relative',
+  'timestamp.localTz': 'Your zone: {tz}',
+  'timestamp.copyHint': 'Click any value to copy it.',
 };
 
 export const ui: Record<Locale, Dict> = { es, en };
