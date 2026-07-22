@@ -26,4 +26,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'color', keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch', 'contraste', 'contrast', 'wcag', 'accesibilidad', 'accessibility', 'paleta', 'palette', 'tintes', 'tints', 'shades', 'a11y'] },
   { slug: 'gradiente', keywords: ['gradiente', 'gradient', 'degradado', 'css', 'lineal', 'linear', 'radial', 'conico', 'conic', 'fondo', 'background', 'generador', 'generator'] },
   { slug: 'sombra', keywords: ['sombra', 'shadow', 'box-shadow', 'css', 'desenfoque', 'blur', 'inset', 'interior', 'capas', 'layers', 'elevacion', 'elevation'] },
+  { slug: 'regex', keywords: ['regex', 'regexp', 'expresion', 'expresiones', 'regular', 'patron', 'pattern', 'coincidencias', 'matches', 'grupos', 'groups', 'probador', 'tester', 'buscar'] },
 ];

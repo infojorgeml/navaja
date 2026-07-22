@@ -1,0 +1,472 @@
+---
+// src/components/RegexTester.astro — probador de expresiones regulares (isla cliente).
+// Todo el resaltado se construye con nodos de texto, nunca con innerHTML.
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  invalid: t('regex.invalid'),
+  none: t('regex.none'),
+  one: t('regex.one'),
+  many: t('regex.many'),
+  limited: t('regex.limited'),
+  match: t('regex.match'),
+  pos: t('regex.pos'),
+  groups: t('regex.groups'),
+  named: t('regex.named'),
+  empty: t('regex.empty'),
+};
+---
+
+<div class="rx flow" data-i18n={JSON.stringify(strings)}>
+  <div class="rx__field">
+    <label class="rx__label" for="rx-pattern">{t('regex.pattern')}</label>
+    <div class="rx__pattern-row">
+      <span class="rx__slash" aria-hidden="true">/</span>
+      <input
+        type="text"
+        id="rx-pattern"
+        class="rx__pattern"
+        value={t('regex.defaultPattern')}
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <span class="rx__slash" aria-hidden="true">/</span>
+      <span class="rx__flags-out" data-flags-out>g</span>
+    </div>
+  </div>
+
+  <div class="rx__flags">
+    <span class="rx__label">{t('regex.flags')}</span>
+    <label class="rx__flag" title={t('regex.flagG')}>
+      <input type="checkbox" data-flag="g" checked /> <code>g</code>
+    </label>
+    <label class="rx__flag" title={t('regex.flagI')}>
+      <input type="checkbox" data-flag="i" /> <code>i</code>
+    </label>
+    <label class="rx__flag" title={t('regex.flagM')}>
+      <input type="checkbox" data-flag="m" /> <code>m</code>
+    </label>
+    <label class="rx__flag" title={t('regex.flagS')}>
+      <input type="checkbox" data-flag="s" /> <code>s</code>
+    </label>
+    <label class="rx__flag" title={t('regex.flagU')}>
+      <input type="checkbox" data-flag="u" /> <code>u</code>
+    </label>
+  </div>
+
+  <p class="rx__error" data-error hidden></p>
+
+  <div class="rx__field">
+    <label class="rx__label" for="rx-text">{t('regex.text')}</label>
+    <textarea
+      id="rx-text"
+      class="rx__text"
+      rows="6"
+      autocomplete="off"
+      spellcheck="false">{t('regex.defaultText')}</textarea>
+  </div>
+
+  <section class="rx__section">
+    <h2 class="rx__title">
+      {t('regex.result')} <span class="rx__count" data-count></span>
+    </h2>
+    <div class="rx__highlight" data-highlight></div>
+  </section>
+
+  <section class="rx__section" data-groups-section hidden>
+    <h2 class="rx__title">{t('regex.groups')}</h2>
+    <ul class="rx__matches" data-matches role="list"></ul>
+  </section>
+</div>
+
+<style>
+  /* Tonos de resaltado de la paleta de producto (openai.design.md §Syntax):
+     informativos, alternan para distinguir coincidencias contiguas. */
+  .rx {
+    --mark: #1e60e4;
+    --mark-alt: #7a4ff5;
+  }
+
+  :global(.dark) .rx {
+    --mark: #6f9bff;
+    --mark-alt: #a98bff;
+  }
+
+  .rx__field {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .rx__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .rx__pattern-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .rx__pattern-row:focus-within {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .rx__slash,
+  .rx__flags-out {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    color: var(--muted-foreground);
+    flex: none;
+  }
+
+  .rx__pattern {
+    flex: 1;
+    min-inline-size: 0;
+    padding-block: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background: none;
+    border: none;
+    outline: none;
+  }
+
+  .rx__flags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .rx__flag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+    font-size: var(--text-sm);
+    cursor: help;
+  }
+
+  .rx__flag input {
+    inline-size: 1rem;
+    block-size: 1rem;
+    accent-color: var(--primary);
+  }
+
+  .rx__flag code {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+
+  .rx__error {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--destructive);
+  }
+
+  .rx__text {
+    inline-size: 100%;
+    min-block-size: 9rem;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+  }
+
+  .rx__text:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .rx__section {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .rx__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  .rx__count {
+    color: var(--foreground);
+  }
+
+  .rx__highlight {
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--foreground);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-block-size: 4rem;
+  }
+
+  /* Las marcas las crea el JS → padre estático + :global(). */
+  .rx__highlight :global(mark) {
+    color: inherit;
+    background-color: color-mix(in oklab, var(--mark) 22%, transparent);
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--mark) 40%, transparent);
+  }
+
+  .rx__highlight :global(mark.is-alt) {
+    background-color: color-mix(in oklab, var(--mark-alt) 22%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--mark-alt) 40%, transparent);
+  }
+
+  /* Coincidencia de longitud cero: se marca con una fina barra vertical. */
+  .rx__highlight :global(mark.is-empty) {
+    padding-inline: 1px;
+    background-color: var(--mark);
+  }
+
+  .rx__matches {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .rx__matches :global(li) {
+    padding: var(--spacing-2xs) var(--spacing-s);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .rx__matches :global(.rx__match-head) {
+    font-size: var(--text-2xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-foreground);
+  }
+
+  .rx__matches :global(.rx__match-value) {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+
+  .rx__matches :global(dl) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--spacing-3xs) var(--spacing-s);
+    margin: var(--spacing-3xs) 0 0;
+  }
+
+  .rx__matches :global(dt) {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .rx__matches :global(dd) {
+    margin: 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .rx__matches :global(dd.is-undef) {
+    color: var(--muted-foreground);
+    font-style: italic;
+  }
+</style>
+
+<script>
+  function initRegex() {
+    const root = document.querySelector<HTMLElement>('.rx');
+    const patternEl = document.getElementById('rx-pattern') as HTMLInputElement | null;
+    const textEl = document.getElementById('rx-text') as HTMLTextAreaElement | null;
+    const flagEls = document.querySelectorAll<HTMLInputElement>('[data-flag]');
+    const flagsOut = document.querySelector<HTMLElement>('[data-flags-out]');
+    const errorEl = document.querySelector<HTMLElement>('[data-error]');
+    const highlightEl = document.querySelector<HTMLElement>('[data-highlight]');
+    const countEl = document.querySelector<HTMLElement>('[data-count]');
+    const matchesEl = document.querySelector<HTMLElement>('[data-matches]');
+    const groupsSection = document.querySelector<HTMLElement>('[data-groups-section]');
+    if (!root || !patternEl || !textEl || !highlightEl || !matchesEl) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    const MAX_MATCHES = 5000; // cota dura por si la expresión casa en todas partes
+    const MAX_SHOWN = 50; // tarjetas de grupos que se pintan
+
+    function readFlags(): string {
+      return Array.from(flagEls)
+        .filter((f) => f.checked)
+        .map((f) => f.dataset.flag)
+        .join('');
+    }
+
+    function setError(text: string) {
+      if (!errorEl) return;
+      errorEl.textContent = text;
+      errorEl.hidden = !text;
+    }
+
+    function plain(text: string) {
+      highlightEl!.replaceChildren(document.createTextNode(text));
+    }
+
+    function renderHighlight(text: string, matches: RegExpExecArray[]) {
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      matches.forEach((m, i) => {
+        if (m.index > last) frag.append(document.createTextNode(text.slice(last, m.index)));
+        const mark = document.createElement('mark');
+        if (i % 2) mark.className = 'is-alt';
+        if (m[0] === '') mark.classList.add('is-empty');
+        else mark.textContent = m[0];
+        frag.append(mark);
+        last = m.index + m[0].length;
+      });
+      if (last < text.length) frag.append(document.createTextNode(text.slice(last)));
+      highlightEl!.replaceChildren(frag);
+    }
+
+    function renderMatches(matches: RegExpExecArray[]) {
+      const hasGroups = matches.some((m) => m.length > 1 || m.groups);
+      if (!groupsSection) return;
+      groupsSection.hidden = !hasGroups || matches.length === 0;
+      if (groupsSection.hidden) {
+        matchesEl!.replaceChildren();
+        return;
+      }
+
+      matchesEl!.replaceChildren(
+        ...matches.slice(0, MAX_SHOWN).map((m, i) => {
+          const li = document.createElement('li');
+
+          const head = document.createElement('p');
+          head.className = 'rx__match-head';
+          head.textContent = `${T.match} ${i + 1} · ${T.pos} ${m.index}`;
+          head.style.margin = '0';
+
+          const value = document.createElement('p');
+          value.className = 'rx__match-value';
+          value.textContent = m[0];
+          value.style.margin = '0';
+
+          li.append(head, value);
+
+          const dl = document.createElement('dl');
+          // Grupos numerados
+          for (let g = 1; g < m.length; g++) {
+            const dt = document.createElement('dt');
+            dt.textContent = String(g);
+            const dd = document.createElement('dd');
+            if (m[g] === undefined) {
+              dd.className = 'is-undef';
+              dd.textContent = 'undefined';
+            } else {
+              dd.textContent = m[g];
+            }
+            dl.append(dt, dd);
+          }
+          // Grupos con nombre
+          if (m.groups) {
+            for (const [name, val] of Object.entries(m.groups)) {
+              const dt = document.createElement('dt');
+              dt.textContent = `?<${name}>`;
+              const dd = document.createElement('dd');
+              if (val === undefined) {
+                dd.className = 'is-undef';
+                dd.textContent = 'undefined';
+              } else {
+                dd.textContent = val;
+              }
+              dl.append(dt, dd);
+            }
+          }
+          if (dl.children.length) li.append(dl);
+          return li;
+        })
+      );
+    }
+
+    function setCount(n: number, capped: boolean) {
+      if (!countEl) return;
+      let label = n === 0 ? T.none : n === 1 ? T.one : T.many.replace('{n}', String(n));
+      if (capped) label += ` (${T.limited.replace('{n}', String(MAX_MATCHES))})`;
+      countEl.textContent = label;
+    }
+
+    function run() {
+      const pattern = patternEl!.value;
+      const flags = readFlags();
+      const text = textEl!.value;
+      if (flagsOut) flagsOut.textContent = flags;
+
+      if (!pattern) {
+        setError('');
+        plain(text);
+        if (countEl) countEl.textContent = T.empty;
+        if (groupsSection) groupsSection.hidden = true;
+        return;
+      }
+
+      let re: RegExp;
+      try {
+        re = new RegExp(pattern, flags);
+      } catch (e) {
+        setError(`${T.invalid}: ${e instanceof Error ? e.message : ''}`);
+        plain(text);
+        if (countEl) countEl.textContent = '';
+        if (groupsSection) groupsSection.hidden = true;
+        return;
+      }
+      setError('');
+
+      const matches: RegExpExecArray[] = [];
+      let capped = false;
+      if (flags.includes('g')) {
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(text)) !== null) {
+          matches.push(m);
+          // Sin esto, una coincidencia vacía (p. ej. `a*`) bloquearía el bucle.
+          if (m.index === re.lastIndex) re.lastIndex++;
+          if (matches.length >= MAX_MATCHES) {
+            capped = true;
+            break;
+          }
+        }
+      } else {
+        const m = re.exec(text);
+        if (m) matches.push(m);
+      }
+
+      renderHighlight(text, matches);
+      renderMatches(matches);
+      setCount(matches.length, capped);
+    }
+
+    patternEl.addEventListener('input', run);
+    textEl.addEventListener('input', run);
+    flagEls.forEach((f) => f.addEventListener('change', run));
+
+    run();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initRegex);
+</script>

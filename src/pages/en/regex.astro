@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Page from '../../components/Page.astro';
+import RegexTester from '../../components/RegexTester.astro';
+import { getLocale, useTranslations } from '../../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.regex.title')} description={t('tool.regex.lead')}>
+  <Page title={t('tool.regex.title')} lead={t('tool.regex.lead')} size="wide">
+    <RegexTester />
+  </Page>
+</BaseLayout>

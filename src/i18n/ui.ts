@@ -321,6 +321,34 @@ const es: Dict = {
   'sombra.opacity': 'Opacidad',
   'sombra.inset': 'Interior',
   'sombra.copyCss': 'Copiar CSS',
+
+  // Regex (tarjeta, página y componente)
+  'tool.regex.label': 'Regex',
+  'tool.regex.desc': 'Prueba expresiones regulares',
+  'tool.regex.title': 'Probador de regex',
+  'tool.regex.lead': 'Prueba tus expresiones regulares y ve las coincidencias y los grupos resaltados en vivo.',
+  'regex.pattern': 'Expresión',
+  'regex.flags': 'Flags',
+  'regex.flagG': 'global — busca todas las coincidencias',
+  'regex.flagI': 'ignore case — no distingue mayúsculas',
+  'regex.flagM': 'multiline — ^ y $ actúan por línea',
+  'regex.flagS': 'dotAll — el punto también casa saltos de línea',
+  'regex.flagU': 'unicode — trata el patrón como Unicode',
+  'regex.text': 'Texto de prueba',
+  'regex.result': 'Resultado',
+  'regex.groups': 'Grupos',
+  'regex.match': 'Coincidencia',
+  'regex.pos': 'posición',
+  'regex.named': 'con nombre',
+  'regex.none': 'Sin coincidencias',
+  'regex.one': '1 coincidencia',
+  'regex.many': '{n} coincidencias',
+  'regex.limited': 'límite de {n}',
+  'regex.invalid': 'Expresión no válida',
+  'regex.empty': 'Escribe una expresión para empezar',
+  'regex.defaultPattern': '(?<usuario>[\\w.+-]+)@(?<dominio>[\\w.-]+\\.\\w+)',
+  'regex.defaultText':
+    'Escribe a ana.garcia@example.com o a soporte@navaja.es.\nPublicado el 2026-07-09 y actualizado el 2026-08-01.',
 };
 
 const en: Dict = {
@@ -637,6 +665,34 @@ const en: Dict = {
   'sombra.opacity': 'Opacity',
   'sombra.inset': 'Inset',
   'sombra.copyCss': 'Copy CSS',
+
+  // Regex (card, page and component)
+  'tool.regex.label': 'Regex',
+  'tool.regex.desc': 'Test regular expressions',
+  'tool.regex.title': 'Regex tester',
+  'tool.regex.lead': 'Test your regular expressions and see matches and groups highlighted live.',
+  'regex.pattern': 'Pattern',
+  'regex.flags': 'Flags',
+  'regex.flagG': 'global — find every match',
+  'regex.flagI': 'ignore case — case-insensitive',
+  'regex.flagM': 'multiline — ^ and $ match per line',
+  'regex.flagS': 'dotAll — dot also matches newlines',
+  'regex.flagU': 'unicode — treat the pattern as Unicode',
+  'regex.text': 'Test text',
+  'regex.result': 'Result',
+  'regex.groups': 'Groups',
+  'regex.match': 'Match',
+  'regex.pos': 'position',
+  'regex.named': 'named',
+  'regex.none': 'No matches',
+  'regex.one': '1 match',
+  'regex.many': '{n} matches',
+  'regex.limited': '{n} limit',
+  'regex.invalid': 'Invalid pattern',
+  'regex.empty': 'Type a pattern to start',
+  'regex.defaultPattern': '(?<user>[\\w.+-]+)@(?<domain>[\\w.-]+\\.\\w+)',
+  'regex.defaultText':
+    'Write to ana.garcia@example.com or soporte@navaja.es.\nPublished on 2026-07-09 and updated on 2026-08-01.',
 };
 
 export const ui: Record<Locale, Dict> = { es, en };
