@@ -29,4 +29,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'regex', keywords: ['regex', 'regexp', 'expresion', 'expresiones', 'regular', 'patron', 'pattern', 'coincidencias', 'matches', 'grupos', 'groups', 'probador', 'tester', 'buscar'] },
   { slug: 'timestamp', keywords: ['timestamp', 'unix', 'epoch', 'fecha', 'date', 'hora', 'time', 'iso', 'zona', 'horaria', 'timezone', 'utc', 'convertir', 'convert'] },
   { slug: 'csv', keywords: ['csv', 'json', 'convertir', 'convert', 'tabla', 'table', 'excel', 'hoja', 'spreadsheet', 'delimitador', 'delimiter', 'datos', 'data'] },
+  { slug: 'bases', keywords: ['bases', 'base', 'binario', 'binary', 'octal', 'decimal', 'hexadecimal', 'hex', 'radix', 'numero', 'number', 'convertir', 'convert', 'bigint'] },
 ];

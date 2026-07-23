@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Page from '../../components/Page.astro';
+import BaseConverter from '../../components/BaseConverter.astro';
+import { getLocale, useTranslations } from '../../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.bases.title')} description={t('tool.bases.lead')}>
+  <Page title={t('tool.bases.title')} lead={t('tool.bases.lead')} size="wide">
+    <BaseConverter />
+  </Page>
+</BaseLayout>

@@ -397,6 +397,20 @@ const es: Dict = {
   'csv.errorCsv': 'No se pudo convertir el CSV',
   'csv.errorJson': 'JSON no válido',
   'csv.errorShape': 'El JSON debe ser un array de objetos',
+
+  // Bases numéricas (tarjeta, página y componente)
+  'tool.bases.label': 'Bases',
+  'tool.bases.desc': 'Convierte entre bases numéricas',
+  'tool.bases.title': 'Bases numéricas',
+  'tool.bases.lead': 'Convierte números entre binario, octal, decimal, hexadecimal y cualquier base, al instante.',
+  'bases.binary': 'Binario',
+  'bases.octal': 'Octal',
+  'bases.decimal': 'Decimal',
+  'bases.hex': 'Hexadecimal',
+  'bases.custom': 'Personalizada',
+  'bases.base': 'Base',
+  'bases.invalid': 'Hay caracteres que no existen en esta base.',
+  'bases.hint': 'Escribe en cualquier campo y el resto se actualiza. Sin límite de tamaño.',
 };
 
 const en: Dict = {
@@ -789,6 +803,20 @@ const en: Dict = {
   'csv.errorCsv': 'Could not convert the CSV',
   'csv.errorJson': 'Invalid JSON',
   'csv.errorShape': 'JSON must be an array of objects',
+
+  // Number bases (card, page and component)
+  'tool.bases.label': 'Bases',
+  'tool.bases.desc': 'Convert between number bases',
+  'tool.bases.title': 'Number bases',
+  'tool.bases.lead': 'Convert numbers between binary, octal, decimal, hexadecimal and any base, instantly.',
+  'bases.binary': 'Binary',
+  'bases.octal': 'Octal',
+  'bases.decimal': 'Decimal',
+  'bases.hex': 'Hexadecimal',
+  'bases.custom': 'Custom',
+  'bases.base': 'Base',
+  'bases.invalid': 'Some characters are not valid in this base.',
+  'bases.hint': 'Type in any field and the rest update. No size limit.',
 };
 
 export const ui: Record<Locale, Dict> = { es, en };

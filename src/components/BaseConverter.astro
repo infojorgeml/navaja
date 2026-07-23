@@ -1,0 +1,288 @@
+---
+// src/components/BaseConverter.astro — convierte enteros entre bases (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { invalid: t('bases.invalid') };
+
+const fixed = [
+  { id: 'bin', base: 2, label: t('bases.binary'), ph: '11111111' },
+  { id: 'oct', base: 8, label: t('bases.octal'), ph: '377' },
+  { id: 'dec', base: 10, label: t('bases.decimal'), ph: '255' },
+  { id: 'hex', base: 16, label: t('bases.hex'), ph: 'ff' },
+];
+const customBases = Array.from({ length: 35 }, (_, i) => i + 2); // 2–36
+---
+
+<div class="bases flow" data-i18n={JSON.stringify(strings)}>
+  {
+    fixed.map((f) => (
+      <div class="bases__row">
+        <label class="bases__label" for={`base-${f.id}`}>
+          {f.label} <span class="bases__badge">{f.base}</span>
+        </label>
+        <div class="bases__input-wrap">
+          <input
+            type="text"
+            id={`base-${f.id}`}
+            class="bases__input"
+            data-base={f.base}
+            placeholder={f.ph}
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <button type="button" class="bases__copy" data-copy-for={`base-${f.id}`} aria-label={t('common.copy')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </button>
+        </div>
+        <p class="bases__err" data-err-for={`base-${f.id}`} hidden />
+      </div>
+    ))
+  }
+
+  <div class="bases__row">
+    <label class="bases__label" for="base-custom">
+      {t('bases.custom')}
+      <select class="bases__base-select" data-custom-base aria-label={t('bases.base')}>
+        {customBases.map((b) => <option value={b} selected={b === 3}>{b}</option>)}
+      </select>
+    </label>
+    <div class="bases__input-wrap">
+      <input
+        type="text"
+        id="base-custom"
+        class="bases__input"
+        data-base="3"
+        data-custom
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <button type="button" class="bases__copy" data-copy-for="base-custom" aria-label={t('common.copy')}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+      </button>
+    </div>
+    <p class="bases__err" data-err-for="base-custom" hidden></p>
+  </div>
+
+  <p class="bases__hint">
+    {t('bases.hint')}
+    <span class="bases__msg" data-msg hidden>{t('common.copied')}</span>
+  </p>
+</div>
+
+<style>
+  .bases__row {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: var(--spacing-2xs) var(--spacing-s);
+    align-items: center;
+  }
+
+  @media (max-width: 34rem) {
+    .bases__row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .bases__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .bases__badge {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-2xs);
+    padding-block: 0.05rem;
+    padding-inline: 0.35rem;
+    color: var(--muted-foreground);
+    background-color: var(--muted);
+    border-radius: 9999px;
+  }
+
+  .bases__base-select {
+    padding-block: 0.05rem;
+    padding-inline: var(--spacing-3xs);
+    font: inherit;
+    font-size: var(--text-2xs);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .bases__input-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+  }
+
+  .bases__input {
+    flex: 1;
+    min-inline-size: 0;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+
+  .bases__input:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .bases__input[data-invalid] {
+    border-color: var(--destructive);
+  }
+
+  .bases__copy {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    color: var(--muted-foreground);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .bases__copy:hover {
+    color: var(--foreground);
+    border-color: var(--foreground);
+  }
+
+  .bases__copy:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .bases__copy svg {
+    inline-size: 1.05rem;
+    block-size: 1.05rem;
+  }
+
+  .bases__err {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--destructive);
+  }
+
+  .bases__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .bases__msg {
+    margin-inline-start: var(--spacing-2xs);
+    color: var(--foreground);
+  }
+</style>
+
+<script>
+  import { parseInBase, toBase } from '../lib/bases';
+
+  function initBases() {
+    const root = document.querySelector<HTMLElement>('.bases');
+    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('.bases__input'));
+    const customBaseSel = document.querySelector<HTMLSelectElement>('[data-custom-base]');
+    const customInput = document.querySelector<HTMLInputElement>('[data-custom]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !inputs.length || !customInput || !customBaseSel) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    let msgTimer = 0;
+
+    const baseOf = (el: HTMLInputElement) => parseInt(el.dataset.base || '10', 10);
+
+    function setError(el: HTMLInputElement, on: boolean) {
+      const err = document.querySelector<HTMLElement>(`[data-err-for="${el.id}"]`);
+      if (on) {
+        el.dataset.invalid = '';
+        if (err) {
+          err.textContent = T.invalid;
+          err.hidden = false;
+        }
+      } else {
+        delete el.dataset.invalid;
+        if (err) err.hidden = true;
+      }
+    }
+
+    // Refresca todos los campos menos el que se está editando (no mueve el cursor).
+    function render(value: bigint, except?: HTMLInputElement) {
+      for (const el of inputs) {
+        setError(el, false);
+        if (el === except) continue;
+        el.value = toBase(value, baseOf(el));
+      }
+    }
+
+    function onInput(el: HTMLInputElement) {
+      if (el.value.trim() === '') {
+        // Vaciar un campo vacía todos los demás.
+        for (const other of inputs) {
+          setError(other, false);
+          if (other !== el) other.value = '';
+        }
+        return;
+      }
+      const value = parseInBase(el.value, baseOf(el));
+      if (value === null) {
+        setError(el, true); // no toca los demás mientras el campo sea inválido
+        return;
+      }
+      render(value, el);
+    }
+
+    inputs.forEach((el) => el.addEventListener('input', () => onInput(el)));
+
+    // Cambiar la base personalizada re-parsea desde el decimal actual.
+    customBaseSel.addEventListener('change', () => {
+      customInput!.dataset.base = customBaseSel!.value;
+      const dec = inputs.find((i) => i.dataset.base === '10');
+      const value = dec && dec.value ? parseInBase(dec.value, 10) : null;
+      customInput!.value = value === null ? '' : toBase(value, parseInt(customBaseSel!.value, 10));
+      setError(customInput!, false);
+    });
+
+    root.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-copy-for]');
+      if (!btn) return;
+      const target = document.getElementById(btn.dataset.copyFor!) as HTMLInputElement | null;
+      if (!target?.value) return;
+      try {
+        await navigator.clipboard.writeText(target.value);
+        if (msg) {
+          msg.hidden = false;
+          clearTimeout(msgTimer);
+          msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    // Ejemplo inicial: 255 en las cuatro bases + la personalizada.
+    render(255n);
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initBases);
+</script>
