@@ -1,0 +1,373 @@
+---
+// src/components/CryptoTool.astro — Hash (SHA) + generador de UUID (isla cliente).
+// Todo con Web Crypto (crypto.subtle / crypto.randomUUID): nada sale del navegador.
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = { copied: t('common.copied') };
+const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
+---
+
+<div class="crypto flow" data-i18n={JSON.stringify(strings)}>
+  <div class="crypto__tabs" role="tablist" aria-label={t('crypto.tabAria')} data-tablist>
+    <button type="button" role="tab" class="crypto__tab is-active" data-tab="hash" aria-selected="true">
+      {t('crypto.tabHash')}
+    </button>
+    <button type="button" role="tab" class="crypto__tab" data-tab="uuid" aria-selected="false" tabindex="-1">
+      {t('crypto.tabUuid')}
+    </button>
+  </div>
+
+  {/* ---- Panel Hash ---- */}
+  <div class="crypto__panel" data-panel="hash">
+    <div class="crypto__field">
+      <label class="crypto__label" for="crypto-hash-input">{t('common.text')}</label>
+      <textarea
+        id="crypto-hash-input"
+        class="crypto__area"
+        rows="4"
+        placeholder={t('crypto.hashPh')}
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <ul class="crypto__hashes" data-hashes role="list">
+      {
+        algos.map((a) => (
+          <li>
+            <span class="crypto__algo">{a}</span>
+            <button type="button" class="crypto__value" data-algo={a} title={t('common.copy')} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  {/* ---- Panel UUID ---- */}
+  <div class="crypto__panel" data-panel="uuid" hidden>
+    <div class="crypto__controls">
+      <label class="crypto__inline">
+        <span>{t('crypto.qty')}</span>
+        <input type="number" id="crypto-qty" class="crypto__num" min="1" max="100" value="5" />
+      </label>
+      <label class="crypto__check"><input type="checkbox" data-opt="upper" /> <span>{t('crypto.uppercase')}</span></label>
+      <label class="crypto__check"><input type="checkbox" data-opt="nohyphen" /> <span>{t('crypto.noHyphens')}</span></label>
+      <button type="button" class="btn" data-action="gen">{t('crypto.generate')}</button>
+    </div>
+
+    <textarea
+      id="crypto-uuid-out"
+      class="crypto__area crypto__area--out"
+      rows="7"
+      readonly
+      aria-label={t('crypto.tabUuid')}></textarea>
+
+    <div class="crypto__actions">
+      <button type="button" class="btn btn--secondary" data-action="copy-uuid">{t('crypto.copyAll')}</button>
+    </div>
+  </div>
+
+  <p class="crypto__hint">
+    {t('crypto.privacy')}
+    <span class="crypto__msg" data-msg hidden>{t('common.copied')}</span>
+  </p>
+</div>
+
+<style>
+  .crypto__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2xs);
+  }
+
+  .crypto__tab {
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-m);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .crypto__tab:hover {
+    border-color: var(--foreground);
+  }
+
+  .crypto__tab.is-active {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .crypto__tab:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .crypto__panel {
+    display: grid;
+    gap: var(--spacing-m);
+  }
+
+  .crypto__panel[hidden] {
+    display: none;
+  }
+
+  .crypto__field {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .crypto__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .crypto__area {
+    inline-size: 100%;
+    min-block-size: 7rem;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+  }
+
+  .crypto__area--out {
+    background-color: var(--muted);
+    white-space: pre;
+    overflow-wrap: normal;
+  }
+
+  .crypto__area::placeholder {
+    font-family: var(--font-sans);
+    color: var(--muted-foreground);
+  }
+
+  .crypto__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  /* ---- Filas de hash ---- */
+  .crypto__hashes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .crypto__hashes li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--spacing-2xs) var(--spacing-s);
+    padding: var(--spacing-2xs) var(--spacing-s);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .crypto__algo {
+    flex: none;
+    inline-size: 4.5rem;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted-foreground);
+  }
+
+  .crypto__value {
+    flex: 1;
+    min-inline-size: 0;
+    padding: 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    text-align: start;
+    color: var(--foreground);
+    background: none;
+    border: none;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  .crypto__value:hover {
+    text-decoration: underline;
+  }
+
+  /* ---- UUID ---- */
+  .crypto__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s) var(--spacing-m);
+  }
+
+  .crypto__inline,
+  .crypto__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .crypto__check input {
+    accent-color: var(--primary);
+  }
+
+  .crypto__num {
+    inline-size: 5rem;
+    padding-block: var(--spacing-2xs);
+    padding-inline: var(--spacing-xs);
+    font: inherit;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .crypto__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .crypto__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .crypto__msg {
+    margin-inline-start: var(--spacing-2xs);
+    color: var(--foreground);
+  }
+</style>
+
+<script>
+  function initCrypto() {
+    const root = document.querySelector<HTMLElement>('.crypto');
+    const tablist = document.querySelector<HTMLElement>('[data-tablist]');
+    const hashInput = document.getElementById('crypto-hash-input') as HTMLTextAreaElement | null;
+    const valueEls = Array.from(document.querySelectorAll<HTMLButtonElement>('.crypto__value'));
+    const qtyEl = document.getElementById('crypto-qty') as HTMLInputElement | null;
+    const uuidOut = document.getElementById('crypto-uuid-out') as HTMLTextAreaElement | null;
+    const opts = document.querySelectorAll<HTMLInputElement>('[data-opt]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !tablist || !hashInput || !qtyEl || !uuidOut) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    let msgTimer = 0;
+    let hashToken = 0;
+
+    function flash() {
+      if (!msg) return;
+      msg.hidden = false;
+      clearTimeout(msgTimer);
+      msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+    }
+
+    async function digestHex(algo: string, data: Uint8Array): Promise<string> {
+      const buf = await crypto.subtle.digest(algo, data);
+      return Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+
+    async function updateHashes() {
+      const token = ++hashToken; // el último input gana si llegan fuera de orden
+      const data = new TextEncoder().encode(hashInput!.value);
+      await Promise.all(
+        valueEls.map(async (el) => {
+          const hex = await digestHex(el.dataset.algo!, data);
+          if (token !== hashToken) return; // resultado obsoleto
+          el.textContent = hex;
+          el.dataset.copy = hex;
+        })
+      );
+    }
+
+    function opt(name: string): boolean {
+      for (const o of opts) if (o.dataset.opt === name) return o.checked;
+      return false;
+    }
+
+    function generateUuids() {
+      let n = parseInt(qtyEl!.value, 10);
+      if (!Number.isFinite(n) || n < 1) n = 1;
+      if (n > 100) n = 100;
+      const upper = opt('upper');
+      const nohyphen = opt('nohyphen');
+      const list: string[] = [];
+      for (let i = 0; i < n; i++) {
+        let u = crypto.randomUUID();
+        if (nohyphen) u = u.replace(/-/g, '');
+        if (upper) u = u.toUpperCase();
+        list.push(u);
+      }
+      uuidOut!.value = list.join('\n');
+    }
+
+    function selectTab(name: string) {
+      tablist!.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((tab) => {
+        const on = tab.dataset.tab === name;
+        tab.classList.toggle('is-active', on);
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        tab.tabIndex = on ? 0 : -1;
+      });
+      document.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => {
+        p.hidden = p.dataset.panel !== name;
+      });
+    }
+
+    tablist.addEventListener('click', (e) => {
+      const tab = (e.target as HTMLElement)?.closest<HTMLButtonElement>('[data-tab]');
+      if (tab?.dataset.tab) selectTab(tab.dataset.tab);
+    });
+
+    hashInput.addEventListener('input', updateHashes);
+    qtyEl.addEventListener('input', generateUuids);
+    opts.forEach((o) => o.addEventListener('change', generateUuids));
+
+    root.addEventListener('click', async (e) => {
+      const el = e.target as HTMLElement;
+      const action = el.closest<HTMLElement>('[data-action]')?.dataset.action;
+      if (action === 'gen') return generateUuids();
+      if (action === 'copy-uuid') {
+        if (uuidOut!.value) {
+          try {
+            await navigator.clipboard.writeText(uuidOut!.value);
+            flash();
+          } catch {}
+        }
+        return;
+      }
+      const copyBtn = el.closest<HTMLElement>('[data-copy]');
+      if (copyBtn?.dataset.copy) {
+        try {
+          await navigator.clipboard.writeText(copyBtn.dataset.copy);
+          flash();
+        } catch {}
+      }
+    });
+
+    updateHashes(); // hashes de la cadena vacía al cargar
+    generateUuids();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initCrypto);
+</script>

@@ -411,6 +411,22 @@ const es: Dict = {
   'bases.base': 'Base',
   'bases.invalid': 'Hay caracteres que no existen en esta base.',
   'bases.hint': 'Escribe en cualquier campo y el resto se actualiza. Sin límite de tamaño.',
+
+  // Cripto: Hash + UUID (tarjeta, página y componente)
+  'tool.crypto.label': 'Cripto',
+  'tool.crypto.desc': 'Hashes SHA y UUID',
+  'tool.crypto.title': 'Hash y UUID',
+  'tool.crypto.lead': 'Calcula hashes SHA y genera UUID, todo en tu navegador.',
+  'crypto.tabAria': 'Herramienta',
+  'crypto.tabHash': 'Hash',
+  'crypto.tabUuid': 'UUID',
+  'crypto.hashPh': 'Escribe o pega el texto a hashear…',
+  'crypto.qty': 'Cantidad',
+  'crypto.uppercase': 'Mayúsculas',
+  'crypto.noHyphens': 'Sin guiones',
+  'crypto.generate': 'Generar',
+  'crypto.copyAll': 'Copiar todos',
+  'crypto.privacy': 'Todo se calcula en tu navegador: nada se envía a ningún servidor.',
 };
 
 const en: Dict = {
@@ -817,6 +833,22 @@ const en: Dict = {
   'bases.base': 'Base',
   'bases.invalid': 'Some characters are not valid in this base.',
   'bases.hint': 'Type in any field and the rest update. No size limit.',
+
+  // Crypto: Hash + UUID (card, page and component)
+  'tool.crypto.label': 'Crypto',
+  'tool.crypto.desc': 'SHA hashes and UUIDs',
+  'tool.crypto.title': 'Hash & UUID',
+  'tool.crypto.lead': 'Compute SHA hashes and generate UUIDs, all in your browser.',
+  'crypto.tabAria': 'Tool',
+  'crypto.tabHash': 'Hash',
+  'crypto.tabUuid': 'UUID',
+  'crypto.hashPh': 'Type or paste the text to hash…',
+  'crypto.qty': 'Amount',
+  'crypto.uppercase': 'Uppercase',
+  'crypto.noHyphens': 'No hyphens',
+  'crypto.generate': 'Generate',
+  'crypto.copyAll': 'Copy all',
+  'crypto.privacy': 'Everything runs in your browser: nothing is sent to any server.',
 };
 
 export const ui: Record<Locale, Dict> = { es, en };

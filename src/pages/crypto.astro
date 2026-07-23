@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import CryptoTool from '../components/CryptoTool.astro';
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.crypto.title')} description={t('tool.crypto.lead')}>
+  <Page title={t('tool.crypto.title')} lead={t('tool.crypto.lead')} size="wide">
+    <CryptoTool />
+  </Page>
+</BaseLayout>

@@ -30,4 +30,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'timestamp', keywords: ['timestamp', 'unix', 'epoch', 'fecha', 'date', 'hora', 'time', 'iso', 'zona', 'horaria', 'timezone', 'utc', 'convertir', 'convert'] },
   { slug: 'csv', keywords: ['csv', 'json', 'convertir', 'convert', 'tabla', 'table', 'excel', 'hoja', 'spreadsheet', 'delimitador', 'delimiter', 'datos', 'data'] },
   { slug: 'bases', keywords: ['bases', 'base', 'binario', 'binary', 'octal', 'decimal', 'hexadecimal', 'hex', 'radix', 'numero', 'number', 'convertir', 'convert', 'bigint'] },
+  { slug: 'crypto', keywords: ['cripto', 'crypto', 'hash', 'sha', 'sha256', 'sha512', 'uuid', 'guid', 'checksum', 'huella', 'digest', 'identificador', 'random', 'generar', 'generate'] },
 ];
