@@ -1,0 +1,344 @@
+---
+// src/components/CsvJsonTool.astro — convierte CSV ↔ JSON en ambos sentidos (isla cliente)
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  errorCsv: t('csv.errorCsv'),
+  errorJson: t('csv.errorJson'),
+  errorShape: t('csv.errorShape'),
+  rows: t('csv.rows'),
+  inputCsv: t('csv.inputCsv'),
+  inputJson: t('csv.inputJson'),
+  outputJson: t('csv.outputJson'),
+  outputCsv: t('csv.outputCsv'),
+};
+---
+
+<div class="csv flow" data-i18n={JSON.stringify(strings)}>
+  <div class="csv__bar">
+    <div class="csv__dir" role="group" aria-label={t('csv.direction')}>
+      <label class="csv__radio">
+        <input type="radio" name="csv-dir" value="c2j" checked />
+        <span>{t('csv.csvToJson')}</span>
+      </label>
+      <label class="csv__radio">
+        <input type="radio" name="csv-dir" value="j2c" />
+        <span>{t('csv.jsonToCsv')}</span>
+      </label>
+    </div>
+
+    <div class="csv__opts">
+      <label class="csv__opt">
+        <span>{t('csv.delimiter')}</span>
+        <select class="csv__select" data-delim>
+          <option value=",">{t('csv.comma')}</option>
+          <option value=";">{t('csv.semicolon')}</option>
+          <option value="\t">{t('csv.tab')}</option>
+        </select>
+      </label>
+      <label class="csv__check" data-coerce-wrap>
+        <input type="checkbox" data-coerce checked />
+        <span>{t('csv.coerce')}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="csv__panels">
+    <div class="csv__field">
+      <label class="csv__label" for="csv-input" data-in-label>{t('csv.inputCsv')}</label>
+      <textarea
+        id="csv-input"
+        class="csv__area"
+        rows="10"
+        autocomplete="off"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="csv__field">
+      <label class="csv__label" for="csv-output" data-out-label>{t('csv.outputJson')}</label>
+      <textarea
+        id="csv-output"
+        class="csv__area"
+        rows="10"
+        readonly
+        placeholder={t('csv.outputPh')}></textarea>
+    </div>
+  </div>
+
+  <p class="csv__status" data-status></p>
+
+  <div class="csv__actions">
+    <button type="button" class="btn" data-action="copy">{t('csv.copyOutput')}</button>
+    <button type="button" class="btn btn--secondary" data-action="swap">{t('csv.swap')}</button>
+    <button type="button" class="btn btn--secondary" data-action="clear">{t('common.clear')}</button>
+    <span class="csv__msg" data-msg hidden>{t('common.copied')}</span>
+  </div>
+</div>
+
+<style>
+  .csv__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-s) var(--spacing-m);
+  }
+
+  .csv__dir,
+  .csv__opts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s) var(--spacing-m);
+  }
+
+  .csv__radio,
+  .csv__check,
+  .csv__opt {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+  }
+
+  .csv__radio input,
+  .csv__check input {
+    accent-color: var(--primary);
+  }
+
+  .csv__select {
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-2xs);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .csv__panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .csv__field {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .csv__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .csv__area {
+    inline-size: 100%;
+    min-block-size: 15rem;
+    padding: var(--spacing-s);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    white-space: pre;
+    overflow-wrap: normal;
+  }
+
+  .csv__area:read-only {
+    background-color: var(--muted);
+  }
+
+  .csv__area::placeholder {
+    font-family: var(--font-sans);
+    color: var(--muted-foreground);
+  }
+
+  .csv__area:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .csv__status {
+    margin: 0;
+    min-block-size: 1.25rem;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .csv__status[data-error] {
+    color: var(--destructive);
+  }
+
+  .csv__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-s);
+  }
+
+  .csv__msg {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  import { parseCsv, escapeCsv, cell, coerce } from '../lib/csv';
+
+  function initCsvJson() {
+    const root = document.querySelector<HTMLElement>('.csv');
+    const input = document.getElementById('csv-input') as HTMLTextAreaElement | null;
+    const output = document.getElementById('csv-output') as HTMLTextAreaElement | null;
+    const dirs = document.querySelectorAll<HTMLInputElement>('input[name="csv-dir"]');
+    const delimEl = document.querySelector<HTMLSelectElement>('[data-delim]');
+    const coerceEl = document.querySelector<HTMLInputElement>('[data-coerce]');
+    const coerceWrap = document.querySelector<HTMLElement>('[data-coerce-wrap]');
+    const inLabel = document.querySelector<HTMLElement>('[data-in-label]');
+    const outLabel = document.querySelector<HTMLElement>('[data-out-label]');
+    const statusEl = document.querySelector<HTMLElement>('[data-status]');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root || !input || !output || !delimEl) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    let msgTimer = 0;
+
+    const dir = () => {
+      for (const d of dirs) if (d.checked) return d.value;
+      return 'c2j';
+    };
+    const delim = () => (delimEl.value === '\\t' ? '\t' : delimEl.value);
+
+    function setStatus(text: string, isError = false) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      if (isError) statusEl.dataset.error = '';
+      else delete statusEl.dataset.error;
+    }
+
+    // CSV → array de objetos, usando la primera fila como cabecera.
+    function csvToJson(text: string): string {
+      const rows = parseCsv(text, delim());
+      if (!rows.length) return '[]';
+      const headers = rows[0];
+      const out = rows.slice(1).map((r) => {
+        const obj: Record<string, unknown> = {};
+        headers.forEach((h, i) => {
+          obj[h] = coerce(r[i] ?? '', !!coerceEl?.checked);
+        });
+        return obj;
+      });
+      setStatus(T.rows.replace('{n}', String(out.length)));
+      return JSON.stringify(out, null, 2);
+    }
+
+    // JSON (array de objetos) → CSV. La cabecera es la unión de todas las claves.
+    function jsonToCsv(text: string): string {
+      let data: unknown;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`${T.errorJson}: ${e instanceof Error ? e.message : ''}`);
+      }
+      if (!Array.isArray(data)) throw new Error(T.errorShape);
+      if (!data.length) return '';
+
+      const headers: string[] = [];
+      const seen = new Set<string>();
+      for (const item of data) {
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          for (const k of Object.keys(item)) {
+            if (!seen.has(k)) {
+              seen.add(k);
+              headers.push(k);
+            }
+          }
+        } else {
+          throw new Error(T.errorShape);
+        }
+      }
+
+      const d = delim();
+      const lines = [headers.map((h) => escapeCsv(h, d)).join(d)];
+      for (const item of data as Record<string, unknown>[]) {
+        lines.push(headers.map((h) => escapeCsv(cell(item[h]), d)).join(d));
+      }
+      setStatus(T.rows.replace('{n}', String((data as unknown[]).length)));
+      return lines.join('\n');
+    }
+
+    function syncUi() {
+      const c2j = dir() === 'c2j';
+      if (inLabel) inLabel.textContent = c2j ? T.inputCsv : T.inputJson;
+      if (outLabel) outLabel.textContent = c2j ? T.outputJson : T.outputCsv;
+      // La coerción de tipos solo aplica al leer CSV.
+      if (coerceWrap) coerceWrap.style.visibility = c2j ? 'visible' : 'hidden';
+    }
+
+    function convert() {
+      const text = input!.value;
+      if (!text.trim()) {
+        output!.value = '';
+        setStatus('');
+        return;
+      }
+      try {
+        output!.value = dir() === 'c2j' ? csvToJson(text) : jsonToCsv(text);
+      } catch (e) {
+        output!.value = '';
+        setStatus(e instanceof Error ? e.message : T.errorCsv, true);
+      }
+    }
+
+    input.addEventListener('input', convert);
+    dirs.forEach((d) => d.addEventListener('change', () => { syncUi(); convert(); }));
+    delimEl.addEventListener('change', convert);
+    coerceEl?.addEventListener('change', convert);
+
+    root.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      if (action === 'clear') {
+        input!.value = '';
+        convert();
+        input!.focus();
+        return;
+      }
+      if (action === 'swap') {
+        // Manda la salida a la entrada e invierte la dirección.
+        if (!output!.value) return;
+        input!.value = output!.value;
+        const other = dir() === 'c2j' ? 'j2c' : 'c2j';
+        for (const d of dirs) d.checked = d.value === other;
+        syncUi();
+        convert();
+        return;
+      }
+      if (action === 'copy') {
+        if (!output!.value) return;
+        try {
+          await navigator.clipboard.writeText(output!.value);
+          if (msg) {
+            msg.hidden = false;
+            clearTimeout(msgTimer);
+            msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+          }
+        } catch {}
+      }
+    });
+
+    syncUi();
+    // Ejemplo inicial para que se vea qué hace.
+    input.value = 'nombre,edad,activo\nAna,32,true\n"García, S.L.",5,false';
+    convert();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initCsvJson);
+</script>

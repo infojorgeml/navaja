@@ -372,6 +372,31 @@ const es: Dict = {
   'timestamp.relative': 'Relativo',
   'timestamp.localTz': 'Tu zona: {tz}',
   'timestamp.copyHint': 'Pulsa cualquier valor para copiarlo.',
+
+  // CSV ↔ JSON (tarjeta, página y componente)
+  'tool.csv.label': 'CSV ↔ JSON',
+  'tool.csv.desc': 'Convierte CSV y JSON',
+  'tool.csv.title': 'CSV ↔ JSON',
+  'tool.csv.lead': 'Convierte entre CSV y JSON en ambos sentidos, con comillas y campos multilínea.',
+  'csv.direction': 'Dirección',
+  'csv.csvToJson': 'CSV → JSON',
+  'csv.jsonToCsv': 'JSON → CSV',
+  'csv.delimiter': 'Separador',
+  'csv.comma': 'Coma (,)',
+  'csv.semicolon': 'Punto y coma (;)',
+  'csv.tab': 'Tabulador',
+  'csv.coerce': 'Detectar números y booleanos',
+  'csv.inputCsv': 'CSV',
+  'csv.inputJson': 'JSON',
+  'csv.outputJson': 'JSON',
+  'csv.outputCsv': 'CSV',
+  'csv.outputPh': 'Aquí aparecerá el resultado…',
+  'csv.copyOutput': 'Copiar resultado',
+  'csv.swap': 'Invertir',
+  'csv.rows': '{n} filas',
+  'csv.errorCsv': 'No se pudo convertir el CSV',
+  'csv.errorJson': 'JSON no válido',
+  'csv.errorShape': 'El JSON debe ser un array de objetos',
 };
 
 const en: Dict = {
@@ -739,6 +764,31 @@ const en: Dict = {
   'timestamp.relative': 'Relative',
   'timestamp.localTz': 'Your zone: {tz}',
   'timestamp.copyHint': 'Click any value to copy it.',
+
+  // CSV ↔ JSON (card, page and component)
+  'tool.csv.label': 'CSV ↔ JSON',
+  'tool.csv.desc': 'Convert CSV and JSON',
+  'tool.csv.title': 'CSV ↔ JSON',
+  'tool.csv.lead': 'Convert between CSV and JSON both ways, handling quotes and multiline fields.',
+  'csv.direction': 'Direction',
+  'csv.csvToJson': 'CSV → JSON',
+  'csv.jsonToCsv': 'JSON → CSV',
+  'csv.delimiter': 'Delimiter',
+  'csv.comma': 'Comma (,)',
+  'csv.semicolon': 'Semicolon (;)',
+  'csv.tab': 'Tab',
+  'csv.coerce': 'Detect numbers and booleans',
+  'csv.inputCsv': 'CSV',
+  'csv.inputJson': 'JSON',
+  'csv.outputJson': 'JSON',
+  'csv.outputCsv': 'CSV',
+  'csv.outputPh': 'The result will appear here…',
+  'csv.copyOutput': 'Copy output',
+  'csv.swap': 'Swap',
+  'csv.rows': '{n} rows',
+  'csv.errorCsv': 'Could not convert the CSV',
+  'csv.errorJson': 'Invalid JSON',
+  'csv.errorShape': 'JSON must be an array of objects',
 };
 
 export const ui: Record<Locale, Dict> = { es, en };
