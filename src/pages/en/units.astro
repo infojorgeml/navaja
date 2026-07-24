@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Page from '../../components/Page.astro';
+import UnitsTool from '../../components/UnitsTool.astro';
+import { getLocale, useTranslations } from '../../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.units.title')} description={t('tool.units.lead')}>
+  <Page title={t('tool.units.title')} lead={t('tool.units.lead')} size="wide">
+    <UnitsTool />
+  </Page>
+</BaseLayout>

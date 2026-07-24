@@ -31,4 +31,6 @@ export const modules: ModuleEntry[] = [
   { slug: 'csv', keywords: ['csv', 'json', 'convertir', 'convert', 'tabla', 'table', 'excel', 'hoja', 'spreadsheet', 'delimitador', 'delimiter', 'datos', 'data'] },
   { slug: 'bases', keywords: ['bases', 'base', 'binario', 'binary', 'octal', 'decimal', 'hexadecimal', 'hex', 'radix', 'numero', 'number', 'convertir', 'convert', 'bigint'] },
   { slug: 'crypto', keywords: ['cripto', 'crypto', 'hash', 'sha', 'sha256', 'sha512', 'uuid', 'guid', 'checksum', 'huella', 'digest', 'identificador', 'random', 'generar', 'generate'] },
+  { slug: 'percent', keywords: ['porcentaje', 'porcentajes', 'percent', 'percentage', 'descuento', 'discount', 'iva', 'tax', 'impuesto', 'propina', 'tip', 'variacion', 'change', 'calculadora', 'calculator'] },
+  { slug: 'units', keywords: ['unidades', 'units', 'convertir', 'convert', 'longitud', 'length', 'peso', 'weight', 'masa', 'mass', 'temperatura', 'temperature', 'almacenamiento', 'storage', 'km', 'kg', 'celsius', 'fahrenheit'] },
 ];

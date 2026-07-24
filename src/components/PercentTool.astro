@@ -1,0 +1,262 @@
+---
+// src/components/PercentTool.astro — calculadora de porcentajes (isla cliente).
+// Cuatro cálculos independientes en vivo; formato de número según el idioma.
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<div class="pct flow">
+  <div class="pct__grid">
+    {/* 1 · % de un número */}
+    <div class="pct__card">
+      <p class="pct__q">{t('percent.q1')}</p>
+      <div class="pct__row">
+        <input class="pct__in" type="number" inputmode="decimal" data-c="1" data-k="p" placeholder="20" aria-label={t('percent.percent')} />
+        <span class="pct__op">% {t('percent.of')}</span>
+        <input class="pct__in" type="number" inputmode="decimal" data-c="1" data-k="v" placeholder="150" aria-label={t('percent.value')} />
+      </div>
+      <p class="pct__res">= <button type="button" class="pct__val" data-r="1">—</button></p>
+    </div>
+
+    {/* 2 · qué porcentaje representa */}
+    <div class="pct__card">
+      <p class="pct__q">{t('percent.q2')}</p>
+      <div class="pct__row">
+        <input class="pct__in" type="number" inputmode="decimal" data-c="2" data-k="a" placeholder="30" aria-label={t('percent.part')} />
+        <span class="pct__op">{t('percent.of')}</span>
+        <input class="pct__in" type="number" inputmode="decimal" data-c="2" data-k="b" placeholder="150" aria-label={t('percent.total')} />
+      </div>
+      <p class="pct__res">= <button type="button" class="pct__val" data-r="2">—</button></p>
+    </div>
+
+    {/* 3 · variación porcentual */}
+    <div class="pct__card">
+      <p class="pct__q">{t('percent.q3')}</p>
+      <div class="pct__row">
+        <input class="pct__in" type="number" inputmode="decimal" data-c="3" data-k="from" placeholder="120" aria-label={t('percent.from')} />
+        <span class="pct__op">→</span>
+        <input class="pct__in" type="number" inputmode="decimal" data-c="3" data-k="to" placeholder="150" aria-label={t('percent.to')} />
+      </div>
+      <p class="pct__res">= <button type="button" class="pct__val" data-r="3">—</button></p>
+    </div>
+
+    {/* 4 · aumentar o descontar (IVA, descuento, propina) */}
+    <div class="pct__card">
+      <p class="pct__q">{t('percent.q4')}</p>
+      <div class="pct__row">
+        <input class="pct__in" type="number" inputmode="decimal" data-c="4" data-k="v" placeholder="150" aria-label={t('percent.value')} />
+        <select class="pct__sign" data-c="4" data-k="sign" aria-label={t('percent.sign')}>
+          <option value="1">+</option>
+          <option value="-1">−</option>
+        </select>
+        <input class="pct__in" type="number" inputmode="decimal" data-c="4" data-k="p" placeholder="21" aria-label={t('percent.percent')} />
+        <span class="pct__op">%</span>
+      </div>
+      <p class="pct__res">
+        = <button type="button" class="pct__val" data-r="4">—</button>
+        <span class="pct__diff" data-r="4diff"></span>
+      </p>
+    </div>
+  </div>
+
+  <p class="pct__hint">
+    {t('percent.copyHint')}
+    <span class="pct__msg" data-msg hidden>{t('common.copied')}</span>
+  </p>
+</div>
+
+<style>
+  .pct__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: var(--spacing-m);
+  }
+
+  .pct__card {
+    display: grid;
+    gap: var(--spacing-2xs);
+    padding: var(--spacing-m);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .pct__q {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--muted-foreground);
+  }
+
+  .pct__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-2xs);
+  }
+
+  .pct__in {
+    inline-size: 5rem;
+    flex: 1 1 4rem;
+    min-inline-size: 3.5rem;
+    padding: var(--spacing-2xs);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .pct__sign {
+    flex: none;
+    padding: var(--spacing-2xs);
+    font: inherit;
+    font-size: var(--text-base);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .pct__in:focus-visible,
+  .pct__sign:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  }
+
+  .pct__op {
+    flex: none;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .pct__res {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .pct__val {
+    padding: 0;
+    font: inherit;
+    font-size: var(--text-xl);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .pct__val:hover {
+    text-decoration: underline;
+  }
+
+  .pct__diff {
+    margin-inline-start: var(--spacing-2xs);
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pct__hint {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .pct__msg {
+    margin-inline-start: var(--spacing-2xs);
+    color: var(--foreground);
+  }
+</style>
+
+<script>
+  function initPercent() {
+    const root = document.querySelector<HTMLElement>('.pct');
+    const msg = document.querySelector<HTMLElement>('[data-msg]');
+    if (!root) return;
+
+    const locale = document.documentElement.lang === 'en' ? 'en-US' : 'es-ES';
+    const nf = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+    // Signo explícito para las variaciones (+/−).
+    const pf = new Intl.NumberFormat(locale, { maximumFractionDigits: 2, signDisplay: 'exceptZero' });
+    let msgTimer = 0;
+
+    const field = (c: string, k: string) =>
+      root.querySelector<HTMLInputElement>(`[data-c="${c}"][data-k="${k}"]`);
+    const num = (c: string, k: string) => {
+      const el = field(c, k);
+      if (!el || el.value.trim() === '') return NaN;
+      return Number(el.value);
+    };
+    const out = (r: string) => root.querySelector<HTMLElement>(`[data-r="${r}"]`);
+
+    function set(r: string, value: number | null, formatter = nf) {
+      const el = out(r);
+      if (!el) return;
+      if (value === null || !Number.isFinite(value)) {
+        el.textContent = '—';
+        delete (el as HTMLElement).dataset.copy;
+      } else {
+        el.textContent = formatter.format(value);
+        (el as HTMLElement).dataset.copy = String(parseFloat(value.toPrecision(12)));
+      }
+    }
+
+    function render() {
+      // 1 · p% de v
+      const p1 = num('1', 'p'), v1 = num('1', 'v');
+      set('1', Number.isFinite(p1) && Number.isFinite(v1) ? (p1 / 100) * v1 : null);
+
+      // 2 · a es qué % de b
+      const a2 = num('2', 'a'), b2 = num('2', 'b');
+      set('2', Number.isFinite(a2) && Number.isFinite(b2) && b2 !== 0 ? (a2 / b2) * 100 : null, pf);
+      const r2 = out('2');
+      if (r2 && r2.textContent !== '—') r2.textContent += '%';
+
+      // 3 · variación de from a to
+      const f3 = num('3', 'from'), t3 = num('3', 'to');
+      set('3', Number.isFinite(f3) && Number.isFinite(t3) && f3 !== 0 ? ((t3 - f3) / f3) * 100 : null, pf);
+      const r3 = out('3');
+      if (r3 && r3.textContent !== '—') r3.textContent += '%';
+
+      // 4 · valor ± p%
+      const v4 = num('4', 'v'), p4 = num('4', 'p');
+      const signEl = field('4', 'sign');
+      const sign = signEl ? Number(signEl.value) : 1;
+      const diffEl = out('4diff');
+      if (Number.isFinite(v4) && Number.isFinite(p4)) {
+        const delta = (v4 * p4) / 100;
+        set('4', v4 + sign * delta);
+        if (diffEl) diffEl.textContent = `(${sign < 0 ? '−' : '+'}${nf.format(delta)})`;
+      } else {
+        set('4', null);
+        if (diffEl) diffEl.textContent = '';
+      }
+    }
+
+    root.addEventListener('input', render);
+    root.addEventListener('change', render);
+
+    root.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('.pct__val');
+      if (!btn?.dataset.copy) return;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        if (msg) {
+          msg.hidden = false;
+          clearTimeout(msgTimer);
+          msgTimer = window.setTimeout(() => (msg.hidden = true), 1500);
+        }
+      } catch {}
+    });
+
+    render();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initPercent);
+</script>

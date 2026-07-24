@@ -427,6 +427,37 @@ const es: Dict = {
   'crypto.generate': 'Generar',
   'crypto.copyAll': 'Copiar todos',
   'crypto.privacy': 'Todo se calcula en tu navegador: nada se envía a ningún servidor.',
+
+  // Porcentajes (tarjeta, página y componente)
+  'tool.percent.label': 'Porcentajes',
+  'tool.percent.desc': 'Descuentos, IVA, variación…',
+  'tool.percent.title': 'Calculadora de porcentajes',
+  'tool.percent.lead': 'Calcula porcentajes, descuentos, impuestos y variaciones al instante.',
+  'percent.q1': '¿Cuánto es un porcentaje de un número?',
+  'percent.q2': '¿Qué porcentaje representa un número de otro?',
+  'percent.q3': 'Variación porcentual de un valor a otro',
+  'percent.q4': 'Aumentar o descontar un porcentaje (IVA, descuento, propina)',
+  'percent.of': 'de',
+  'percent.percent': 'Porcentaje',
+  'percent.value': 'Valor',
+  'percent.part': 'Parte',
+  'percent.total': 'Total',
+  'percent.from': 'Desde',
+  'percent.to': 'Hasta',
+  'percent.sign': 'Aumentar o descontar',
+  'percent.copyHint': 'Pulsa un resultado para copiarlo.',
+
+  // Unidades (tarjeta, página y componente)
+  'tool.units.label': 'Unidades',
+  'tool.units.desc': 'Longitud, peso, temperatura…',
+  'tool.units.title': 'Conversor de unidades',
+  'tool.units.lead': 'Convierte longitud, peso, temperatura y almacenamiento al instante.',
+  'units.length': 'Longitud',
+  'units.mass': 'Peso',
+  'units.temperature': 'Temperatura',
+  'units.data': 'Almacenamiento',
+  'units.catAria': 'Categoría',
+  'units.hint': 'Escribe en cualquier unidad y el resto se actualiza.',
 };
 
 const en: Dict = {
@@ -849,6 +880,37 @@ const en: Dict = {
   'crypto.generate': 'Generate',
   'crypto.copyAll': 'Copy all',
   'crypto.privacy': 'Everything runs in your browser: nothing is sent to any server.',
+
+  // Percentages (card, page and component)
+  'tool.percent.label': 'Percentages',
+  'tool.percent.desc': 'Discounts, tax, change…',
+  'tool.percent.title': 'Percentage calculator',
+  'tool.percent.lead': 'Calculate percentages, discounts, taxes and changes instantly.',
+  'percent.q1': 'What is a percentage of a number?',
+  'percent.q2': 'What percentage is one number of another?',
+  'percent.q3': 'Percentage change from one value to another',
+  'percent.q4': 'Add or subtract a percentage (tax, discount, tip)',
+  'percent.of': 'of',
+  'percent.percent': 'Percentage',
+  'percent.value': 'Value',
+  'percent.part': 'Part',
+  'percent.total': 'Total',
+  'percent.from': 'From',
+  'percent.to': 'To',
+  'percent.sign': 'Add or subtract',
+  'percent.copyHint': 'Click a result to copy it.',
+
+  // Units (card, page and component)
+  'tool.units.label': 'Units',
+  'tool.units.desc': 'Length, weight, temperature…',
+  'tool.units.title': 'Unit converter',
+  'tool.units.lead': 'Convert length, weight, temperature and storage instantly.',
+  'units.length': 'Length',
+  'units.mass': 'Weight',
+  'units.temperature': 'Temperature',
+  'units.data': 'Storage',
+  'units.catAria': 'Category',
+  'units.hint': 'Type in any unit and the rest update.',
 };
 
 export const ui: Record<Locale, Dict> = { es, en };
