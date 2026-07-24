@@ -1,6 +1,7 @@
 ---
 // src/components/Footer.astro — pie de página
 import { getLocale, useTranslations } from '../i18n/ui';
+import pkg from '../../package.json';
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 const year = new Date().getFullYear();
@@ -13,6 +14,8 @@ const year = new Date().getFullYear();
       <span class="footer__os">{t('footer.os')}</span>
       <span class="footer__sep" aria-hidden="true">·</span>
       <span>{t('footer.by')} <a href="https://jorgeml.com/" target="_blank" rel="noopener noreferrer">JorgeML</a></span>
+      <span class="footer__sep" aria-hidden="true">·</span>
+      <span class="footer__version">v{pkg.version}</span>
     </p>
   </div>
 </footer>
@@ -46,6 +49,11 @@ const year = new Date().getFullYear();
 
   .footer__sep {
     opacity: 0.5;
+  }
+
+  .footer__version {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-xs);
   }
 
   .footer a {
