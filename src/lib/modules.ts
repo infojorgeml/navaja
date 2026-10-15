@@ -34,4 +34,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'percent', keywords: ['porcentaje', 'porcentajes', 'percent', 'percentage', 'descuento', 'discount', 'iva', 'tax', 'impuesto', 'propina', 'tip', 'variacion', 'change', 'calculadora', 'calculator'] },
   { slug: 'units', keywords: ['unidades', 'units', 'convertir', 'convert', 'longitud', 'length', 'peso', 'weight', 'masa', 'mass', 'temperatura', 'temperature', 'almacenamiento', 'storage', 'km', 'kg', 'celsius', 'fahrenheit'] },
   { slug: 'calco', keywords: ['calco', 'calcar', 'vectorizar', 'vector', 'svg', 'imagen', 'logo', 'potrace', 'illustrator', 'png', 'jpg', 'bitmap', 'trace', 'tracing', 'vectorize', 'image', 'colores', 'colors'] },
+  { slug: 'eps', keywords: ['eps', 'svg', 'convertir', 'convert', 'postscript', 'ps', 'epsf', 'vector', 'vectorial', 'illustrator', 'cmyk', 'logo', 'archivo', 'file', 'exportar', 'export'] },
 ];

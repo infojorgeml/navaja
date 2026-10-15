@@ -13,6 +13,7 @@ Hecha con **Astro + Tailwind CSS v4**.
 - **Base64** — codifica y descodifica (UTF-8), bidireccional.
 - **Slug** — convierte texto en slugs limpios para URLs.
 - **Calco** — vectoriza una imagen a SVG, a una tinta o a varios colores (port de Potrace, en un Web Worker).
+- **EPS a SVG** — convierte archivos EPS en SVG con un intérprete PostScript propio (CMYK, recortes, texto simple).
 
 Busca cualquier herramienta al instante con **⌘K / Ctrl+K**.
 
