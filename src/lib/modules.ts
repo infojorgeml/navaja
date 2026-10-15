@@ -33,4 +33,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'crypto', keywords: ['cripto', 'crypto', 'hash', 'sha', 'sha256', 'sha512', 'uuid', 'guid', 'checksum', 'huella', 'digest', 'identificador', 'random', 'generar', 'generate'] },
   { slug: 'percent', keywords: ['porcentaje', 'porcentajes', 'percent', 'percentage', 'descuento', 'discount', 'iva', 'tax', 'impuesto', 'propina', 'tip', 'variacion', 'change', 'calculadora', 'calculator'] },
   { slug: 'units', keywords: ['unidades', 'units', 'convertir', 'convert', 'longitud', 'length', 'peso', 'weight', 'masa', 'mass', 'temperatura', 'temperature', 'almacenamiento', 'storage', 'km', 'kg', 'celsius', 'fahrenheit'] },
+  { slug: 'calco', keywords: ['calco', 'calcar', 'vectorizar', 'vector', 'svg', 'imagen', 'logo', 'potrace', 'illustrator', 'png', 'jpg', 'bitmap', 'trace', 'tracing', 'vectorize', 'image', 'colores', 'colors'] },
 ];

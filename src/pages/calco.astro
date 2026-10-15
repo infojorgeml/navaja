@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Page from '../components/Page.astro';
+import CalcoTool from '../components/CalcoTool.astro';
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.calco.title')} description={t('tool.calco.lead')}>
+  <Page title={t('tool.calco.title')} lead={t('tool.calco.lead')} size="wide">
+    <CalcoTool />
+  </Page>
+</BaseLayout>

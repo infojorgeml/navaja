@@ -1,0 +1,936 @@
+---
+// src/components/CalcoTool.astro — calco interactivo: imagen → SVG vectorizado (isla cliente).
+// El motor (src/lib/calco.js) corre en un Web Worker; si no se puede crear, en el hilo principal.
+import { getLocale, useTranslations } from '../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+const strings = {
+  calculating: t('calco.calculating'),
+  copied: t('calco.copied'),
+  copyManual: t('calco.copyManual'),
+  notImage: t('calco.notImage'),
+  cantOpen: t('calco.cantOpen'),
+  unreadable: t('calco.unreadable'),
+  inkOn: t('calco.inkOn'),
+  inkColor: t('calco.inkColor'),
+  sampleName: t('calco.sampleName'),
+};
+---
+
+<div class="calco" data-i18n={JSON.stringify(strings)}>
+  <div class="calco__bar">
+    <button type="button" class="btn btn--secondary" data-action="open">{t('calco.open')}</button>
+    <input type="file" accept="image/*" hidden data-file />
+    <span class="calco__hint">{t('calco.hint')}</span>
+    <div class="calco__seg" role="group" aria-label={t('calco.viewAria')} data-view>
+      <button type="button" class="calco__pill" data-v="orig" aria-pressed="false">{t('calco.viewOrig')}</button>
+      <button type="button" class="calco__pill" data-v="trace" aria-pressed="true">{t('calco.viewTrace')}</button>
+      <button type="button" class="calco__pill" data-v="out" aria-pressed="false">{t('calco.viewOut')}</button>
+    </div>
+  </div>
+
+  <div class="calco__grid">
+    <div class="calco__stage" data-stage data-drop={t('calco.drop')}>
+      <div class="calco__sheet" data-sheet data-v="trace">
+        <img data-orig alt={t('calco.origAlt')} />
+        <div class="calco__trace" data-trace></div>
+      </div>
+      <span class="calco__chip" data-chip>{t('calco.sample')}</span>
+      <div class="calco__zoom">
+        <button type="button" class="calco__zbtn" data-action="zout" aria-label={t('calco.zoomOut')}>−</button>
+        <button type="button" class="calco__zbtn" data-action="zin" aria-label={t('calco.zoomIn')}>+</button>
+        <button type="button" class="calco__zbtn calco__zbtn--text" data-action="zfit">{t('calco.fit')}</button>
+      </div>
+    </div>
+
+    <aside class="calco__panel">
+      <section class="calco__group">
+        <h2 class="calco__title">{t('calco.mode')}</h2>
+        <div class="calco__seg calco__seg--wide" role="group" aria-label={t('calco.modeAria')} data-mode>
+          <button type="button" class="calco__pill" data-m="ink" aria-pressed="false">{t('calco.modeInk')}</button>
+          <button type="button" class="calco__pill" data-m="color" aria-pressed="true">{t('calco.modeColor')}</button>
+        </div>
+
+        <div class="calco__group" data-g-ink hidden>
+          <div class="calco__row">
+            <label for="calco-thr">{t('calco.threshold')}</label><output data-out="thr">128</output>
+            <input type="range" id="calco-thr" class="calco__range" min="1" max="254" value="128" />
+            <small>{t('calco.thresholdHint')}</small>
+          </div>
+          <div class="calco__pick">
+            <label for="calco-ink">{t('calco.inkColorLabel')}</label>
+            <input type="color" id="calco-ink" class="calco__swatch" value="#111111" />
+          </div>
+          <label class="calco__check"><input type="checkbox" id="calco-invert" /> {t('calco.invert')}</label>
+        </div>
+
+        <div class="calco__group" data-g-color>
+          <div class="calco__row">
+            <label for="calco-ncol">{t('calco.colors')}</label><output data-out="ncol">4</output>
+            <input type="range" id="calco-ncol" class="calco__range" min="2" max="16" value="4" />
+          </div>
+          <div class="calco__inks" data-inks></div>
+          <small class="calco__note">{t('calco.colorsHint')}</small>
+        </div>
+      </section>
+
+      <section class="calco__group">
+        <h2 class="calco__title">{t('calco.paths')}</h2>
+        <div class="calco__row">
+          <label for="calco-turd">{t('calco.noise')}</label><output data-out="turd">4 px</output>
+          <input type="range" id="calco-turd" class="calco__range" min="0" max="100" value="4" />
+          <small>{t('calco.noiseHint')}</small>
+        </div>
+        <div class="calco__row">
+          <label for="calco-corner">{t('calco.corners')}</label><output data-out="corner">75 %</output>
+          <input type="range" id="calco-corner" class="calco__range" min="0" max="100" value="75" />
+          <small>{t('calco.cornersHint')}</small>
+        </div>
+        <div class="calco__row">
+          <label for="calco-opt">{t('calco.simplify')}</label><output data-out="opt">20 %</output>
+          <input type="range" id="calco-opt" class="calco__range" min="0" max="100" value="20" />
+          <small>{t('calco.simplifyHint')}</small>
+        </div>
+      </section>
+
+      <dl class="calco__stats">
+        <dt>{t('calco.statPaths')}</dt><dd data-stat="paths">–</dd>
+        <dt>{t('calco.statNodes')}</dt><dd data-stat="nodes">–</dd>
+        <dt>{t('calco.statSize')}</dt><dd data-stat="size">–</dd>
+        <dt>{t('calco.statDim')}</dt><dd data-stat="dim">–</dd>
+      </dl>
+
+      <div class="calco__actions">
+        <button type="button" class="btn" data-action="save">{t('calco.download')}</button>
+        <button type="button" class="btn btn--secondary" data-action="copy">{t('calco.copy')}</button>
+        <p class="calco__msg" data-msg role="status"></p>
+        <textarea class="calco__fallback" data-fallback readonly hidden aria-label={t('calco.codeAria')}></textarea>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<style>
+  /* El «papel» del calco es claro también en modo oscuro: los colores del
+     logo son reales y una tinta negra desaparecería sobre el lienzo oscuro. */
+  .calco {
+    --paper: #ffffff;
+    --paper-2: #ececec;
+    --flow-space: var(--spacing-s);
+  }
+
+  :global(.dark) .calco {
+    --paper: #d6d6d6;
+    --paper-2: #c2c2c2;
+  }
+
+  .calco__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-2xs) var(--spacing-s);
+  }
+
+  .calco__hint {
+    flex: 1;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  /* ---- Segmentados (pills, como las pestañas de Unidades) ---- */
+  .calco__seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-3xs);
+  }
+
+  .calco__seg--wide {
+    display: flex;
+  }
+
+  .calco__seg--wide .calco__pill {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .calco__pill {
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .calco__pill:hover {
+    border-color: var(--foreground);
+  }
+
+  .calco__pill[aria-pressed='true'] {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .calco__pill:focus-visible,
+  .calco__zbtn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* ---- Mesa de trabajo + panel ---- */
+  .calco__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: var(--spacing-m);
+    align-items: start;
+  }
+
+  @media (max-width: 48rem) {
+    .calco__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .calco__stage {
+    position: relative;
+    block-size: clamp(20rem, 64vh, 38rem);
+    overflow: hidden;
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .calco__stage.is-drag {
+    cursor: grabbing;
+  }
+
+  .calco__stage.is-over::after {
+    content: attr(data-drop);
+    position: absolute;
+    inset: var(--spacing-2xs);
+    display: grid;
+    place-items: center;
+    font-weight: 500;
+    color: var(--foreground);
+    background-color: color-mix(in srgb, var(--muted) 85%, transparent);
+    border: 2px dashed var(--foreground);
+    border-radius: var(--radius);
+  }
+
+  .calco__sheet {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    transform-origin: 0 0;
+    background: repeating-conic-gradient(var(--paper-2) 0 25%, var(--paper) 0 50%) 0 0 / 16px 16px;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+
+  .calco__sheet img,
+  .calco__trace {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    max-inline-size: none;
+    display: block;
+  }
+
+  /* El SVG del calco se inyecta por JS → :global() */
+  .calco__trace :global(svg) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .calco__sheet[data-v='trace'] img {
+    visibility: hidden;
+  }
+
+  .calco__sheet[data-v='orig'] .calco__trace {
+    visibility: hidden;
+  }
+
+  .calco__sheet[data-v='out'] img {
+    opacity: 0.28;
+  }
+
+  .calco__sheet[data-v='out'] .calco__trace :global(path) {
+    fill: none !important;
+    stroke: #000;
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .calco__chip {
+    position: absolute;
+    inset-block-start: var(--spacing-2xs);
+    inset-inline-start: var(--spacing-2xs);
+    padding-block: 0.125rem;
+    padding-inline: var(--spacing-2xs);
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  .calco__zoom {
+    position: absolute;
+    inset-block-end: var(--spacing-2xs);
+    inset-inline-end: var(--spacing-2xs);
+    display: flex;
+    gap: var(--spacing-3xs);
+  }
+
+  .calco__zbtn {
+    min-inline-size: 2.25rem;
+    block-size: 2.25rem;
+    padding-inline: var(--spacing-2xs);
+    font: inherit;
+    font-size: var(--text-lg);
+    line-height: 1;
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .calco__zbtn--text {
+    padding-inline: var(--spacing-s);
+    font-size: var(--text-sm);
+  }
+
+  .calco__zbtn:hover {
+    border-color: var(--foreground);
+  }
+
+  /* ---- Panel de ajustes ---- */
+  .calco__panel {
+    display: grid;
+    gap: var(--spacing-m);
+  }
+
+  .calco__group {
+    display: grid;
+    gap: var(--spacing-xs);
+  }
+
+  /* `hidden` debe ganar al display:grid de arriba. */
+  .calco__group[hidden] {
+    display: none;
+  }
+
+  .calco__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  .calco__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.125rem var(--spacing-2xs);
+    align-items: baseline;
+    font-size: var(--text-sm);
+  }
+
+  .calco__row label {
+    font-weight: 500;
+  }
+
+  .calco__row output {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+  }
+
+  .calco__row small,
+  .calco__note {
+    grid-column: 1 / -1;
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .calco__range {
+    grid-column: 1 / -1;
+    inline-size: 100%;
+    margin: var(--spacing-3xs) 0 0;
+    accent-color: var(--primary);
+  }
+
+  .calco__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .calco__check input {
+    accent-color: var(--primary);
+    inline-size: 1rem;
+    block-size: 1rem;
+    margin: 0;
+  }
+
+  .calco__pick {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  /* Selector de color en pill (mismo trato que las paradas de Gradientes).
+     Las muestras de tinta se crean por JS → :global() bajo su padre estático. */
+  .calco__swatch,
+  .calco__inks :global(input[type='color']) {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .calco__swatch::-webkit-color-swatch-wrapper,
+  .calco__inks :global(input[type='color']::-webkit-color-swatch-wrapper) {
+    padding: 3px;
+  }
+
+  .calco__swatch::-webkit-color-swatch,
+  .calco__inks :global(input[type='color']::-webkit-color-swatch) {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .calco__swatch::-moz-color-swatch,
+  .calco__inks :global(input[type='color']::-moz-color-swatch) {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .calco__inks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+    gap: var(--spacing-2xs);
+  }
+
+  .calco__inks :global(.calco__ink) {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+  }
+
+  .calco__inks :global(input[type='checkbox']) {
+    accent-color: var(--primary);
+    margin: 0;
+  }
+
+  .calco__stats {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--spacing-3xs) var(--spacing-2xs);
+    margin: 0;
+    padding-block-start: var(--spacing-s);
+    font-size: var(--text-sm);
+    border-block-start: 1px solid var(--border);
+  }
+
+  .calco__stats dt {
+    color: var(--muted-foreground);
+  }
+
+  .calco__stats dd {
+    margin: 0;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .calco__actions {
+    display: grid;
+    gap: var(--spacing-2xs);
+  }
+
+  .calco__msg {
+    min-block-size: 1.5em;
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .calco__msg.is-err {
+    color: var(--destructive);
+  }
+
+  .calco__fallback {
+    inline-size: 100%;
+    block-size: 6rem;
+    padding: var(--spacing-2xs);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-xs);
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+</style>
+
+<script>
+  import type { CalcoCore, CalcoParams, CalcoResult } from '../lib/calco.js';
+
+  function initCalco() {
+    const root = document.querySelector<HTMLElement>('.calco');
+    if (!root) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    const lang = document.documentElement.lang || 'es';
+    const q = <E extends Element = HTMLElement>(sel: string) => root.querySelector<E>(sel)!;
+    const input = (id: string) => document.getElementById(`calco-${id}`) as HTMLInputElement;
+
+    const stage = q('[data-stage]');
+    const sheet = q('[data-sheet]');
+    const origEl = q<HTMLImageElement>('[data-orig]');
+    const traceEl = q('[data-trace]');
+    const inksEl = q('[data-inks]');
+    const msgEl = q('[data-msg]');
+    const fileEl = q<HTMLInputElement>('[data-file]');
+    const stat = (k: string) => q(`[data-stat="${k}"]`);
+
+    const S = {
+      ow: 0, oh: 0, sx: 1, sy: 1, imgId: 0, name: 'logo',
+      mode: 'color' as CalcoParams['mode'],
+      result: null as CalcoResult | null,
+      over: [] as string[], hidden: [] as boolean[], sig: '', url: '',
+    };
+    const view = { k: 1, x: 0, y: 0 };
+    let last: { w: number; h: number; data: Uint8ClampedArray } | null = null;
+    let worker: Worker | null = null;
+    let core: CalcoCore | null = null;
+    let busy = false;
+    let pending = false;
+    let timer = 0;
+
+    // Todo lo global (paste, drop, resize) se desmonta al salir de la página
+    // con View Transitions, y el worker se termina.
+    const ac = new AbortController();
+    const signal = ac.signal;
+    let ro: ResizeObserver | null = null;
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        ac.abort();
+        ro?.disconnect();
+        worker?.terminate();
+        if (S.url.startsWith('blob:')) URL.revokeObjectURL(S.url);
+      },
+      { once: true }
+    );
+
+    /* ---------- motor ---------- */
+    async function useLocal() {
+      worker = null;
+      const { coreFactory } = await import('../lib/calco.js');
+      core = coreFactory();
+      busy = false;
+      if (last) {
+        core.setImage(last.w, last.h, last.data);
+        runTrace();
+      }
+    }
+    try {
+      worker = new Worker(new URL('../lib/calco.worker.js', import.meta.url), { type: 'module' });
+      worker.onmessage = (e) => onResult(e.data);
+      worker.onerror = () => {
+        worker?.terminate();
+        useLocal();
+      };
+    } catch {
+      useLocal();
+    }
+
+    function sendImage(w: number, h: number, data: Uint8ClampedArray) {
+      last = { w, h, data };
+      if (worker) {
+        const buf = data.buffer.slice(0);
+        worker.postMessage({ t: 'img', w, h, buf }, [buf]);
+      } else core?.setImage(w, h, data);
+    }
+
+    function params(): CalcoParams {
+      const a = +input('corner').value / 100;
+      return {
+        imgId: S.imgId, mode: S.mode,
+        thr: +input('thr').value, invert: input('invert').checked, n: +input('ncol').value,
+        turd: +input('turd').value * S.sx * S.sy,
+        alphamax: a * 1.334,
+        opt: (+input('opt').value / 100) * S.sx,
+        sx: S.sx, sy: S.sy,
+      };
+    }
+
+    function runTrace() {
+      if (!last) return;
+      if (busy) {
+        pending = true;
+        return;
+      }
+      if (!worker && !core) return; // el motor local aún se está cargando
+      busy = true;
+      stat('paths').textContent = T.calculating;
+      const p = params();
+      if (worker) worker.postMessage({ t: 'trace', p });
+      else setTimeout(() => onResult(core!.trace(p)), 0);
+    }
+
+    function schedule() {
+      clearTimeout(timer);
+      timer = window.setTimeout(runTrace, 90);
+    }
+
+    function onResult(r: CalcoResult) {
+      busy = false;
+      if (pending) {
+        pending = false;
+        runTrace();
+      }
+      if (r.imgId !== S.imgId) return;
+      S.result = r;
+      render();
+    }
+
+    /* ---------- salida ---------- */
+    const hex = (c: number[]) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+    const layerColor = (l: CalcoResult['layers'][number], i: number) =>
+      l.color ? S.over[i] || hex(l.color) : input('ink').value;
+
+    function visible() {
+      const r = S.result;
+      if (!r) return [];
+      return r.layers
+        .map((l, i) => ({ l, i }))
+        .filter((o) => o.l.d && !(r.mode === 'color' && S.hidden[o.i]));
+    }
+
+    const paths = () =>
+      visible()
+        .map((o) => `<path fill="${layerColor(o.l, o.i)}" fill-rule="evenodd" d="${o.l.d}"/>`)
+        .join('\n');
+
+    const svgText = () =>
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${S.ow}" height="${S.oh}" viewBox="0 0 ${S.ow} ${S.oh}">\n${paths()}\n</svg>\n`;
+
+    function render() {
+      const r = S.result;
+      if (!r) return;
+      traceEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S.ow} ${S.oh}" preserveAspectRatio="none">${paths()}</svg>`;
+      const vis = visible();
+      stat('paths').textContent = vis.reduce((a, o) => a + o.l.paths, 0).toLocaleString(lang);
+      stat('nodes').textContent = vis.reduce((a, o) => a + o.l.nodes, 0).toLocaleString(lang);
+      stat('size').textContent =
+        (svgText().length / 1024).toLocaleString(lang, { maximumFractionDigits: 1 }) + ' KB';
+      stat('dim').textContent = `${S.ow} × ${S.oh} px`;
+      if (r.mode === 'color') {
+        const sig = S.imgId + '|' + r.layers.map((l) => hex(l.color!)).join();
+        if (sig !== S.sig) {
+          S.sig = sig;
+          buildInks(r);
+        }
+      }
+    }
+
+    function buildInks(r: CalcoResult) {
+      inksEl.replaceChildren(
+        ...r.layers.map((l, i) => {
+          const cell = document.createElement('div');
+          cell.className = 'calco__ink';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = !S.hidden[i];
+          cb.setAttribute('aria-label', T.inkOn.replace('{n}', String(i + 1)));
+          cb.addEventListener('change', () => {
+            S.hidden[i] = !cb.checked;
+            render();
+          });
+          const ci = document.createElement('input');
+          ci.type = 'color';
+          ci.value = S.over[i] || hex(l.color!);
+          ci.setAttribute('aria-label', T.inkColor.replace('{n}', String(i + 1)));
+          ci.addEventListener('input', () => {
+            S.over[i] = ci.value;
+            render();
+          });
+          cell.append(cb, ci);
+          return cell;
+        })
+      );
+    }
+
+    /* ---------- imagen ---------- */
+    function say(text: string, err = false) {
+      msgEl.textContent = text;
+      msgEl.classList.toggle('is-err', err);
+    }
+
+    function loadImage(url: string, name: string, sample: boolean) {
+      const im = new Image();
+      im.onload = () => {
+        const w = im.naturalWidth || im.width;
+        const h = im.naturalHeight || im.height;
+        if (!w || !h) return say(T.unreadable, true);
+        // Las imágenes pequeñas se amplían antes de calcar (lado largo ~1400 px, máx. ×3)
+        // y las grandes se reducen a 2000 px; el motor divide las coordenadas entre la escala.
+        const long = Math.max(w, h);
+        const s = long < 1400 ? Math.min(3, 1400 / long) : long > 2000 ? 2000 / long : 1;
+        const sw = Math.max(1, Math.round(w * s));
+        const sh = Math.max(1, Math.round(h * s));
+        const cv = document.createElement('canvas');
+        cv.width = sw;
+        cv.height = sh;
+        const cx = cv.getContext('2d', { willReadFrequently: true })!;
+        cx.imageSmoothingEnabled = true;
+        cx.imageSmoothingQuality = 'high';
+        cx.drawImage(im, 0, 0, sw, sh);
+        let data: Uint8ClampedArray;
+        try {
+          data = cx.getImageData(0, 0, sw, sh).data;
+        } catch {
+          return say(T.unreadable, true);
+        }
+        if (S.url.startsWith('blob:') && S.url !== url) URL.revokeObjectURL(S.url);
+        Object.assign(S, {
+          ow: w, oh: h, sx: sw / w, sy: sh / h, imgId: S.imgId + 1, name,
+          over: [], hidden: [], result: null, sig: '', url,
+        });
+        origEl.src = url;
+        sheet.style.width = w + 'px';
+        sheet.style.height = h + 'px';
+        q('[data-chip]').hidden = !sample;
+        q<HTMLTextAreaElement>('[data-fallback]').hidden = true;
+        say('');
+        fit();
+        sendImage(sw, sh, data);
+        runTrace();
+      };
+      im.onerror = () => say(T.cantOpen, true);
+      im.src = url;
+    }
+
+    function loadFile(f?: File | null) {
+      if (!f || !/^image\//.test(f.type)) return say(T.notImage, true);
+      loadImage(URL.createObjectURL(f), f.name.replace(/\.[^.]+$/, '') || 'logo', false);
+    }
+
+    function sample() {
+      const c = document.createElement('canvas');
+      c.width = 300;
+      c.height = 180;
+      const x = c.getContext('2d')!;
+      x.fillStyle = '#fff';
+      x.fillRect(0, 0, 300, 180);
+      x.fillStyle = '#e8452c';
+      x.beginPath();
+      x.arc(74, 90, 52, 0, 7);
+      x.fill();
+      x.fillStyle = '#f2b705';
+      x.beginPath();
+      x.arc(104, 58, 22, 0, 7);
+      x.fill();
+      x.fillStyle = '#1b2a4a';
+      x.beginPath();
+      x.moveTo(40, 118);
+      x.quadraticCurveTo(90, 70, 128, 128);
+      x.lineTo(128, 142);
+      x.lineTo(40, 142);
+      x.fill();
+      x.font = 'bold 54px Georgia,serif';
+      x.textBaseline = 'middle';
+      x.fillText('calco', 140, 96);
+      loadImage(c.toDataURL('image/jpeg', 0.55), T.sampleName, true);
+    }
+
+    /* ---------- vista: zoom con rueda, arrastre y ajustar ---------- */
+    const apply = () => {
+      sheet.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.k})`;
+    };
+    function fit() {
+      const r = stage.getBoundingClientRect();
+      if (!S.ow || !r.width) return;
+      view.k = Math.min((r.width - 56) / S.ow, (r.height - 56) / S.oh);
+      view.x = (r.width - S.ow * view.k) / 2;
+      view.y = (r.height - S.oh * view.k) / 2;
+      apply();
+    }
+    function zoomAt(f: number, cx: number, cy: number) {
+      const k = Math.min(64, Math.max(0.05, view.k * f));
+      f = k / view.k;
+      view.x = cx - (cx - view.x) * f;
+      view.y = cy - (cy - view.y) * f;
+      view.k = k;
+      apply();
+    }
+    function zoomCenter(f: number) {
+      const r = stage.getBoundingClientRect();
+      zoomAt(f, r.width / 2, r.height / 2);
+    }
+
+    stage.addEventListener(
+      'wheel',
+      (e) => {
+        e.preventDefault();
+        const r = stage.getBoundingClientRect();
+        zoomAt(Math.exp(-e.deltaY * 0.002), e.clientX - r.left, e.clientY - r.top);
+      },
+      { passive: false }
+    );
+    let drag: { x: number; y: number } | null = null;
+    stage.addEventListener('pointerdown', (e) => {
+      if ((e.target as HTMLElement).closest('button')) return;
+      drag = { x: e.clientX - view.x, y: e.clientY - view.y };
+      stage.setPointerCapture(e.pointerId);
+      stage.classList.add('is-drag');
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      view.x = e.clientX - drag.x;
+      view.y = e.clientY - drag.y;
+      apply();
+    });
+    const endDrag = () => {
+      drag = null;
+      stage.classList.remove('is-drag');
+    };
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+    if ('ResizeObserver' in window) {
+      ro = new ResizeObserver(fit);
+      ro.observe(stage);
+    }
+
+    q('[data-view]').addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+      if (!b) return;
+      for (const x of q('[data-view]').children) x.setAttribute('aria-pressed', String(x === b));
+      sheet.dataset.v = b.dataset.v;
+    });
+
+    /* ---------- controles ---------- */
+    function setMode(m: CalcoParams['mode']) {
+      S.mode = m;
+      for (const x of q('[data-mode]').children)
+        x.setAttribute('aria-pressed', String((x as HTMLElement).dataset.m === m));
+      q('[data-g-ink]').hidden = m !== 'ink';
+      q('[data-g-color]').hidden = m !== 'color';
+      runTrace();
+    }
+    q('[data-mode]').addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+      if (b && b.dataset.m !== S.mode) setMode(b.dataset.m as CalcoParams['mode']);
+    });
+
+    const outs: Record<string, (v: string) => string> = {
+      thr: (v) => v,
+      ncol: (v) => v,
+      turd: (v) => `${v} px`,
+      corner: (v) => `${v} %`,
+      opt: (v) => `${v} %`,
+    };
+    for (const id in outs) {
+      input(id).addEventListener('input', () => {
+        q(`[data-out="${id}"]`).textContent = outs[id](input(id).value);
+        if (id === 'ncol') {
+          S.over = [];
+          S.hidden = [];
+        }
+        schedule();
+      });
+    }
+    input('invert').addEventListener('change', runTrace);
+    input('ink').addEventListener('input', render);
+
+    fileEl.addEventListener('change', () => {
+      loadFile(fileEl.files?.[0]);
+      fileEl.value = '';
+    });
+    stage.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      stage.classList.add('is-over');
+    });
+    stage.addEventListener('dragleave', () => stage.classList.remove('is-over'));
+    stage.addEventListener('drop', (e) => {
+      e.preventDefault();
+      stage.classList.remove('is-over');
+      loadFile(e.dataTransfer?.files[0]);
+    });
+    // Soltar fuera de la mesa no debe abrir la imagen en la pestaña.
+    window.addEventListener('dragover', (e) => e.preventDefault(), { signal });
+    window.addEventListener('drop', (e) => e.preventDefault(), { signal });
+    window.addEventListener(
+      'paste',
+      (e) => {
+        const it = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith('image/'));
+        if (it) {
+          e.preventDefault();
+          loadFile(it.getAsFile());
+        }
+      },
+      { signal }
+    );
+
+    /* ---------- exportar ---------- */
+    const fname = () => `${S.name || 'logo'}-calco.svg`;
+
+    root.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      if (action === 'open') return fileEl.click();
+      if (action === 'zin') return zoomCenter(1.4);
+      if (action === 'zout') return zoomCenter(1 / 1.4);
+      if (action === 'zfit') return fit();
+      if (!S.result) return;
+      const text = svgText();
+      if (action === 'save') {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }));
+        a.download = fname();
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      } else if (action === 'copy') {
+        const fallback = () => {
+          const ta = q<HTMLTextAreaElement>('[data-fallback]');
+          ta.hidden = false;
+          ta.value = text;
+          ta.focus();
+          ta.select();
+          say(T.copyManual);
+        };
+        try {
+          navigator.clipboard.writeText(text).then(() => say(T.copied), fallback);
+        } catch {
+          fallback();
+        }
+      }
+    });
+
+    sample();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initCalco);
+</script>
