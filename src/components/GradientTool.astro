@@ -9,7 +9,7 @@ const strings = {
 };
 ---
 
-<div class="grad flow" data-i18n={JSON.stringify(strings)}>
+<div class="grad stack" data-i18n={JSON.stringify(strings)}>
   <div class="grad__preview" data-preview role="img" aria-label={t('gradiente.preview')}></div>
 
   <div class="grad__controls">
@@ -77,7 +77,7 @@ const strings = {
     inline-size: 100%;
     min-block-size: 14rem;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .grad__controls {
@@ -110,7 +110,7 @@ const strings = {
   .grad__opts {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .grad__radio {
@@ -130,16 +130,21 @@ const strings = {
   }
 
   .grad__title {
-    margin: 0 0 var(--spacing-2xs);
+    margin: 0;
     font-size: var(--text-sm);
     font-weight: 500;
     letter-spacing: 0;
     color: var(--muted-foreground);
   }
 
+  /* Sección: título → contenido a ritmo de campo; las acciones, un poco más separadas. */
   .grad__section {
     display: grid;
-    gap: var(--spacing-2xs);
+    gap: var(--gap-field);
+  }
+
+  .grad__section > .grad__actions {
+    margin-block-start: var(--gap-field);
   }
 
   /* ---- Paradas de color (filas creadas por JS → :global()) ---- */
@@ -159,7 +164,7 @@ const strings = {
     padding: var(--spacing-2xs);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .grad__stops :global(.grad__picker) {
@@ -188,11 +193,12 @@ const strings = {
   }
 
   .grad__stops :global(.grad__hex) {
+    block-size: 2.25rem; /* control compacto: misma altura que pestañas e iconos */
     inline-size: 7rem;
     flex: none;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-2xs);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-transform: uppercase;
     color: var(--foreground);
@@ -228,13 +234,13 @@ const strings = {
     color: var(--muted-foreground);
     background: none;
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
   }
 
   .grad__stops :global(.grad__remove:hover:not(:disabled)) {
     color: var(--foreground);
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .grad__stops :global(.grad__remove:disabled) {
@@ -246,13 +252,13 @@ const strings = {
   .grad__css {
     display: block;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     overflow-wrap: anywhere;
   }
 
@@ -260,7 +266,7 @@ const strings = {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .grad__msg {

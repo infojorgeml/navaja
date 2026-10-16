@@ -7,7 +7,7 @@ const t = useTranslations(getLocale(Astro));
 const strings = { paraSing: t('placeholder.paraSing'), paraPlur: t('placeholder.paraPlur'), chars: t('placeholder.chars') };
 ---
 
-<div class="ph flow" data-i18n={JSON.stringify(strings)}>
+<div class="ph stack" data-i18n={JSON.stringify(strings)}>
   <div class="ph__tabs" role="tablist" aria-label={t('placeholder.langAria')} data-tablist>
     {
       sampleLangs.map((l, i) => (
@@ -50,24 +50,25 @@ const strings = { paraSing: t('placeholder.paraSing'), paraPlur: t('placeholder.
     gap: var(--spacing-2xs);
   }
 
-  /* Pestaña = pill (superficie interactiva). Activa = relleno tinta. */
+  /* Pestaña = control de radio 8px (los pills quedan para chips y badges). Activa = tinta. */
   .ph__tab {
     display: inline-flex;
     align-items: center;
+    min-block-size: 2.25rem;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-s);
     font: inherit;
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
 
   .ph__tab:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .ph__tab.is-active {
@@ -85,7 +86,7 @@ const strings = { paraSing: t('placeholder.paraSing'), paraPlur: t('placeholder.
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .ph__label {
@@ -109,7 +110,7 @@ const strings = { paraSing: t('placeholder.paraSing'), paraPlur: t('placeholder.
     padding: var(--spacing-l);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     font-size: var(--text-lg);
     line-height: 1.9;
     text-align: start; /* sigue a dir → derecha en árabe/hebreo */
@@ -130,7 +131,7 @@ const strings = { paraSing: t('placeholder.paraSing'), paraPlur: t('placeholder.
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .ph__meta,

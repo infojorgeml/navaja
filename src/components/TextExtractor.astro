@@ -10,8 +10,8 @@ const strings = {
 };
 ---
 
-<div class="extractor flow" data-i18n={JSON.stringify(strings)}>
-  <div class="extractor__field flow">
+<div class="extractor stack" data-i18n={JSON.stringify(strings)}>
+  <div class="extractor__field stack stack--field">
     <label class="extractor__label" for="extractor-input">{t('common.text')}</label>
     <textarea
       id="extractor-input"
@@ -42,7 +42,7 @@ const strings = {
     </label>
   </div>
 
-  <div class="extractor__field flow">
+  <div class="extractor__field stack stack--field">
     <label class="extractor__label" for="extractor-output">{t('common.result')}</label>
     <textarea
       id="extractor-output"
@@ -61,9 +61,6 @@ const strings = {
 </div>
 
 <style>
-  .extractor__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .extractor__label {
     display: block;
@@ -87,7 +84,7 @@ const strings = {
 
   .extractor__area--mono {
     min-block-size: 8rem;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     word-break: break-all;
@@ -101,14 +98,14 @@ const strings = {
   .extractor__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .extractor__mode {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .extractor__mode .extractor__label {
@@ -128,15 +125,11 @@ const strings = {
     accent-color: var(--primary);
   }
 
-  .extractor__check {
-    margin-inline-start: var(--spacing-s);
-  }
-
   .extractor__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .extractor__stat,

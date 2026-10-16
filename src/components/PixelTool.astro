@@ -103,7 +103,7 @@ const strings = {
 <style>
   .pixel {
     display: grid;
-    gap: var(--spacing-s);
+    gap: var(--gap-group);
   }
 
   .pixel__bar {
@@ -119,14 +119,22 @@ const strings = {
     color: var(--muted-foreground);
   }
 
+  /* En móvil la ayuda baja a su propia línea en vez de apretarse entre los dos botones. */
+  @media (max-width: 34rem) {
+    .pixel__hint {
+      flex-basis: 100%;
+      order: 3;
+    }
+  }
+
   .pixel__ghost,
   .pixel__zbtn {
     font: inherit;
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
   }
 
@@ -137,7 +145,7 @@ const strings = {
 
   .pixel__ghost:hover,
   .pixel__zbtn:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .pixel__ghost:focus-visible,
@@ -174,7 +182,7 @@ const strings = {
     overflow: hidden;
     background: repeating-conic-gradient(var(--muted) 0 25%, var(--background) 0 50%) 0 0 / 18px 18px;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .pixel__stage.is-over::after {
@@ -187,7 +195,7 @@ const strings = {
     color: var(--foreground);
     background-color: color-mix(in srgb, var(--muted) 85%, transparent);
     border: 2px dashed var(--foreground);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .pixel__empty {
@@ -200,7 +208,7 @@ const strings = {
     text-align: center;
     background-color: var(--background);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .pixel__empty[hidden],
@@ -370,7 +378,7 @@ const strings = {
   }
 
   .pixel__palette:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .pixel__palette[aria-pressed='true'] {
@@ -422,10 +430,11 @@ const strings = {
   }
 
   .pixel__hex {
+    block-size: 2.25rem; /* control compacto: misma altura que pestañas e iconos */
     inline-size: 7rem;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-2xs);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-transform: uppercase;
     color: var(--foreground);

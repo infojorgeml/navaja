@@ -9,8 +9,8 @@ const { title, lead, size = 'narrow' } = Astro.props;
 ---
 
 <main class="page" data-size={size}>
-  <div class="page__inner flow">
-    <div class="page__head flow">
+  <div class="page__inner stack stack--page">
+    <div class="page__head stack stack--field">
       <h1>{title}</h1>
       {lead && <p class="page__lead">{lead}</p>}
     </div>
@@ -19,9 +19,13 @@ const { title, lead, size = 'narrow' } = Astro.props;
 </main>
 
 <style>
+  /* Cada herramienta ocupa al menos toda la pantalla: el footer queda siempre por
+     debajo del pliegue y no distrae mientras se trabaja. Solo lo usan las páginas
+     de herramienta; la home no. */
   .page {
     flex: 1;
-    padding-block: var(--spacing-xl);
+    min-block-size: 100vh;
+    padding-block: var(--spacing-xl) var(--spacing-2xl);
     padding-inline: var(--spacing-m);
   }
 
@@ -37,12 +41,14 @@ const { title, lead, size = 'narrow' } = Astro.props;
     max-inline-size: 60rem;
   }
 
-  .page__head {
-    --flow-space: var(--spacing-2xs);
+  .page__head h1 {
+    margin: 0;
   }
 
   .page__lead {
-    color: var(--muted-foreground);
+    margin: 0;
+    max-inline-size: var(--measure);
+    color: var(--body-foreground);
     font-size: var(--text-lg);
   }
 </style>

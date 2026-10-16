@@ -10,6 +10,8 @@
    ============================================================ */
 @theme {
   --font-sans: var(--font-body, ui-sans-serif, system-ui, sans-serif);
+  /* JetBrains Mono en todas las superficies de código y salida técnica (Cursor). */
+  --font-mono: var(--font-code, ui-monospace, 'SF Mono', Menlo, Consolas, monospace);
 
   /* Escala tipográfica compacta (Utopia 320→1240, base 15→16) */
   --text-2xs: clamp(0.6875rem, 0.677rem + 0.054vw, 0.719rem);  /* ~11 → 11.5 */
@@ -45,91 +47,97 @@
 }
 
 /* ============================================================
-   TOKENS DE COLOR (sistema oklch — modo claro)
+   TOKENS DE COLOR — sistema adaptado del DESIGN.md de Cursor
+   (docs/cursor.design.md): lienzo crema cálido, tinta cálida, hairlines
+   cálidas, tarjetas blancas sobre crema y un único acento naranja.
    ============================================================ */
 :root {
-  /* Radio base = 6px (tarjetas). Las superficies interactivas van a pill
-     (ver .btn y los chips): split binario del sistema de OpenAI. */
-  --radius: 0.375rem;
+  /* Radios: 8px en botones e inputs (dialecto «developer» de Cursor),
+     12px en tarjetas y paneles, pill solo para chips y badges. */
+  --radius: 0.5rem;        /* 8px  — botones, inputs, controles */
+  --radius-card: 0.75rem;  /* 12px — tarjetas, paneles, salidas */
+  --radius-pill: 9999px;   /* chips y badges */
   color-scheme: light;
 
-  /* Estructura de dos colores (OpenAI design.md): tinta sobre lienzo + una
-     única hairline. Sin color de marca en reserva. */
-  --background: #ffffff;          /* canvas */
-  --foreground: #000000;          /* ink */
-  --card: #ffffff;
-  --card-foreground: #000000;
+  --background: #f7f7f4;          /* canvas crema */
+  --foreground: #26251e;          /* ink cálida */
+  --card: #ffffff;                /* surface-card: blanco sobre crema */
+  --card-foreground: #26251e;
   --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #000000;             /* ink — relleno del CTA */
-  --primary-foreground: #ffffff;  /* canvas */
-  --secondary: #f1f1f1;           /* surface-1 */
-  --secondary-foreground: #000000;
-  --muted: #f1f1f1;               /* surface-1 */
-  --muted-foreground: #707070;    /* ink-muted */
-  --accent: #f1f1f1;
-  --accent-foreground: #000000;
-  --destructive: #f53255;         /* syntax-error: único rojo de estado */
-  --border: #e5e7eb;              /* hairline — única tinta de borde */
+  --popover-foreground: #26251e;
+  --primary: #26251e;             /* ink — estados activos (pestañas, toggles) */
+  --primary-foreground: #f7f7f4;
+  --secondary: #ffffff;           /* botón secundario: tarjeta + hairline */
+  --secondary-foreground: #26251e;
+  --muted: #efeee8;               /* hairline-soft — superficies de solo lectura */
+  --muted-foreground: #6b6960;    /* entre body y muted del archivo: AA sobre crema y blanco */
+  /* Flecha de los desplegables, en el gris de --muted-foreground (ver regla de select). */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%236b6960' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  --body-foreground: #5a5852;     /* body — entradillas y texto de apoyo largo */
+  --accent: #efeee8;              /* hover de superficies */
+  --accent-foreground: #26251e;
+  --surface-soft: #fafaf7;        /* canvas-soft — paneles de código / salida técnica */
+  --destructive: #cf2d56;         /* semantic-error */
+  --success: #1f8a65;             /* semantic-success */
+  --border: #e6e5e0;              /* hairline */
+  --border-strong: #cfcdc4;       /* hairline-strong — hover y controles */
   --input: #ffffff;
-  --ring: #000000;                /* foco en tinta (halo suave en uso) */
+  --ring: #26251e;
+
+  /* Acento único (Cursor Orange): solo el CTA principal de cada herramienta. */
+  --cta: #f54e00;
+  --cta-active: #d04200;
+  --cta-foreground: #ffffff;
+
+  /* Halo de foco (no es elevación: el sistema no usa sombras). */
+  --focus-halo: 0 0 0 3px color-mix(in oklab, var(--ring) 14%, transparent);
+
+  /* Ritmo vertical de las herramientas (ver .stack). */
+  --gap-field: var(--spacing-2xs);  /* etiqueta → control → ayuda */
+  --gap-group: var(--spacing-s);    /* controles relacionados de un mismo grupo */
+  --gap-block: var(--spacing-m);    /* bloques: controles, resultado, acciones */
+  --gap-page: var(--spacing-l);     /* cabecera de página → herramienta */
 
   /* Dimensiones de componente (base-astro.md, principio 4) */
   --measure: 65ch;
   --boxed-max: 87.5rem;
-  --chart-1: oklch(0.872 0.007 219.6);
-  --chart-2: oklch(0.56 0.021 213.5);
-  --chart-3: oklch(0.45 0.017 213.2);
-  --chart-4: oklch(0.378 0.015 216);
-  --chart-5: oklch(0.275 0.011 216.9);
-  --sidebar: oklch(0.987 0.002 197.1);
-  --sidebar-foreground: oklch(0.148 0.004 228.8);
-  --sidebar-primary: oklch(0.511 0.262 276.966);
-  --sidebar-primary-foreground: oklch(0.962 0.018 272.314);
-  --sidebar-accent: oklch(0.963 0.002 197.1);
-  --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
-  --sidebar-border: oklch(0.925 0.005 214.3);
-  --sidebar-ring: oklch(0.723 0.014 214.4);
 }
 
-/* Modo oscuro: activado por la clase .dark en <html> */
+/* Modo oscuro: activado por la clase .dark en <html>. Cursor es solo claro;
+   esta es la versión nocturna coherente: lienzo casi negro cálido, tinta
+   crema, hairlines cálidas y el mismo naranja. */
 .dark {
   color-scheme: dark;
 
-  /* Modo oscuro = misma disciplina de OpenAI, invertida: tinta clara sobre
-     lienzo casi negro, botón blanco. (El marketing de OpenAI es solo claro;
-     esto extiende su lógica al toggle de Deftkit.) */
-  --background: #0a0a0a;          /* canvas oscuro */
-  --foreground: #f5f5f5;          /* tinta clara */
-  --card: #161616;
-  --card-foreground: #f5f5f5;
-  --popover: #161616;
-  --popover-foreground: #f5f5f5;
-  --primary: #ffffff;             /* inversión: relleno blanco, texto tinta */
-  --primary-foreground: #000000;
-  --secondary: #1f1f1f;           /* surface-2 */
-  --secondary-foreground: #f5f5f5;
-  --muted: #1f1f1f;               /* surface-2 */
-  --muted-foreground: #a1a1a1;
-  --accent: #1f1f1f;
-  --accent-foreground: #f5f5f5;
-  --destructive: #f53255;
-  --border: rgba(255, 255, 255, 0.12);  /* hairline en oscuro */
-  --input: #161616;
-  --ring: #ffffff;
-  --chart-1: oklch(0.872 0.007 219.6);
-  --chart-2: oklch(0.56 0.021 213.5);
-  --chart-3: oklch(0.45 0.017 213.2);
-  --chart-4: oklch(0.378 0.015 216);
-  --chart-5: oklch(0.275 0.011 216.9);
-  --sidebar: oklch(0.218 0.008 223.9);
-  --sidebar-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-primary: oklch(0.585 0.233 277.117);
-  --sidebar-primary-foreground: oklch(0.962 0.018 272.314);
-  --sidebar-accent: oklch(0.275 0.011 216.9);
-  --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.56 0.021 213.5);
+  --background: #14130f;          /* canvas casi negro cálido */
+  --foreground: #edece6;          /* tinta crema */
+  --card: #1c1b17;
+  --card-foreground: #edece6;
+  --popover: #1f1e1a;
+  --popover-foreground: #edece6;
+  --primary: #edece6;             /* inversión: estado activo en crema */
+  --primary-foreground: #14130f;
+  --secondary: #1c1b17;
+  --secondary-foreground: #edece6;
+  --muted: #24231e;
+  --muted-foreground: #a3a095;
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23a3a095' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  --body-foreground: #b9b6ab;
+  --accent: #282721;
+  --accent-foreground: #edece6;
+  --surface-soft: #181713;
+  --destructive: #f0657f;
+  --success: #4cc38a;
+  --border: #2f2e28;
+  --border-strong: #46443c;
+  --input: #1a1915;
+  --ring: #edece6;
+
+  --cta: #f54e00;
+  --cta-active: #d04200;
+  --cta-foreground: #ffffff;
+
+  --focus-halo: 0 0 0 3px color-mix(in oklab, var(--ring) 16%, transparent);
 }
 
 /* Mapea los tokens a utilidades de Tailwind (bg-card, text-muted-foreground,
@@ -153,27 +161,14 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-cta: var(--cta);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Escala de radios de Cursor (rounded.*) */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius-card);
+  --radius-xl: 1rem;
 }
 
 /* ============================================================
@@ -203,59 +198,89 @@
    COMPONENTES
    ============================================================ */
 @layer components {
-  /* Tarjeta contenedora reutilizable (estética shadcn) */
+  /* Pila vertical con gap: el ritmo entre bloques de cada herramienta.
+     Usa gap (no márgenes) para que el `margin: 0` de los estilos scoped de
+     los componentes no lo anule. Variantes por nivel de ritmo. */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-block);
+  }
+  .stack--field { gap: var(--gap-field); }
+  .stack--group { gap: var(--gap-group); }
+  .stack--page { gap: var(--gap-page); }
+  /* Un botón suelto dentro de la pila no se estira a todo el ancho. */
+  .stack > .btn { align-self: flex-start; }
+
+  /* Tarjeta: blanco sobre crema, hairline como única profundidad. */
   .card {
     background-color: var(--card);
     color: var(--card-foreground);
     border: 1px solid var(--border);
-    border-radius: var(--radius); /* 6px — tarjeta plana (la hairline es la elevación) */
-    padding: var(--spacing-l);
-    box-shadow: 0 1px 2px oklch(0 0 0 / 0.04);
+    border-radius: var(--radius-card);
+    padding: var(--spacing-m);
   }
 
-  @media (min-width: 640px) {
-    .card {
-      padding: var(--spacing-xl);
-    }
-  }
-
-  /* Botón reutilizable — primario por defecto.
-     Superficie interactiva → pill (split binario de radios de OpenAI),
-     peso 500 (el sistema nunca sube la voz por encima de 500 salvo wordmark). */
+  /* Botón — por defecto es el CTA principal de la herramienta: el único
+     naranja de la pantalla. 40px de alto, radio 8px, peso 500. */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: var(--spacing-3xs);
+    min-block-size: 2.5rem;
     padding-block: 0.625rem;
-    padding-inline: 1.25rem;
+    padding-inline: 1.125rem;
     font: inherit;
     font-size: var(--text-sm);
     font-weight: 500;
     line-height: 1;
     text-align: center;
-    color: var(--primary-foreground);
-    background-color: var(--primary);
+    white-space: nowrap;
+    color: var(--cta-foreground);
+    background-color: var(--cta);
     border: 1px solid transparent;
-    border-radius: 9999px; /* pill */
+    border-radius: var(--radius);
     cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.05s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
   .btn:hover {
-    opacity: 0.9;
+    background-color: color-mix(in oklab, var(--cta) 88%, var(--cta-active));
   }
   .btn:active {
-    transform: translateY(1px);
+    background-color: var(--cta-active);
   }
   .btn:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 
-  /* Variante secundaria (acciones de apoyo, p. ej. "Copiar") */
+  /* Secundario (acciones de apoyo: copiar, limpiar…): tarjeta + hairline. */
   .btn--secondary {
     color: var(--secondary-foreground);
     background-color: var(--secondary);
-    border-color: var(--border);
+    border-color: var(--border-strong);
+  }
+  .btn--secondary:hover {
+    background-color: var(--accent);
+    border-color: var(--border-strong);
+  }
+  .btn--secondary:active {
+    background-color: var(--muted);
+  }
+
+  /* Tinta (acción fuerte que no es el CTA principal). */
+  .btn--ink {
+    color: var(--primary-foreground);
+    background-color: var(--primary);
+  }
+  .btn--ink:hover,
+  .btn--ink:active {
+    background-color: color-mix(in oklab, var(--primary) 86%, var(--background));
   }
 }
 
@@ -275,16 +300,33 @@
     color: var(--foreground);
     font-family: var(--font-sans);
     font-size: var(--text-base);
-    line-height: 1.6;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  /* Confianza editorial por tracking y contraste, no por peso: todo a 500
-     con tracking negativo afinado por tamaño (OpenAI design.md §Typography). */
-  h1 { font-size: var(--text-4xl); letter-spacing: -0.03em; }
-  h2 { font-size: var(--text-2xl); letter-spacing: -0.02em; }
-  h3 { font-size: var(--text-xl); letter-spacing: -0.015em; }
-  h1, h2, h3 { font-weight: 500; text-wrap: balance; }
+  /* Voz editorial de Cursor: titulares a peso 400 con tracking negativo
+     (−0.03em en display, menos cuanto más pequeño). */
+  h1 { font-size: var(--text-4xl); letter-spacing: -0.025em; line-height: 1.15; }
+  h2 { font-size: var(--text-2xl); letter-spacing: -0.015em; }
+  h3 { font-size: var(--text-xl); letter-spacing: -0.005em; }
+  h1, h2, h3 { font-weight: 400; text-wrap: balance; }
   p { text-wrap: pretty; }
+  code, kbd, samp, pre { font-family: var(--font-mono); }
+  /* Casillas, radios y sliders nativos en tinta (el naranja queda para el CTA). */
+  input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color: var(--primary); }
+  ::selection { background-color: color-mix(in oklab, var(--cta) 22%, transparent); }
+}
+
+/* Desplegables: la flecha nativa queda pegada al borde, así que se dibuja una propia
+   con aire a la derecha. Va en em para escalar con el tamaño de letra de cada select
+   (del mini selector de Bases al de zona horaria). El padding derecho lleva !important
+   porque cada componente fija su padding-inline con estilos scoped, más específicos. */
+select:not([multiple]):not([size]) {
+  appearance: none;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 1em center;
+  background-size: 1em;
+  padding-inline-end: 2.5em !important;
 }
 
 /* Respeta la preferencia de movimiento reducido en TODO (red de seguridad) */

@@ -15,7 +15,7 @@ const strings = {
 };
 ---
 
-<div class="shadow flow" data-i18n={JSON.stringify(strings)}>
+<div class="shadow stack" data-i18n={JSON.stringify(strings)}>
   <div class="shadow__stage">
     <div class="shadow__box" data-preview role="img" aria-label={t('sombra.preview')}></div>
   </div>
@@ -46,7 +46,7 @@ const strings = {
     padding: var(--spacing-2xl) var(--spacing-m);
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .shadow__box {
@@ -56,9 +56,14 @@ const strings = {
     border-radius: var(--radius);
   }
 
+  /* Sección: título → contenido a ritmo de campo; las acciones, un poco más separadas. */
   .shadow__section {
     display: grid;
-    gap: var(--spacing-2xs);
+    gap: var(--gap-field);
+  }
+
+  .shadow__section > .shadow__actions {
+    margin-block-start: var(--gap-field);
   }
 
   .shadow__title {
@@ -81,7 +86,7 @@ const strings = {
     padding: var(--spacing-s);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .shadow__layers :global(.shadow__head) {
@@ -123,13 +128,13 @@ const strings = {
     color: var(--muted-foreground);
     background: none;
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
   }
 
   .shadow__layers :global(.shadow__remove:hover:not(:disabled)) {
     color: var(--foreground);
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .shadow__layers :global(.shadow__remove:disabled) {
@@ -197,11 +202,12 @@ const strings = {
   }
 
   .shadow__layers :global(.shadow__hex) {
+    block-size: 2.25rem; /* control compacto: misma altura que pestañas e iconos */
     inline-size: 7rem;
     flex: none;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-2xs);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-transform: uppercase;
     color: var(--foreground);
@@ -221,13 +227,13 @@ const strings = {
   .shadow__css {
     display: block;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     overflow-wrap: anywhere;
   }
 
@@ -235,7 +241,7 @@ const strings = {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .shadow__msg {

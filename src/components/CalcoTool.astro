@@ -16,11 +16,9 @@ const strings = {
 };
 ---
 
-<div class="calco" data-i18n={JSON.stringify(strings)}>
+<div class="calco stack stack--group" data-i18n={JSON.stringify(strings)}>
   <div class="calco__bar">
-    <button type="button" class="btn btn--secondary" data-action="open">{t('calco.open')}</button>
     <input type="file" accept="image/*" hidden data-file />
-    <span class="calco__hint">{t('calco.hint')}</span>
     <div class="calco__seg" role="group" aria-label={t('calco.viewAria')} data-view>
       <button type="button" class="calco__pill" data-v="orig" aria-pressed="false">{t('calco.viewOrig')}</button>
       <button type="button" class="calco__pill" data-v="trace" aria-pressed="true">{t('calco.viewTrace')}</button>
@@ -29,13 +27,23 @@ const strings = {
   </div>
 
   <div class="calco__grid">
-    <div class="calco__stage" data-stage data-drop={t('calco.drop')}>
+    {/* La mesa es también la zona de entrada: se suelta, se pega o se pulsa aquí mismo. */}
+    <div class="calco__stage is-empty" data-stage data-drop={t('calco.drop')}>
+      <div class="calco__empty" data-empty>
+        <p class="calco__empty-title">{t('calco.dropTitle')}</p>
+        <p class="calco__empty-hint">{t('calco.dropHint')}</p>
+        <p class="calco__empty-error" data-empty-error hidden></p>
+        <div class="calco__empty-actions">
+          <button type="button" class="btn btn--secondary" data-action="open">{t('calco.choose')}</button>
+          <button type="button" class="calco__textbtn" data-action="sample">{t('calco.trySample')}</button>
+        </div>
+      </div>
       <div class="calco__sheet" data-sheet data-v="trace">
         <img data-orig alt={t('calco.origAlt')} />
         <div class="calco__trace" data-trace></div>
       </div>
-      <span class="calco__chip" data-chip>{t('calco.sample')}</span>
-      <div class="calco__zoom">
+      <span class="calco__chip" data-chip hidden>{t('calco.sample')}</span>
+      <div class="calco__zoom" data-zoom hidden>
         <button type="button" class="calco__zbtn" data-action="zout" aria-label={t('calco.zoomOut')}>−</button>
         <button type="button" class="calco__zbtn" data-action="zin" aria-label={t('calco.zoomIn')}>+</button>
         <button type="button" class="calco__zbtn calco__zbtn--text" data-action="zfit">{t('calco.fit')}</button>
@@ -100,8 +108,9 @@ const strings = {
       </dl>
 
       <div class="calco__actions">
-        <button type="button" class="btn" data-action="save">{t('calco.download')}</button>
-        <button type="button" class="btn btn--secondary" data-action="copy">{t('calco.copy')}</button>
+        <button type="button" class="btn" data-action="save" disabled>{t('calco.download')}</button>
+        <button type="button" class="btn btn--secondary" data-action="copy" disabled>{t('calco.copy')}</button>
+        <button type="button" class="btn btn--secondary" data-action="open" data-open-other hidden>{t('calco.openOther')}</button>
         <p class="calco__msg" data-msg role="status"></p>
         <textarea class="calco__fallback" data-fallback readonly hidden aria-label={t('calco.codeAria')}></textarea>
       </div>
@@ -115,7 +124,6 @@ const strings = {
   .calco {
     --paper: #ffffff;
     --paper-2: #ececec;
-    --flow-space: var(--spacing-s);
   }
 
   :global(.dark) .calco {
@@ -130,13 +138,8 @@ const strings = {
     gap: var(--spacing-2xs) var(--spacing-s);
   }
 
-  .calco__hint {
-    flex: 1;
-    font-size: var(--text-sm);
-    color: var(--muted-foreground);
-  }
 
-  /* ---- Segmentados (pills, como las pestañas de Unidades) ---- */
+  /* ---- Segmentados (radio 8px, como las pestañas de Unidades) ---- */
   .calco__seg {
     display: inline-flex;
     flex-wrap: wrap;
@@ -155,20 +158,21 @@ const strings = {
   .calco__pill {
     display: inline-flex;
     align-items: center;
+    min-block-size: 2.25rem;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-s);
     font: inherit;
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
 
   .calco__pill:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .calco__pill[aria-pressed='true'] {
@@ -203,13 +207,92 @@ const strings = {
     overflow: hidden;
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     touch-action: none;
     cursor: grab;
   }
 
   .calco__stage.is-drag {
     cursor: grabbing;
+  }
+
+  /* Sin imagen, toda la mesa invita a soltar o pulsar (no hay nada que arrastrar). */
+  .calco__stage.is-empty {
+    cursor: pointer;
+  }
+
+  .calco__empty {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    block-size: fit-content;
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-2xs);
+    max-inline-size: min(24rem, calc(100% - 2 * var(--spacing-s)));
+    padding: var(--spacing-m);
+    text-align: center;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  .calco__empty[hidden],
+  .calco__empty-error[hidden],
+  .calco__zoom[hidden],
+  .calco__chip[hidden] {
+    display: none;
+  }
+
+  .calco__empty p {
+    margin: 0;
+  }
+
+  .calco__empty-title {
+    font-size: var(--text-lg);
+    font-weight: 500;
+  }
+
+  .calco__empty-hint {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .calco__empty-error {
+    font-size: var(--text-sm);
+    color: var(--destructive);
+  }
+
+  .calco__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2xs) var(--spacing-s);
+    margin-block-start: var(--spacing-3xs);
+  }
+
+  /* Acción terciaria: texto subrayado, sin caja. */
+  .calco__textbtn {
+    padding: 0;
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .calco__textbtn:hover {
+    color: var(--foreground);
+  }
+
+  .calco__textbtn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   .calco__stage.is-over::after {
@@ -222,7 +305,7 @@ const strings = {
     color: var(--foreground);
     background-color: color-mix(in srgb, var(--muted) 85%, transparent);
     border: 2px dashed var(--foreground);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .calco__sheet {
@@ -280,7 +363,7 @@ const strings = {
     color: var(--muted-foreground);
     background-color: var(--background);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     pointer-events: none;
   }
 
@@ -300,9 +383,9 @@ const strings = {
     font-size: var(--text-lg);
     line-height: 1;
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
   }
 
@@ -312,7 +395,7 @@ const strings = {
   }
 
   .calco__zbtn:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   /* ---- Panel de ajustes ---- */
@@ -467,6 +550,15 @@ const strings = {
     gap: var(--spacing-2xs);
   }
 
+  .calco__actions .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .calco__actions [hidden] {
+    display: none;
+  }
+
   .calco__msg {
     min-block-size: 1.5em;
     margin: 0;
@@ -482,12 +574,12 @@ const strings = {
     inline-size: 100%;
     block-size: 6rem;
     padding: var(--spacing-2xs);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--foreground);
     background-color: var(--input);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 </style>
 
@@ -611,6 +703,8 @@ const strings = {
       }
       if (r.imgId !== S.imgId) return;
       S.result = r;
+      for (const b of root!.querySelectorAll<HTMLButtonElement>('[data-action="save"], [data-action="copy"]'))
+        b.disabled = false;
       render();
     }
 
@@ -682,9 +776,14 @@ const strings = {
     }
 
     /* ---------- imagen ---------- */
+    // Sin imagen cargada, los errores salen en el propio estado vacío de la mesa.
     function say(text: string, err = false) {
       msgEl.textContent = text;
       msgEl.classList.toggle('is-err', err);
+      const emptyErr = q('[data-empty-error]');
+      const showInEmpty = err && !S.ow;
+      emptyErr.textContent = showInEmpty ? text : '';
+      emptyErr.hidden = !showInEmpty;
     }
 
     function loadImage(url: string, name: string, sample: boolean) {
@@ -721,6 +820,10 @@ const strings = {
         sheet.style.width = w + 'px';
         sheet.style.height = h + 'px';
         q('[data-chip]').hidden = !sample;
+        q('[data-empty]').hidden = true;
+        q('[data-zoom]').hidden = false;
+        q('[data-open-other]').hidden = false;
+        stage.classList.remove('is-empty');
         q<HTMLTextAreaElement>('[data-fallback]').hidden = true;
         say('');
         fit();
@@ -800,7 +903,7 @@ const strings = {
     );
     let drag: { x: number; y: number } | null = null;
     stage.addEventListener('pointerdown', (e) => {
-      if ((e.target as HTMLElement).closest('button')) return;
+      if (!S.ow || (e.target as HTMLElement).closest('button')) return;
       drag = { x: e.clientX - view.x, y: e.clientY - view.y };
       stage.setPointerCapture(e.pointerId);
       stage.classList.add('is-drag');
@@ -896,10 +999,14 @@ const strings = {
     const fname = () => `${S.name || 'logo'}-calco.svg`;
 
     root.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-action]');
+      const target = e.target as HTMLElement;
+      const btn = target.closest<HTMLElement>('[data-action]');
+      // Pulsar en cualquier parte de la mesa vacía también abre el selector.
+      if (!btn && !S.ow && stage.contains(target)) return fileEl.click();
       if (!btn) return;
       const action = btn.dataset.action;
       if (action === 'open') return fileEl.click();
+      if (action === 'sample') return sample();
       if (action === 'zin') return zoomCenter(1.4);
       if (action === 'zout') return zoomCenter(1 / 1.4);
       if (action === 'zfit') return fit();
@@ -928,7 +1035,6 @@ const strings = {
       }
     });
 
-    sample();
   }
 
   // Con View Transitions, re-inicializar en cada carga/navegación.

@@ -5,9 +5,9 @@ const t = useTranslations(getLocale(Astro));
 const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.textCopied') };
 ---
 
-<div class="binconv flow" data-i18n={JSON.stringify(strings)}>
+<div class="binconv stack" data-i18n={JSON.stringify(strings)}>
   <div class="binconv__panels">
-    <div class="binconv__field flow">
+    <div class="binconv__field stack stack--field">
       <label class="binconv__label" for="bin-text">{t('common.text')}</label>
       <textarea
         id="bin-text"
@@ -18,7 +18,7 @@ const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.text
         spellcheck="false"></textarea>
     </div>
 
-    <div class="binconv__field flow">
+    <div class="binconv__field stack stack--field">
       <label class="binconv__label" for="bin-binary">{t('binario.binary')}</label>
       <textarea
         id="bin-binary"
@@ -45,9 +45,6 @@ const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.text
     gap: var(--spacing-m);
   }
 
-  .binconv__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .binconv__label {
     display: block;
@@ -57,7 +54,9 @@ const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.text
 
   .binconv__area {
     inline-size: 100%;
-    min-block-size: 11rem;
+    /* Altura fija (no por `rows`): los dos paneles miden igual aunque uno sea mono. */
+    block-size: 12rem;
+    min-block-size: 8rem;
     padding: var(--spacing-s);
     font: inherit;
     font-size: var(--text-base);
@@ -70,7 +69,7 @@ const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.text
   }
 
   .binconv__area--mono {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     letter-spacing: 0.02em;
     line-height: 1.6;
@@ -83,14 +82,14 @@ const strings = { binCopied: t('binario.binCopied'), textCopied: t('binario.text
   .binconv__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .binconv__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .binconv__msg {

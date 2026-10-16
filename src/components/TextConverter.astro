@@ -4,9 +4,9 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const t = useTranslations(getLocale(Astro));
 ---
 
-<div class="converter flow">
+<div class="converter stack">
   <div class="converter__panels">
-    <div class="converter__field flow">
+    <div class="converter__field stack stack--field">
       <label class="converter__label" for="conv-input">{t('conversor.origLabel')}</label>
       <textarea
         id="conv-input"
@@ -17,7 +17,7 @@ const t = useTranslations(getLocale(Astro));
         spellcheck="false"></textarea>
     </div>
 
-    <div class="converter__field flow">
+    <div class="converter__field stack stack--field">
       <label class="converter__label" for="conv-output">{t('common.result')}</label>
       <textarea
         id="conv-output"
@@ -29,10 +29,10 @@ const t = useTranslations(getLocale(Astro));
   </div>
 
   <div class="converter__actions" role="group" aria-label={t('conversor.group')}>
-    <button type="button" class="btn" data-transform="sentence">{t('conversor.sentence')}</button>
-    <button type="button" class="btn" data-transform="lower">{t('conversor.lower')}</button>
-    <button type="button" class="btn" data-transform="upper">{t('conversor.upper')}</button>
-    <button type="button" class="btn" data-transform="title">{t('conversor.title')}</button>
+    <button type="button" class="btn btn--secondary" data-transform="sentence">{t('conversor.sentence')}</button>
+    <button type="button" class="btn btn--secondary" data-transform="lower">{t('conversor.lower')}</button>
+    <button type="button" class="btn btn--secondary" data-transform="upper">{t('conversor.upper')}</button>
+    <button type="button" class="btn btn--secondary" data-transform="title">{t('conversor.title')}</button>
   </div>
 </div>
 
@@ -43,13 +43,10 @@ const t = useTranslations(getLocale(Astro));
     gap: var(--spacing-m);
   }
 
-  .converter__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .converter__label {
     display: block;
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     font-weight: 500;
   }
 
@@ -74,7 +71,7 @@ const t = useTranslations(getLocale(Astro));
   .converter__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .converter__area--output {
@@ -85,10 +82,12 @@ const t = useTranslations(getLocale(Astro));
   .converter__actions {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
-  /* Los botones usan la clase .btn global (ver global.css) */
+  /* Cuatro transformaciones equivalentes: todas secundarias (ninguna es «el» CTA,
+     así que aquí no hay naranja). Usan la clase .btn global (ver global.css). */
+
 </style>
 
 <script>

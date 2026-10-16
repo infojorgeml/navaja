@@ -7,9 +7,9 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 const items = modules.map((m) => ({
-  href: getRelativeLocaleUrl(locale, m.slug),
-  label: t(`tool.${m.slug}.label`),
-  description: t(`tool.${m.slug}.desc`),
+  href: getRelativeLocaleUrl(locale, m.slugs[locale]),
+  label: t(`tool.${m.id}.label`),
+  description: t(`tool.${m.id}.desc`),
   keywords: m.keywords,
 }));
 ---
@@ -66,13 +66,12 @@ const items = modules.map((m) => ({
     color: var(--popover-foreground);
     background-color: var(--popover);
     border: 1px solid var(--border);
-    border-radius: calc(var(--radius) + 4px);
-    box-shadow: 0 12px 48px oklch(0 0 0 / 0.3);
-    overflow: hidden;
+    border-radius: var(--radius-card);
+    overflow: hidden; /* sin sombra: el velo del fondo ya separa el panel */
   }
 
   .cmdk::backdrop {
-    background-color: oklch(0 0 0 / 0.5);
+    background-color: color-mix(in oklab, #14130f 45%, transparent);
     backdrop-filter: blur(2px);
   }
 
@@ -109,13 +108,14 @@ const items = modules.map((m) => ({
   }
 
   .cmdk__esc {
-    font-family: inherit;
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     padding-block: 0.1rem;
     padding-inline: 0.35rem;
     color: var(--muted-foreground);
     background-color: var(--muted);
-    border-radius: calc(var(--radius) - 4px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs, 0.25rem);
   }
 
   .cmdk__list {

@@ -3,19 +3,20 @@
 // La navegación entre módulos vive en la home (índice) y en el command palette.
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import ThemeToggle from './ThemeToggle.astro';
-import { getLocale, useTranslations, basePath } from '../i18n/ui';
+import Logo from './Logo.astro';
+import { getLocale, useTranslations, localizedBasePath } from '../i18n/ui';
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
-const base = basePath(Astro.url.pathname);
-const esUrl = getRelativeLocaleUrl('es', base);
-const enUrl = getRelativeLocaleUrl('en', base);
+// Cada idioma tiene su slug (/counter ↔ /es/contador): se traduce la ruta actual.
+const esUrl = getRelativeLocaleUrl('es', localizedBasePath(Astro.url.pathname, locale, 'es'));
+const enUrl = getRelativeLocaleUrl('en', localizedBasePath(Astro.url.pathname, locale, 'en'));
 const brandUrl = getRelativeLocaleUrl(locale, '');
 ---
 
 <header class="header">
   <div class="header__inner boxed">
-    <a class="header__brand" href={brandUrl}>Deftkit</a>
+    <a class="header__brand" href={brandUrl}><Logo /></a>
 
     <div class="header__right">
       <button
@@ -61,14 +62,21 @@ const brandUrl = getRelativeLocaleUrl(locale, '');
     block-size: 4rem;
   }
 
-  /* Wordmark: el único momento en peso 600 del sistema (OpenAI design.md). */
+  /* Logotipo de Jorge (src/components/Logo.astro): solo se escala, no se rediseña. */
   .header__brand {
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    --logo-size: 1.625rem;
+    display: inline-flex;
+    align-items: center;
     color: var(--foreground);
     text-decoration: none;
   }
+
+  .header__brand:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
 
   .header__right {
     display: flex;
@@ -76,26 +84,26 @@ const brandUrl = getRelativeLocaleUrl(locale, '');
     gap: var(--spacing-2xs);
   }
 
-  /* Buscador como mini-pill estilo input de OpenAI: lienzo + hairline, full-round. */
+  /* Buscador como input compacto: tarjeta + hairline, radio 8px (input de Cursor). */
   .header__search {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2xs);
-    padding-block: var(--spacing-3xs);
-    padding-inline: var(--spacing-s);
+    block-size: 2.25rem;
+    padding-inline: var(--spacing-xs) 0.375rem;
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     color: var(--muted-foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px; /* pill */
+    border-radius: var(--radius);
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .header__search:hover {
     color: var(--foreground);
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .header__search:focus-visible {
@@ -115,37 +123,40 @@ const brandUrl = getRelativeLocaleUrl(locale, '');
   }
 
   .header__kbd {
-    font-family: inherit;
+    margin-inline-start: var(--spacing-2xs);
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     padding-block: 0.1rem;
     padding-inline: 0.35rem;
     color: var(--muted-foreground);
     background-color: var(--background);
     border: 1px solid var(--border);
-    border-radius: calc(var(--radius) - 4px);
+    border-radius: var(--radius-xs, 0.25rem);
   }
 
-  /* Selector de idioma: control segmentado en pill (activo = tinta). */
+  /* Selector de idioma: control segmentado de radio 8px (activo = tinta). */
   .lang {
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 2px;
+    block-size: 2.25rem;
+    padding: 3px;
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
   }
 
   .lang__opt {
     display: inline-flex;
     align-items: center;
-    padding-block: 0.15rem;
+    block-size: 100%;
     padding-inline: 0.5rem;
     font-size: var(--text-2xs);
     font-weight: 500;
     line-height: 1;
     color: var(--muted-foreground);
     text-decoration: none;
-    border-radius: 9999px;
+    border-radius: calc(var(--radius) - 3px);
     transition: color 0.15s ease, background-color 0.15s ease;
   }
 

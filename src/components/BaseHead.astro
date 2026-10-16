@@ -2,7 +2,7 @@
 // src/components/BaseHead.astro
 import { Font } from 'astro:assets';
 import { getAbsoluteLocaleUrl } from 'astro:i18n';
-import { getLocale, basePath } from '../i18n/ui';
+import { getLocale, localizedBasePath } from '../i18n/ui';
 
 interface Props {
   title: string;
@@ -16,21 +16,29 @@ const locale = getLocale(Astro);
 // `Astro.site` solo existe si defines `site` en astro.config.mjs (ver base-astro.md §3).
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
 
-// hreflang: la misma página en cada idioma (+ x-default → inglés).
-const base = basePath(Astro.url.pathname);
+// hreflang: la misma página en cada idioma, con su slug (+ x-default → inglés).
+const enHref = getAbsoluteLocaleUrl('en', localizedBasePath(Astro.url.pathname, locale, 'en'));
+const esHref = getAbsoluteLocaleUrl('es', localizedBasePath(Astro.url.pathname, locale, 'es'));
 const alternates = Astro.site
   ? [
-      { hreflang: 'en', href: getAbsoluteLocaleUrl('en', base) },
-      { hreflang: 'es', href: getAbsoluteLocaleUrl('es', base) },
-      { hreflang: 'x-default', href: getAbsoluteLocaleUrl('en', base) },
+      { hreflang: 'en', href: enHref },
+      { hreflang: 'es', href: esHref },
+      { hreflang: 'x-default', href: enHref },
     ]
   : [];
 const ogLocale = locale === 'en' ? 'en_US' : 'es_ES';
+// Imagen para compartir: el logotipo sobre el lienzo oscuro (public/og.png, 1200×630).
+const ogImage = Astro.site ? new URL('/og.png', Astro.site) : undefined;
 ---
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+{/* Color de la barra del navegador en móvil: lienzo de cada tema. */}
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f4" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14130f" />
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 {canonical && <link rel="canonical" href={canonical} />}
@@ -38,11 +46,17 @@ const ogLocale = locale === 'en' ? 'en_US' : 'es_ES';
 
 {/* Tipografía self-hosted (base-astro.md §5): autoaloja + fallback optimizado + preload */}
 <Font cssVariable="--font-body" preload />
+<Font cssVariable="--font-code" />
 
-{/* Open Graph mínimo */}
+{/* Open Graph + tarjeta grande en X/Twitter */}
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={SITE_NAME} />
 <meta property="og:locale" content={ogLocale} />
 {canonical && <meta property="og:url" content={canonical} />}
+{ogImage && <meta property="og:image" content={ogImage} />}
+{ogImage && <meta property="og:image:width" content="1200" />}
+{ogImage && <meta property="og:image:height" content="630" />}
+{ogImage && <meta property="og:image:alt" content={SITE_NAME} />}
+<meta name="twitter:card" content="summary_large_image" />

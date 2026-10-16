@@ -7,7 +7,7 @@ const strings = { copied: t('common.copied') };
 const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
 ---
 
-<div class="crypto flow" data-i18n={JSON.stringify(strings)}>
+<div class="crypto stack" data-i18n={JSON.stringify(strings)}>
   <div class="crypto__tabs" role="tablist" aria-label={t('crypto.tabAria')} data-tablist>
     <button type="button" role="tab" class="crypto__tab is-active" data-tab="hash" aria-selected="true">
       {t('crypto.tabHash')}
@@ -82,20 +82,21 @@ const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
   .crypto__tab {
     display: inline-flex;
     align-items: center;
+    min-block-size: 2.25rem;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-m);
     font: inherit;
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
 
   .crypto__tab:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .crypto__tab.is-active {
@@ -132,7 +133,7 @@ const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
     inline-size: 100%;
     min-block-size: 7rem;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
@@ -156,7 +157,7 @@ const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
   .crypto__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   /* ---- Filas de hash ---- */
@@ -176,7 +177,7 @@ const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
     padding: var(--spacing-2xs) var(--spacing-s);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .crypto__algo {
@@ -193,7 +194,7 @@ const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
     flex: 1;
     min-inline-size: 0;
     padding: 0;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-align: start;
     color: var(--foreground);
@@ -242,7 +243,7 @@ const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .crypto__hint {

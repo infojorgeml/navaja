@@ -5,9 +5,9 @@ const t = useTranslations(getLocale(Astro));
 const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
 ---
 
-<div class="sorter flow" data-i18n={JSON.stringify(strings)}>
+<div class="sorter stack" data-i18n={JSON.stringify(strings)}>
   <div class="sorter__panels">
-    <div class="sorter__field flow">
+    <div class="sorter__field stack stack--field">
       <label class="sorter__label" for="sorter-input">{t('ordenar.linesLabel')}</label>
       <textarea
         id="sorter-input"
@@ -18,7 +18,7 @@ const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
         spellcheck="false"></textarea>
     </div>
 
-    <div class="sorter__field flow">
+    <div class="sorter__field stack stack--field">
       <label class="sorter__label" for="sorter-output">{t('common.result')}</label>
       <textarea
         id="sorter-output"
@@ -29,35 +29,37 @@ const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
     </div>
   </div>
 
-  <div class="sorter__order">
-    <span class="sorter__label">{t('ordenar.order')}</span>
-    <label class="sorter__radio">
-      <input type="radio" name="sorter-order" value="az" checked />
-      <span>{t('ordenar.az')}</span>
-    </label>
-    <label class="sorter__radio">
-      <input type="radio" name="sorter-order" value="za" />
-      <span>{t('ordenar.za')}</span>
-    </label>
-    <label class="sorter__radio">
-      <input type="radio" name="sorter-order" value="random" />
-      <span>{t('ordenar.random')}</span>
-    </label>
-  </div>
+  <div class="sorter__controls stack stack--group">
+    <div class="sorter__order">
+      <span class="sorter__label">{t('ordenar.order')}</span>
+      <label class="sorter__radio">
+        <input type="radio" name="sorter-order" value="az" checked />
+        <span>{t('ordenar.az')}</span>
+      </label>
+      <label class="sorter__radio">
+        <input type="radio" name="sorter-order" value="za" />
+        <span>{t('ordenar.za')}</span>
+      </label>
+      <label class="sorter__radio">
+        <input type="radio" name="sorter-order" value="random" />
+        <span>{t('ordenar.random')}</span>
+      </label>
+    </div>
 
-  <div class="sorter__options">
-    <label class="sorter__check">
-      <input type="checkbox" id="sorter-dedupe" />
-      <span>{t('ordenar.dedupe')}</span>
-    </label>
-    <label class="sorter__check">
-      <input type="checkbox" id="sorter-nocase" checked />
-      <span>{t('ordenar.nocase')}</span>
-    </label>
-    <label class="sorter__check">
-      <input type="checkbox" id="sorter-noempty" checked />
-      <span>{t('ordenar.noempty')}</span>
-    </label>
+    <div class="sorter__options">
+      <label class="sorter__check">
+        <input type="checkbox" id="sorter-dedupe" />
+        <span>{t('ordenar.dedupe')}</span>
+      </label>
+      <label class="sorter__check">
+        <input type="checkbox" id="sorter-nocase" checked />
+        <span>{t('ordenar.nocase')}</span>
+      </label>
+      <label class="sorter__check">
+        <input type="checkbox" id="sorter-noempty" checked />
+        <span>{t('ordenar.noempty')}</span>
+      </label>
+    </div>
   </div>
 
   <div class="sorter__actions">
@@ -76,9 +78,6 @@ const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
     gap: var(--spacing-m);
   }
 
-  .sorter__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .sorter__label {
     display: block;
@@ -107,14 +106,14 @@ const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
   .sorter__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .sorter__order {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .sorter__order .sorter__label {
@@ -155,7 +154,7 @@ const strings = { lines: t('ordenar.lines'), ofTotal: t('ordenar.ofTotal') };
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .sorter__stat,

@@ -5,9 +5,9 @@ const t = useTranslations(getLocale(Astro));
 const strings = { b64Copied: t('base64.b64Copied'), textCopied: t('base64.textCopied'), invalid: t('base64.invalid') };
 ---
 
-<div class="b64 flow" data-i18n={JSON.stringify(strings)}>
+<div class="b64 stack" data-i18n={JSON.stringify(strings)}>
   <div class="b64__panels">
-    <div class="b64__field flow">
+    <div class="b64__field stack stack--field">
       <label class="b64__label" for="b64-text">{t('common.text')}</label>
       <textarea
         id="b64-text"
@@ -18,7 +18,7 @@ const strings = { b64Copied: t('base64.b64Copied'), textCopied: t('base64.textCo
         spellcheck="false"></textarea>
     </div>
 
-    <div class="b64__field flow">
+    <div class="b64__field stack stack--field">
       <label class="b64__label" for="b64-out">Base64</label>
       <textarea
         id="b64-out"
@@ -45,9 +45,6 @@ const strings = { b64Copied: t('base64.b64Copied'), textCopied: t('base64.textCo
     gap: var(--spacing-m);
   }
 
-  .b64__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .b64__label {
     display: block;
@@ -57,7 +54,9 @@ const strings = { b64Copied: t('base64.b64Copied'), textCopied: t('base64.textCo
 
   .b64__area {
     inline-size: 100%;
-    min-block-size: 11rem;
+    /* Altura fija (no por `rows`): los dos paneles miden igual aunque uno sea mono. */
+    block-size: 12rem;
+    min-block-size: 8rem;
     padding: var(--spacing-s);
     font: inherit;
     font-size: var(--text-base);
@@ -70,7 +69,7 @@ const strings = { b64Copied: t('base64.b64Copied'), textCopied: t('base64.textCo
   }
 
   .b64__area--mono {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     word-break: break-all;
@@ -83,14 +82,14 @@ const strings = { b64Copied: t('base64.b64Copied'), textCopied: t('base64.textCo
   .b64__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .b64__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .b64__msg {

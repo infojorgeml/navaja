@@ -5,9 +5,9 @@ const t = useTranslations(getLocale(Astro));
 const strings = { removed: t('limpiador.removed') };
 ---
 
-<div class="cleaner flow" data-i18n={JSON.stringify(strings)}>
+<div class="cleaner stack" data-i18n={JSON.stringify(strings)}>
   <div class="cleaner__panels">
-    <div class="cleaner__field flow">
+    <div class="cleaner__field stack stack--field">
       <label class="cleaner__label" for="cleaner-input">{t('limpiador.origLabel')}</label>
       <textarea
         id="cleaner-input"
@@ -18,7 +18,7 @@ const strings = { removed: t('limpiador.removed') };
         spellcheck="false"></textarea>
     </div>
 
-    <div class="cleaner__field flow">
+    <div class="cleaner__field stack stack--field">
       <label class="cleaner__label" for="cleaner-output">{t('limpiador.cleanLabel')}</label>
       <textarea
         id="cleaner-output"
@@ -63,9 +63,6 @@ const strings = { removed: t('limpiador.removed') };
     gap: var(--spacing-m);
   }
 
-  .cleaner__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .cleaner__label {
     display: block;
@@ -94,7 +91,7 @@ const strings = { removed: t('limpiador.removed') };
   .cleaner__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .cleaner__options {
@@ -120,7 +117,7 @@ const strings = { removed: t('limpiador.removed') };
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .cleaner__stat,

@@ -33,15 +33,8 @@ const strings = {
 };
 ---
 
-<div class="eps flow" data-i18n={JSON.stringify(strings)}>
-  <div class="eps__intake">
-    <label class="eps__drop" data-drop>
-      <span class="eps__drop-title">{t('eps.dropTitle')}</span>
-      <span class="eps__drop-hint">{t('eps.dropHint')}</span>
-      <input type="file" accept=".eps,.epsf,.ps,application/postscript,application/eps" data-file />
-    </label>
-    <button type="button" class="btn btn--secondary" data-action="sample">{t('eps.loadSample')}</button>
-  </div>
+<div class="eps stack stack--group" data-i18n={JSON.stringify(strings)}>
+  <input type="file" accept=".eps,.epsf,.ps,application/postscript,application/eps" hidden data-file />
 
   <div class="eps__grid">
     <section class="eps__result" aria-label={t('eps.resultAria')}>
@@ -58,7 +51,19 @@ const strings = {
       </div>
 
       <div id="eps-view-prev" role="tabpanel">
-        <div class="eps__stage" data-stage data-bg="checker"></div>
+        {/* El lienzo es también la zona de entrada: se suelta o se pulsa aquí mismo. */}
+        <div class="eps__stage" data-stage data-bg="checker" data-drop={t('eps.dropRelease')}>
+          <div class="eps__empty" data-empty>
+            <p class="eps__empty-title">{t('eps.dropTitle')}</p>
+            <p class="eps__empty-hint">{t('eps.dropHint')}</p>
+            <p class="eps__empty-error" data-empty-error hidden></p>
+            <div class="eps__empty-actions">
+              <button type="button" class="btn btn--secondary" data-action="open">{t('eps.choose')}</button>
+              <button type="button" class="eps__textbtn" data-action="sample">{t('eps.loadSample')}</button>
+            </div>
+          </div>
+          <div class="eps__preview" data-preview hidden></div>
+        </div>
       </div>
       <div id="eps-view-code" role="tabpanel" hidden>
         <textarea class="eps__code" data-code readonly spellcheck="false" aria-label={t('eps.codeAria')}></textarea>
@@ -67,6 +72,7 @@ const strings = {
       <div class="eps__actions">
         <button type="button" class="btn" data-action="save" disabled>{t('eps.download')}</button>
         <button type="button" class="btn btn--secondary" data-action="copy" disabled>{t('eps.copy')}</button>
+        <button type="button" class="btn btn--secondary" data-action="open" data-open-other hidden>{t('eps.openOther')}</button>
         <span class="eps__status" data-status role="status"></span>
       </div>
     </section>
@@ -113,65 +119,6 @@ const strings = {
 </div>
 
 <style>
-  .eps {
-    --flow-space: var(--spacing-s);
-  }
-
-  /* ---- Entrada: zona de soltar + ejemplo ---- */
-  .eps__intake {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--spacing-2xs) var(--spacing-s);
-    align-items: center;
-  }
-
-  @media (max-width: 36rem) {
-    .eps__intake {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  .eps__drop {
-    position: relative;
-    display: grid;
-    gap: 0.125rem;
-    padding: var(--spacing-s);
-    text-align: center;
-    border: 1.5px dashed var(--border);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-  }
-
-  .eps__drop:hover,
-  .eps__drop.is-over {
-    border-color: var(--foreground);
-    background-color: var(--muted);
-  }
-
-  .eps__drop:focus-within {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  .eps__drop-title {
-    font-weight: 500;
-  }
-
-  .eps__drop-hint {
-    font-size: var(--text-sm);
-    color: var(--muted-foreground);
-  }
-
-  /* Input accesible por teclado pero invisible: la etiqueta es la zona de soltar. */
-  .eps__drop input {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    opacity: 0;
-    pointer-events: none;
-  }
-
   /* ---- Segmentados (pills, como Calco y Unidades) ---- */
   .eps__seg {
     display: inline-flex;
@@ -191,20 +138,21 @@ const strings = {
   .eps__pill {
     display: inline-flex;
     align-items: center;
+    min-block-size: 2.25rem;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-s);
     font: inherit;
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
 
   .eps__pill:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .eps__pill[aria-pressed='true'],
@@ -252,6 +200,7 @@ const strings = {
   }
 
   .eps__stage {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -259,7 +208,7 @@ const strings = {
     padding: var(--spacing-s);
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     background: repeating-conic-gradient(var(--muted) 0 25%, var(--background) 0 50%) 0 0 / 18px 18px;
   }
 
@@ -271,22 +220,104 @@ const strings = {
     background: #101010;
   }
 
-  /* Vista previa y estado vacío se crean por JS → :global() */
-  .eps__stage :global(img) {
+  /* Sin archivo, todo el lienzo invita a soltar o pulsar. */
+  .eps__stage.is-empty {
+    cursor: pointer;
+  }
+
+  .eps__stage.is-over::after {
+    content: attr(data-drop);
+    position: absolute;
+    inset: var(--spacing-2xs);
+    display: grid;
+    place-items: center;
+    font-weight: 500;
+    color: var(--foreground);
+    background-color: color-mix(in srgb, var(--background) 85%, transparent);
+    border: 2px dashed var(--foreground);
+    border-radius: var(--radius);
+  }
+
+  .eps__empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-2xs);
+    max-inline-size: 24rem;
+    padding: var(--spacing-m);
+    text-align: center;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  .eps__empty[hidden],
+  .eps__preview[hidden],
+  .eps__empty-error[hidden] {
+    display: none;
+  }
+
+  .eps__empty p {
+    margin: 0;
+  }
+
+  .eps__empty-title {
+    font-size: var(--text-lg);
+    font-weight: 500;
+  }
+
+  .eps__empty-hint {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .eps__empty-error {
+    font-size: var(--text-sm);
+    color: var(--destructive);
+  }
+
+  .eps__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2xs) var(--spacing-s);
+    margin-block-start: var(--spacing-3xs);
+  }
+
+  /* Acción terciaria: texto subrayado, sin caja. */
+  .eps__textbtn {
+    padding: 0;
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .eps__textbtn:hover {
+    color: var(--foreground);
+  }
+
+  .eps__textbtn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .eps__preview {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  /* La imagen de la vista previa se crea por JS → :global() bajo su padre estático. */
+  .eps__preview :global(img) {
     display: block;
     inline-size: 100%;
     block-size: 100%;
     object-fit: contain;
-  }
-
-  .eps__stage :global(.eps__empty) {
-    max-inline-size: 40ch;
-    padding: var(--spacing-2xs) var(--spacing-s);
-    text-align: center;
-    color: var(--muted-foreground);
-    background-color: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
   }
 
   .eps__code {
@@ -295,7 +326,7 @@ const strings = {
     block-size: clamp(18rem, 56vh, 34rem);
     padding: var(--spacing-s);
     resize: vertical;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     line-height: 1.55;
     white-space: pre;
@@ -304,7 +335,7 @@ const strings = {
     color: var(--foreground);
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .eps__actions {
@@ -361,6 +392,7 @@ const strings = {
   }
 
   .eps__select {
+    block-size: 2.25rem; /* control compacto: misma altura que pestañas e iconos */
     inline-size: 100%;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-2xs);
@@ -375,7 +407,7 @@ const strings = {
   .eps__select:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   /* Datos del archivo y avisos se pintan por JS → :global() bajo su padre estático. */
@@ -399,7 +431,7 @@ const strings = {
   }
 
   .eps__facts :global(.is-mono) {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
   }
 
@@ -417,7 +449,7 @@ const strings = {
     overflow-wrap: anywhere;
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .eps__notes :global(li.is-ok) {
@@ -479,7 +511,10 @@ const strings = {
     const notesEl = q('[data-notes]');
     const statusEl = q('[data-status]');
     const fileEl = q<HTMLInputElement>('[data-file]');
-    const dropEl = q('[data-drop]');
+    const emptyEl = q('[data-empty]');
+    const emptyErr = q('[data-empty-error]');
+    const previewEl = q('[data-preview]');
+    const openOther = q('[data-open-other]');
     const decEl = document.getElementById('eps-dec') as HTMLSelectElement;
     const saveBtn = q<HTMLButtonElement>('[data-action="save"]');
     const copyBtn = q<HTMLButtonElement>('[data-action="copy"]');
@@ -592,8 +627,15 @@ const strings = {
     const noteText = (n: EpsNote) =>
       (T[`note.${n.code}`] || n.code).replace('{n}', String(n.n ?? '')).replace('{ops}', n.ops ?? '');
 
-    function setStage(node: Node) {
-      stage.replaceChildren(node);
+    // Sin resultado se ve el estado vacío (soltar / elegir); con resultado, la vista previa.
+    function showEmpty(error = '') {
+      emptyErr.textContent = error;
+      emptyErr.hidden = !error;
+      emptyEl.hidden = false;
+      previewEl.hidden = true;
+      previewEl.replaceChildren();
+      stage.classList.add('is-empty');
+      openOther.hidden = true;
     }
 
     function render(r: EpsResult) {
@@ -604,7 +646,12 @@ const strings = {
       const img = document.createElement('img');
       img.alt = T.previewAlt;
       img.src = state.url;
-      setStage(img);
+      previewEl.replaceChildren(img);
+      previewEl.hidden = false;
+      emptyEl.hidden = true;
+      emptyErr.hidden = true;
+      stage.classList.remove('is-empty');
+      openOther.hidden = false;
       codeEl.value =
         r.svg.length > CODE_LIMIT ? `${r.svg.slice(0, CODE_LIMIT)}\n\n<!-- ${T.truncated} -->` : r.svg;
       setFacts([
@@ -623,10 +670,7 @@ const strings = {
 
     function renderError(msg: string) {
       state.svg = '';
-      const d = document.createElement('div');
-      d.className = 'eps__empty';
-      d.textContent = T.failed;
-      setStage(d);
+      showEmpty(T.failed);
       codeEl.value = '';
       setFacts([[T.factName, state.name]]);
       setNotes([msg], 'is-err');
@@ -662,19 +706,22 @@ const strings = {
       loadFile(fileEl.files?.[0]);
       fileEl.value = '';
     });
+    // El lienzo acepta archivos siempre: vacío para empezar, con resultado para reemplazarlo.
     for (const ev of ['dragenter', 'dragover']) {
-      dropEl.addEventListener(ev, (e) => {
+      stage.addEventListener(ev, (e) => {
         e.preventDefault();
-        dropEl.classList.add('is-over');
+        stage.classList.add('is-over');
       });
     }
-    dropEl.addEventListener('dragleave', () => dropEl.classList.remove('is-over'));
-    dropEl.addEventListener('drop', (e) => {
+    stage.addEventListener('dragleave', (e) => {
+      if (!stage.contains((e as DragEvent).relatedTarget as Node)) stage.classList.remove('is-over');
+    });
+    stage.addEventListener('drop', (e) => {
       e.preventDefault();
-      dropEl.classList.remove('is-over');
+      stage.classList.remove('is-over');
       loadFile(e.dataTransfer?.files[0]);
     });
-    // Soltar fuera de la zona no debe abrir el archivo en la pestaña.
+    // Soltar fuera del lienzo no debe abrir el archivo en la pestaña.
     window.addEventListener('dragover', (e) => e.preventDefault(), { signal: ac.signal });
     window.addEventListener('drop', (e) => e.preventDefault(), { signal: ac.signal });
 
@@ -717,6 +764,9 @@ const strings = {
 
       const action = el.closest<HTMLElement>('[data-action]')?.dataset.action;
       if (action === 'sample') return loadSample();
+      if (action === 'open') return fileEl.click();
+      // Pulsar en cualquier parte del lienzo vacío también abre el selector.
+      if (!action && stage.classList.contains('is-empty') && stage.contains(el)) return fileEl.click();
       if (!state.svg) return;
       if (action === 'save') {
         const a = document.createElement('a');
@@ -744,7 +794,7 @@ const strings = {
       }
     });
 
-    loadSample();
+    showEmpty();
   }
 
   // Con View Transitions, re-inicializar en cada carga/navegación.

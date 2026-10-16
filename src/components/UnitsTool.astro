@@ -6,7 +6,7 @@ const t = useTranslations(getLocale(Astro));
 const cats = categoryIds.map((id) => ({ id, label: t(`units.${id}`) }));
 ---
 
-<div class="units flow">
+<div class="units stack">
   <div class="units__tabs" role="tablist" aria-label={t('units.catAria')} data-tabs>
     {
       cats.map((c, i) => (
@@ -42,20 +42,21 @@ const cats = categoryIds.map((id) => ({ id, label: t(`units.${id}`) }));
   .units__tab {
     display: inline-flex;
     align-items: center;
+    min-block-size: 2.25rem;
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-m);
     font: inherit;
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
 
   .units__tab:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .units__tab.is-active {
@@ -83,16 +84,16 @@ const cats = categoryIds.map((id) => ({ id, label: t(`units.${id}`) }));
     display: flex;
     align-items: center;
     gap: var(--spacing-2xs);
-    padding: var(--spacing-2xs) var(--spacing-s);
+    padding: var(--spacing-2xs) var(--spacing-2xs) var(--spacing-2xs) var(--spacing-s);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .units__rows :global(.units__sym) {
     flex: none;
     inline-size: 2.75rem;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--muted-foreground);
@@ -102,7 +103,7 @@ const cats = categoryIds.map((id) => ({ id, label: t(`units.${id}`) }));
     flex: 1;
     min-inline-size: 0;
     padding: var(--spacing-2xs);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     color: var(--foreground);
     background-color: var(--input);
@@ -113,26 +114,26 @@ const cats = categoryIds.map((id) => ({ id, label: t(`units.${id}`) }));
   .units__rows :global(.units__in:focus-visible) {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .units__rows :global(.units__copy) {
-    inline-size: 2.25rem;
-    block-size: 2.25rem;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
     flex: none;
     display: inline-grid;
     place-items: center;
     color: var(--muted-foreground);
-    background: none;
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .units__rows :global(.units__copy:hover) {
     color: var(--foreground);
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .units__rows :global(.units__copy svg) {

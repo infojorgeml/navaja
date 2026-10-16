@@ -25,15 +25,16 @@ const label = t('chrome.themeAria');
     block-size: 2.25rem;
     padding: 0;
     color: var(--foreground);
-    background-color: transparent;
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px; /* pill — superficie interactiva */
+    border-radius: var(--radius); /* 8px — control, como los botones */
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .theme-toggle:hover {
     background-color: var(--accent);
+    border-color: var(--border-strong);
     color: var(--accent-foreground);
   }
 
@@ -43,8 +44,8 @@ const label = t('chrome.themeAria');
   }
 
   .theme-toggle svg {
-    inline-size: 1.15rem;
-    block-size: 1.15rem;
+    inline-size: 1.05rem;
+    block-size: 1.05rem;
   }
 
   /* Muestra un icono u otro según el tema activo */

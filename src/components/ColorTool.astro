@@ -12,7 +12,7 @@ const strings = {
 };
 ---
 
-<div class="color flow" data-i18n={JSON.stringify(strings)}>
+<div class="color stack" data-i18n={JSON.stringify(strings)}>
   <div class="color__inputs">
     <div class="color__field">
       <label class="color__label" for="color-hex">{t('color.colorLabel')}</label>
@@ -80,15 +80,10 @@ const strings = {
 </div>
 
 <style>
-  /* Verde/rojo semánticos (mismos que Diff): estado, no color de marca. */
+  /* Verde/rojo semánticos del sistema (mismos que Diff): estado, no color de marca. */
   .color {
-    --ok: #027f41;
+    --ok: var(--success);
     --no: var(--destructive);
-  }
-
-  :global(.dark) .color {
-    --ok: #34c273;
-    --no: #ff5c73;
   }
 
   .color__inputs {
@@ -99,7 +94,7 @@ const strings = {
 
   .color__label {
     display: block;
-    margin-block-end: var(--spacing-2xs);
+    margin-block-end: var(--gap-field);
     font-size: var(--text-sm);
     font-weight: 500;
   }
@@ -139,8 +134,8 @@ const strings = {
   .color__hex {
     flex: 1;
     min-inline-size: 0;
-    padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: var(--spacing-xs) var(--spacing-s); /* input de 44px (Cursor) */
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     text-transform: uppercase;
     color: var(--foreground);
@@ -152,7 +147,7 @@ const strings = {
   .color__hex:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .color__err {
@@ -162,7 +157,7 @@ const strings = {
   }
 
   .color__title {
-    margin: 0 0 var(--spacing-2xs);
+    margin: 0 0 var(--gap-field);
     font-size: var(--text-sm);
     font-weight: 500;
     letter-spacing: 0;
@@ -187,7 +182,7 @@ const strings = {
     padding: var(--spacing-2xs) var(--spacing-s);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .color__formats :global(.color__key) {
@@ -204,7 +199,7 @@ const strings = {
     flex: 1;
     min-inline-size: 0;
     padding: 0;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-align: start;
     color: var(--foreground);
@@ -250,7 +245,7 @@ const strings = {
   }
 
   .color__scale :global(.color__swatch-hex) {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     text-align: center;
     color: var(--muted-foreground);
@@ -267,7 +262,7 @@ const strings = {
   .color__preview {
     padding: var(--spacing-m);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .color__preview p {
@@ -286,9 +281,9 @@ const strings = {
   }
 
   .color__ratio {
-    margin: 0 0 var(--spacing-2xs);
+    margin: 0 0 var(--gap-field);
     font-size: var(--text-4xl);
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
   }
@@ -310,7 +305,7 @@ const strings = {
     padding-inline: var(--spacing-s);
     font-size: var(--text-sm);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
   }
 
   .color__badges :global(li.is-pass) {

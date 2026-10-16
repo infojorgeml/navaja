@@ -5,7 +5,7 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const t = useTranslations(getLocale(Astro));
 ---
 
-<div class="pct flow">
+<div class="pct stack">
   <div class="pct__grid">
     {/* 1 · % de un número */}
     <div class="pct__card">
@@ -15,7 +15,7 @@ const t = useTranslations(getLocale(Astro));
         <span class="pct__op">% {t('percent.of')}</span>
         <input class="pct__in" type="number" inputmode="decimal" data-c="1" data-k="v" placeholder="150" aria-label={t('percent.value')} />
       </div>
-      <p class="pct__res">= <button type="button" class="pct__val" data-r="1">—</button></p>
+      <p class="pct__res">= <button type="button" class="pct__val" data-r="1"></button></p>
     </div>
 
     {/* 2 · qué porcentaje representa */}
@@ -26,7 +26,7 @@ const t = useTranslations(getLocale(Astro));
         <span class="pct__op">{t('percent.of')}</span>
         <input class="pct__in" type="number" inputmode="decimal" data-c="2" data-k="b" placeholder="150" aria-label={t('percent.total')} />
       </div>
-      <p class="pct__res">= <button type="button" class="pct__val" data-r="2">—</button></p>
+      <p class="pct__res">= <button type="button" class="pct__val" data-r="2"></button></p>
     </div>
 
     {/* 3 · variación porcentual */}
@@ -37,7 +37,7 @@ const t = useTranslations(getLocale(Astro));
         <span class="pct__op">→</span>
         <input class="pct__in" type="number" inputmode="decimal" data-c="3" data-k="to" placeholder="150" aria-label={t('percent.to')} />
       </div>
-      <p class="pct__res">= <button type="button" class="pct__val" data-r="3">—</button></p>
+      <p class="pct__res">= <button type="button" class="pct__val" data-r="3"></button></p>
     </div>
 
     {/* 4 · aumentar o descontar (IVA, descuento, propina) */}
@@ -53,7 +53,7 @@ const t = useTranslations(getLocale(Astro));
         <span class="pct__op">%</span>
       </div>
       <p class="pct__res">
-        = <button type="button" class="pct__val" data-r="4">—</button>
+        = <button type="button" class="pct__val" data-r="4"></button>
         <span class="pct__diff" data-r="4diff"></span>
       </p>
     </div>
@@ -74,11 +74,11 @@ const t = useTranslations(getLocale(Astro));
 
   .pct__card {
     display: grid;
-    gap: var(--spacing-2xs);
+    gap: var(--spacing-xs);
     padding: var(--spacing-m);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .pct__q {
@@ -123,7 +123,7 @@ const t = useTranslations(getLocale(Astro));
   .pct__sign:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .pct__op {
@@ -150,8 +150,18 @@ const t = useTranslations(getLocale(Astro));
     cursor: pointer;
   }
 
-  .pct__val:hover {
+  /* Solo un resultado real se puede copiar: subrayado al pasar por encima. */
+  .pct__val:hover:not(:disabled) {
     text-decoration: underline;
+  }
+
+  .pct__val:disabled {
+    cursor: default;
+  }
+
+  /* Resultado de ejemplo (calculado con los placeholders): gris, como ellos. */
+  .pct__val.is-example {
+    color: var(--muted-foreground);
   }
 
   .pct__diff {
@@ -187,43 +197,55 @@ const t = useTranslations(getLocale(Astro));
 
     const field = (c: string, k: string) =>
       root.querySelector<HTMLInputElement>(`[data-c="${c}"][data-k="${k}"]`);
+    // Un campo vacío usa su placeholder: el resultado se muestra en gris como ejemplo
+    // (sin copiar) y pasa a ser real en cuanto se rellenan los campos de la tarjeta.
+    let example = false;
     const num = (c: string, k: string) => {
       const el = field(c, k);
-      if (!el || el.value.trim() === '') return NaN;
-      return Number(el.value);
+      if (!el) return NaN;
+      const raw = el.value.trim();
+      if (raw === '') {
+        example = true;
+        return Number(el.placeholder);
+      }
+      return Number(raw);
     };
     const out = (r: string) => root.querySelector<HTMLElement>(`[data-r="${r}"]`);
 
+    // Sin resultado válido (p. ej. dividir entre 0) no se pinta nada: queda solo el «=».
     function set(r: string, value: number | null, formatter = nf) {
-      const el = out(r);
+      const el = out(r) as HTMLButtonElement | null;
       if (!el) return;
-      if (value === null || !Number.isFinite(value)) {
-        el.textContent = '—';
-        delete (el as HTMLElement).dataset.copy;
-      } else {
-        el.textContent = formatter.format(value);
-        (el as HTMLElement).dataset.copy = String(parseFloat(value.toPrecision(12)));
-      }
+      const ok = value !== null && Number.isFinite(value);
+      el.textContent = ok ? formatter.format(value!) : '';
+      el.classList.toggle('is-example', example);
+      el.disabled = !ok || example;
+      if (ok && !example) el.dataset.copy = String(parseFloat(value!.toPrecision(12)));
+      else delete el.dataset.copy;
     }
 
     function render() {
       // 1 · p% de v
+      example = false;
       const p1 = num('1', 'p'), v1 = num('1', 'v');
       set('1', Number.isFinite(p1) && Number.isFinite(v1) ? (p1 / 100) * v1 : null);
 
       // 2 · a es qué % de b
+      example = false;
       const a2 = num('2', 'a'), b2 = num('2', 'b');
       set('2', Number.isFinite(a2) && Number.isFinite(b2) && b2 !== 0 ? (a2 / b2) * 100 : null, pf);
       const r2 = out('2');
-      if (r2 && r2.textContent !== '—') r2.textContent += '%';
+      if (r2 && r2.textContent) r2.textContent += '%';
 
       // 3 · variación de from a to
+      example = false;
       const f3 = num('3', 'from'), t3 = num('3', 'to');
       set('3', Number.isFinite(f3) && Number.isFinite(t3) && f3 !== 0 ? ((t3 - f3) / f3) * 100 : null, pf);
       const r3 = out('3');
-      if (r3 && r3.textContent !== '—') r3.textContent += '%';
+      if (r3 && r3.textContent) r3.textContent += '%';
 
       // 4 · valor ± p%
+      example = false;
       const v4 = num('4', 'v'), p4 = num('4', 'p');
       const signEl = field('4', 'sign');
       const sign = signEl ? Number(signEl.value) : 1;
@@ -232,6 +254,7 @@ const t = useTranslations(getLocale(Astro));
         const delta = (v4 * p4) / 100;
         set('4', v4 + sign * delta);
         if (diffEl) diffEl.textContent = `(${sign < 0 ? '−' : '+'}${nf.format(delta)})`;
+        diffEl?.classList.toggle('is-example', example);
       } else {
         set('4', null);
         if (diffEl) diffEl.textContent = '';

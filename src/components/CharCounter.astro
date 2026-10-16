@@ -4,8 +4,8 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const t = useTranslations(getLocale(Astro));
 ---
 
-<div class="counter flow">
-  <div class="counter__field flow">
+<div class="counter stack">
+  <div class="counter__field stack stack--field">
     <label class="counter__label" for="phrase">{t('contador.fieldLabel')}</label>
     <textarea
       id="phrase"
@@ -36,16 +36,13 @@ const t = useTranslations(getLocale(Astro));
   /* Dimensiones de componente con nombre propio (base-astro.md, principio 4) */
   .counter {
     --field-min-block: 9rem;
-    --stat-min: 7rem;
+    --stat-min: 5.5rem;
   }
 
-  .counter__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .counter__label {
     display: block;
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     font-weight: 500;
   }
 
@@ -70,7 +67,7 @@ const t = useTranslations(getLocale(Astro));
   .counter__input:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .counter__stats {
@@ -84,8 +81,9 @@ const t = useTranslations(getLocale(Astro));
     padding-block: var(--spacing-m);
     padding-inline: var(--spacing-s);
     text-align: center;
-    background-color: var(--muted);
-    border-radius: var(--radius);
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
   }
 
   .counter__stat dt {
@@ -100,8 +98,10 @@ const t = useTranslations(getLocale(Astro));
     margin: 0;
     margin-block-start: var(--spacing-2xs);
     font-size: var(--text-3xl);
-    font-weight: 500;
+    font-weight: 400;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+
     color: var(--foreground);
   }
 </style>

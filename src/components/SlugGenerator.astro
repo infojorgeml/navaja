@@ -4,8 +4,8 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const t = useTranslations(getLocale(Astro));
 ---
 
-<div class="slug flow">
-  <div class="slug__field flow">
+<div class="slug stack">
+  <div class="slug__field stack stack--field">
     <label class="slug__label" for="slug-input">{t('common.text')}</label>
     <textarea
       id="slug-input"
@@ -22,7 +22,7 @@ const t = useTranslations(getLocale(Astro));
     <label class="slug__radio"><input type="radio" name="slug-sep" value="_" /> <span>{t('slug.underscore')}</span></label>
   </div>
 
-  <div class="slug__field flow">
+  <div class="slug__field stack stack--field">
     <label class="slug__label" for="slug-output">{t('slug.slugLabel')}</label>
     <input id="slug-output" class="slug__out" type="text" readonly value="" aria-label={t('slug.genAria')} />
   </div>
@@ -34,9 +34,6 @@ const t = useTranslations(getLocale(Astro));
 </div>
 
 <style>
-  .slug__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .slug__label {
     display: block;
@@ -47,7 +44,7 @@ const t = useTranslations(getLocale(Astro));
   .slug__area,
   .slug__out {
     inline-size: 100%;
-    padding: var(--spacing-s);
+    padding: var(--spacing-xs) var(--spacing-s); /* input de 44px (Cursor) */
     font: inherit;
     font-size: var(--text-base);
     color: var(--foreground);
@@ -57,12 +54,13 @@ const t = useTranslations(getLocale(Astro));
   }
 
   .slug__area {
+    padding: var(--spacing-s);
     resize: vertical;
     min-block-size: 5rem;
   }
 
   .slug__out {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     color: var(--foreground);
     font-weight: 500;
@@ -76,14 +74,14 @@ const t = useTranslations(getLocale(Astro));
   .slug__out:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .slug__sep {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .slug__radio {
@@ -101,7 +99,7 @@ const t = useTranslations(getLocale(Astro));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .slug__msg {

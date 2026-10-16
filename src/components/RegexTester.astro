@@ -17,7 +17,7 @@ const strings = {
 };
 ---
 
-<div class="rx flow" data-i18n={JSON.stringify(strings)}>
+<div class="rx stack" data-i18n={JSON.stringify(strings)}>
   <div class="rx__field">
     <label class="rx__label" for="rx-pattern">{t('regex.pattern')}</label>
     <div class="rx__pattern-row">
@@ -81,8 +81,8 @@ const strings = {
 </div>
 
 <style>
-  /* Tonos de resaltado de la paleta de producto (openai.design.md §Syntax):
-     informativos, alternan para distinguir coincidencias contiguas. */
+  /* Tonos de resaltado informativos (no son de marca): alternan para distinguir
+     coincidencias contiguas. */
   .rx {
     --mark: #1e60e4;
     --mark-alt: #7a4ff5;
@@ -115,12 +115,12 @@ const strings = {
 
   .rx__pattern-row:focus-within {
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .rx__slash,
   .rx__flags-out {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     color: var(--muted-foreground);
     flex: none;
@@ -129,8 +129,8 @@ const strings = {
   .rx__pattern {
     flex: 1;
     min-inline-size: 0;
-    padding-block: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding-block: var(--spacing-xs);
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     color: var(--foreground);
     background: none;
@@ -142,7 +142,7 @@ const strings = {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .rx__flag {
@@ -160,7 +160,7 @@ const strings = {
   }
 
   .rx__flag code {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
   }
 
   .rx__error {
@@ -173,7 +173,7 @@ const strings = {
     inline-size: 100%;
     min-block-size: 9rem;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
@@ -186,7 +186,7 @@ const strings = {
   .rx__text:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .rx__section {
@@ -208,7 +208,7 @@ const strings = {
 
   .rx__highlight {
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.7;
     white-space: pre-wrap;
@@ -216,7 +216,7 @@ const strings = {
     color: var(--foreground);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     min-block-size: 4rem;
   }
 
@@ -251,7 +251,7 @@ const strings = {
     padding: var(--spacing-2xs) var(--spacing-s);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .rx__matches :global(.rx__match-head) {
@@ -262,7 +262,7 @@ const strings = {
   }
 
   .rx__matches :global(.rx__match-value) {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     overflow-wrap: anywhere;
   }
@@ -275,14 +275,14 @@ const strings = {
   }
 
   .rx__matches :global(dt) {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--muted-foreground);
   }
 
   .rx__matches :global(dd) {
     margin: 0;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     overflow-wrap: anywhere;
   }

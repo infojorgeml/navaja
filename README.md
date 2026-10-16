@@ -45,6 +45,10 @@ servidor. Todo se procesa en el navegador. Hecha con **Astro + Tailwind CSS v4**
 
 Busca cualquier herramienta al instante con **⌘K / Ctrl+K**.
 
+Cada herramienta tiene su URL en cada idioma: el inglés va en la raíz con slug inglés
+(`/counter`, `/cleaner`, `/sort-lines`) y el español en `/es/` con slug español
+(`/es/contador`, `/es/limpiador`, `/es/ordenar`).
+
 ## Stack
 
 - [Astro](https://astro.build) (SSG) con View Transitions
@@ -69,8 +73,9 @@ Requiere Node 22+.
 src/
 ├─ components/   # Header, Footer, Page, CommandPalette y la isla de cada módulo
 ├─ layouts/      # BaseLayout
-├─ lib/          # modules.ts — registro único de módulos
-├─ pages/        # índice + una ruta por herramienta
+├─ i18n/         # ui.ts — textos en inglés y español
+├─ lib/          # modules.ts — registro único de módulos (id + slug por idioma)
+├─ pages/        # índice + una ruta por herramienta (inglés en la raíz, español en es/)
 └─ styles/       # global.css — tokens, utilidades y componentes
 ```
 

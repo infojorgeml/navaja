@@ -1,5 +1,6 @@
 // src/i18n/ui.ts — diccionarios de UI (es/en) + helpers de traducción e i18n.
 // Inglés es el idioma por defecto (sin prefijo); español vive en /es/.
+import { localizeSlug } from '../lib/modules';
 
 export const defaultLocale = 'en';
 export const locales = ['en', 'es'] as const;
@@ -17,7 +18,7 @@ const es: Dict = {
   // Home
   'home.metaTitle': 'Deftkit — Herramientas online rápidas y privadas',
   'home.metaDesc': 'Herramientas de texto, desarrollo, diseño e imagen que funcionan en tu navegador: rápidas, sin distracciones y sin subir nada.',
-  'home.eyebrow': '{n} herramientas · sin distracciones',
+  'home.eyebrow': '{n} herramientas · gratis · sin distracciones · open source',
   'home.title': '¿Qué necesitas hacer?',
   'home.launch': 'Busca una herramienta…',
   'home.launchAria': 'Buscar una herramienta',
@@ -464,8 +465,11 @@ const es: Dict = {
   'tool.calco.desc': 'Imagen a SVG vectorial',
   'tool.calco.title': 'Calco de imagen',
   'tool.calco.lead': 'Convierte una imagen en un SVG vectorial, a una tinta o a varios colores. Todo se procesa en tu navegador.',
-  'calco.open': 'Abrir imagen',
-  'calco.hint': 'o arrástrala aquí, o pégala con ⌘V',
+  'calco.dropTitle': 'Suelta aquí tu imagen',
+  'calco.dropHint': 'o elígela de tu equipo, o pégala con ⌘V. No se sube a ningún sitio.',
+  'calco.choose': 'Elegir imagen',
+  'calco.trySample': 'Probar con un ejemplo',
+  'calco.openOther': 'Abrir otra imagen',
   'calco.drop': 'Suelta la imagen',
   'calco.viewAria': 'Vista',
   'calco.viewOrig': 'Original',
@@ -516,8 +520,11 @@ const es: Dict = {
   'tool.eps.title': 'EPS a SVG',
   'tool.eps.lead': 'Convierte archivos EPS en SVG sin salir del navegador. El archivo se procesa en tu equipo y no se sube a ningún sitio.',
   'eps.dropTitle': 'Suelta aquí tu EPS',
-  'eps.dropHint': 'o pulsa para elegir un archivo (.eps, .epsf, .ps)',
-  'eps.loadSample': 'Cargar el ejemplo',
+  'eps.dropHint': 'o elige uno de tu equipo (.eps, .epsf, .ps). No se sube a ningún sitio.',
+  'eps.dropRelease': 'Suelta para convertir',
+  'eps.choose': 'Elegir archivo',
+  'eps.openOther': 'Abrir otro archivo',
+  'eps.loadSample': 'Probar con un ejemplo',
   'eps.resultAria': 'Resultado',
   'eps.viewAria': 'Vista del resultado',
   'eps.tabPreview': 'Vista previa',
@@ -625,7 +632,7 @@ const en: Dict = {
   // Home
   'home.metaTitle': 'Deftkit — Fast, private online tools',
   'home.metaDesc': 'Text, developer, design and image tools that run in your browser: fast, no distractions, nothing uploaded.',
-  'home.eyebrow': '{n} tools · no distractions',
+  'home.eyebrow': '{n} tools · free · no distractions · open source',
   'home.title': 'What do you need to do?',
   'home.launch': 'Search for a tool…',
   'home.launchAria': 'Search for a tool',
@@ -1072,8 +1079,11 @@ const en: Dict = {
   'tool.calco.desc': 'Image to vector SVG',
   'tool.calco.title': 'Image trace',
   'tool.calco.lead': 'Turn an image into a vector SVG, in one ink or several colors. Everything runs in your browser.',
-  'calco.open': 'Open image',
-  'calco.hint': 'or drop it here, or paste it with ⌘V',
+  'calco.dropTitle': 'Drop your image here',
+  'calco.dropHint': 'or choose one from your device, or paste it with ⌘V. Nothing is uploaded.',
+  'calco.choose': 'Choose image',
+  'calco.trySample': 'Try a sample',
+  'calco.openOther': 'Open another image',
   'calco.drop': 'Drop the image',
   'calco.viewAria': 'View',
   'calco.viewOrig': 'Original',
@@ -1124,8 +1134,11 @@ const en: Dict = {
   'tool.eps.title': 'EPS to SVG',
   'tool.eps.lead': 'Convert EPS files to SVG without leaving the browser. The file is processed on your device and never uploaded.',
   'eps.dropTitle': 'Drop your EPS here',
-  'eps.dropHint': 'or click to choose a file (.eps, .epsf, .ps)',
-  'eps.loadSample': 'Load the sample',
+  'eps.dropHint': 'or choose one from your device (.eps, .epsf, .ps). Nothing is uploaded.',
+  'eps.dropRelease': 'Release to convert',
+  'eps.choose': 'Choose file',
+  'eps.openOther': 'Open another file',
+  'eps.loadSample': 'Try a sample',
   'eps.resultAria': 'Result',
   'eps.viewAria': 'Result view',
   'eps.tabPreview': 'Preview',
@@ -1247,4 +1260,10 @@ export function basePath(pathname: string): string {
   const seg = pathname.replace(/\/+$/, '').split('/').filter(Boolean);
   if (seg[0] === 'es') seg.shift();
   return seg.join('/');
+}
+
+// Ruta base de la página equivalente en otro idioma (para el selector EN/ES y hreflang).
+// Cada idioma tiene su slug: '/es/contador/' → 'counter' (en), '/counter/' → 'contador' (es).
+export function localizedBasePath(pathname: string, from: Locale, to: Locale): string {
+  return localizeSlug(basePath(pathname), from, to);
 }

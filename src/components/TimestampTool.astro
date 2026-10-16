@@ -19,7 +19,7 @@ const strings = {
 };
 ---
 
-<div class="ts flow" data-i18n={JSON.stringify(strings)}>
+<div class="ts stack" data-i18n={JSON.stringify(strings)}>
   <div class="ts__top">
     <div class="ts__field">
       <label class="ts__label" for="ts-input">{t('timestamp.input')}</label>
@@ -79,8 +79,8 @@ const strings = {
   .ts__input {
     flex: 1;
     min-inline-size: 0;
-    padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: var(--spacing-xs) var(--spacing-s); /* input de 44px (Cursor) */
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     color: var(--foreground);
     background-color: var(--input);
@@ -97,12 +97,12 @@ const strings = {
   .ts__select:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .ts__select {
     inline-size: 100%;
-    padding: var(--spacing-s);
+    padding: var(--spacing-xs) var(--spacing-s); /* input de 44px (Cursor) */
     font: inherit;
     font-size: var(--text-base);
     color: var(--foreground);
@@ -139,7 +139,7 @@ const strings = {
     padding: var(--spacing-2xs) var(--spacing-s);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
   }
 
   .ts__out :global(.ts__key) {
@@ -156,7 +156,7 @@ const strings = {
     flex: 1;
     min-inline-size: 0;
     padding: 0;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-align: start;
     color: var(--foreground);

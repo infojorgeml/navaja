@@ -5,9 +5,9 @@ const t = useTranslations(getLocale(Astro));
 const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied'), invalid: t('url.invalid') };
 ---
 
-<div class="url flow" data-i18n={JSON.stringify(strings)}>
+<div class="url stack" data-i18n={JSON.stringify(strings)}>
   <div class="url__panels">
-    <div class="url__field flow">
+    <div class="url__field stack stack--field">
       <label class="url__label" for="url-text">{t('common.text')}</label>
       <textarea
         id="url-text"
@@ -18,7 +18,7 @@ const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied')
         spellcheck="false"></textarea>
     </div>
 
-    <div class="url__field flow">
+    <div class="url__field stack stack--field">
       <label class="url__label" for="url-out">{t('url.encodedLabel')}</label>
       <textarea
         id="url-out"
@@ -57,9 +57,6 @@ const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied')
     gap: var(--spacing-m);
   }
 
-  .url__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .url__label {
     display: block;
@@ -69,7 +66,9 @@ const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied')
 
   .url__area {
     inline-size: 100%;
-    min-block-size: 11rem;
+    /* Altura fija (no por `rows`): los dos paneles miden igual aunque uno sea mono. */
+    block-size: 12rem;
+    min-block-size: 8rem;
     padding: var(--spacing-s);
     font: inherit;
     font-size: var(--text-base);
@@ -82,7 +81,7 @@ const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied')
   }
 
   .url__area--mono {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     word-break: break-all;
@@ -95,14 +94,14 @@ const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied')
   .url__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .url__mode {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-2xs) var(--spacing-s);
   }
 
   .url__mode .url__label {
@@ -124,7 +123,7 @@ const strings = { urlCopied: t('url.urlCopied'), textCopied: t('url.textCopied')
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .url__msg {

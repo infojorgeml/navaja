@@ -13,7 +13,7 @@ const fixed = [
 const customBases = Array.from({ length: 35 }, (_, i) => i + 2); // 2–36
 ---
 
-<div class="bases flow" data-i18n={JSON.stringify(strings)}>
+<div class="bases stack stack--group" data-i18n={JSON.stringify(strings)}>
   {
     fixed.map((f) => (
       <div class="bases__row">
@@ -100,13 +100,13 @@ const customBases = Array.from({ length: 35 }, (_, i) => i + 2); // 2–36
   }
 
   .bases__badge {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     padding-block: 0.05rem;
     padding-inline: 0.35rem;
     color: var(--muted-foreground);
     background-color: var(--muted);
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
   }
 
   .bases__base-select {
@@ -129,8 +129,8 @@ const customBases = Array.from({ length: 35 }, (_, i) => i + 2); // 2–36
   .bases__input {
     flex: 1;
     min-inline-size: 0;
-    padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: var(--spacing-xs) var(--spacing-s); /* input de 44px (Cursor) */
+    font-family: var(--font-mono);
     font-size: var(--text-base);
     color: var(--foreground);
     background-color: var(--input);
@@ -142,7 +142,7 @@ const customBases = Array.from({ length: 35 }, (_, i) => i + 2); // 2–36
   .bases__input:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .bases__input[data-invalid] {
@@ -156,16 +156,16 @@ const customBases = Array.from({ length: 35 }, (_, i) => i + 2); // 2–36
     display: inline-grid;
     place-items: center;
     color: var(--muted-foreground);
-    background: none;
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease;
   }
 
   .bases__copy:hover {
     color: var(--foreground);
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .bases__copy:focus-visible {

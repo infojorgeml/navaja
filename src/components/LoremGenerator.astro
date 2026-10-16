@@ -4,7 +4,7 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const t = useTranslations(getLocale(Astro));
 ---
 
-<div class="lorem flow">
+<div class="lorem stack">
   <div class="lorem__controls">
     <label class="lorem__field">
       <span class="lorem__label">{t('lorem.amount')}</span>
@@ -48,17 +48,17 @@ const t = useTranslations(getLocale(Astro));
 
   .lorem__field {
     display: grid;
-    gap: var(--spacing-3xs);
+    gap: var(--gap-field);
   }
 
   .lorem__label {
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     font-weight: 500;
-    color: var(--muted-foreground);
   }
 
   .lorem__input {
     inline-size: 100%;
+    min-block-size: 2.5rem;
     padding-block: var(--spacing-2xs);
     padding-inline: var(--spacing-xs);
     font: inherit;
@@ -72,15 +72,18 @@ const t = useTranslations(getLocale(Astro));
   .lorem__input:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
+  /* Misma altura que los inputs para que la fila alinee por abajo. */
   .lorem__check {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2xs);
-    font-size: var(--text-base);
+    min-block-size: 2.5rem;
+    font-size: var(--text-sm);
   }
+
 
   .lorem__check input {
     inline-size: 1rem;
@@ -91,7 +94,7 @@ const t = useTranslations(getLocale(Astro));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .lorem__copied {

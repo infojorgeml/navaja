@@ -7,16 +7,19 @@ import { getLocale, useTranslations } from '../i18n/ui';
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 const items = modules.map((m) => ({
-  href: getRelativeLocaleUrl(locale, m.slug),
-  label: t(`tool.${m.slug}.label`),
-  description: t(`tool.${m.slug}.desc`),
+  id: m.id,
+  href: getRelativeLocaleUrl(locale, m.slugs[locale]),
+  label: t(`tool.${m.id}.label`),
+  description: t(`tool.${m.id}.desc`),
 }));
-// Chips de sugerencia bajo el lanzador (el resto vive en el grid y en ⌘K).
-const featured = items.slice(0, 4);
+// Chips de sugerencia bajo el lanzador (el resto vive en el grid y en ⌘K): una
+// selección destacada por id, no las primeras del grid, que ya se ven debajo.
+const FEATURED = ['calco', 'csv', 'gradiente', 'naming', 'units'];
+const featured = FEATURED.map((id) => items.find((i) => i.id === id)!);
 ---
 
 <main class="home">
-  {/* Above-fold OpenAI: lienzo casi vacío, el lanzador es el héroe (no un titular). */}
+  {/* Above-fold: lienzo crema casi vacío; el lanzador es el héroe, no un titular. */}
   <section class="hero">
     <p class="hero__eyebrow">{t('home.eyebrow', { n: modules.length })}</p>
     <h1 class="hero__title">{t('home.title')}</h1>
@@ -40,7 +43,7 @@ const featured = items.slice(0, 4);
     </ul>
   </section>
 
-  {/* Below-fold: grid denso de tarjetas planas (la imaginería de OpenAI = aquí, las herramientas). */}
+  {/* Below-fold: grid de feature-cards blancas sobre el lienzo crema. */}
   <section class="grid-section">
     <h2 class="grid-section__title">{t('home.allTools')}</h2>
     <ul class="modules" role="list">
@@ -101,32 +104,33 @@ const featured = items.slice(0, 4);
     font-size: var(--text-4xl);
   }
 
-  /* Pill estilo input de OpenAI: lienzo + hairline, full-round, icono a la izda. */
+  /* Input de Cursor como lanzador: tarjeta blanca + hairline, radio 8px. */
   .hero__launch {
     display: flex;
     align-items: center;
     gap: var(--spacing-2xs);
     inline-size: min(100%, 36rem);
+    min-block-size: 3rem;
     padding-block: var(--spacing-2xs);
-    padding-inline: var(--spacing-s);
+    padding-inline: var(--spacing-s) var(--spacing-xs);
     font: inherit;
     font-size: var(--text-base);
     color: var(--muted-foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .hero__launch:hover {
-    border-color: var(--foreground);
+    border-color: var(--border-strong);
   }
 
   .hero__launch:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .hero__launch svg {
@@ -142,13 +146,14 @@ const featured = items.slice(0, 4);
 
   .hero__kbd {
     flex: none;
-    font-family: inherit;
+    font-family: var(--font-mono);
     font-size: var(--text-2xs);
     padding-block: 0.1rem;
     padding-inline: 0.4rem;
     color: var(--muted-foreground);
-    background-color: var(--muted);
-    border-radius: 9999px;
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs, 0.25rem);
   }
 
   .hero__chips {
@@ -161,7 +166,7 @@ const featured = items.slice(0, 4);
     gap: var(--spacing-2xs);
   }
 
-  /* Suggestion-chip: lienzo + hairline, pill. */
+  /* Chip de sugerencia: el único sitio de la home con pill (chips y badges). */
   .chip {
     display: inline-flex;
     align-items: center;
@@ -169,16 +174,16 @@ const featured = items.slice(0, 4);
     padding-inline: var(--spacing-s);
     font-size: var(--text-sm);
     color: var(--foreground);
-    background-color: var(--background);
+    background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     text-decoration: none;
     transition: border-color 0.15s ease, background-color 0.15s ease;
   }
 
   .chip:hover {
-    border-color: var(--foreground);
-    background-color: var(--muted);
+    border-color: var(--border-strong);
+    background-color: var(--accent);
   }
 
   .chip:focus-visible {
@@ -191,12 +196,14 @@ const featured = items.slice(0, 4);
     padding-block-end: var(--spacing-2xl);
   }
 
+  /* Caption en mayúsculas de Cursor como rótulo de sección. */
   .grid-section__title {
-    margin: 0 0 var(--spacing-m);
-    font-size: var(--text-lg);
+    margin: 0 0 var(--spacing-s);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--muted-foreground);
-    font-weight: 500;
-    letter-spacing: 0;
   }
 
   .modules {
@@ -208,25 +215,24 @@ const featured = items.slice(0, 4);
     gap: var(--spacing-s);
   }
 
-  /* Tarjeta plana: lienzo + hairline (la hairline es la elevación). */
+  /* Feature-card de Cursor: blanco sobre crema, hairline, radio 12px, sin sombra. */
   .module {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-s);
     block-size: 100%;
-    padding: var(--spacing-m);
+    padding: var(--spacing-s) var(--spacing-m);
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-card);
     color: var(--foreground);
     text-decoration: none;
     transition: border-color 0.15s ease, background-color 0.15s ease;
   }
 
   .module:hover {
-    border-color: var(--foreground); /* borde tinta en hover, sin sombra de color */
-    background-color: var(--muted);
+    border-color: var(--border-strong); /* hairline más firme en hover, sin sombra */
   }
 
   .module:focus-visible {
@@ -247,6 +253,7 @@ const featured = items.slice(0, 4);
 
   .module__desc {
     font-size: var(--text-sm);
+    line-height: 1.4;
     color: var(--muted-foreground);
   }
 

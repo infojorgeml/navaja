@@ -14,7 +14,7 @@ const strings = {
 };
 ---
 
-<div class="csv flow" data-i18n={JSON.stringify(strings)}>
+<div class="csv stack" data-i18n={JSON.stringify(strings)}>
   <div class="csv__bar">
     <div class="csv__dir" role="group" aria-label={t('csv.direction')}>
       <label class="csv__radio">
@@ -107,6 +107,7 @@ const strings = {
   }
 
   .csv__select {
+    block-size: 2.25rem; /* control compacto: misma altura que pestañas e iconos */
     padding-block: var(--spacing-3xs);
     padding-inline: var(--spacing-2xs);
     font: inherit;
@@ -137,7 +138,7 @@ const strings = {
     inline-size: 100%;
     min-block-size: 15rem;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
@@ -161,7 +162,7 @@ const strings = {
   .csv__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .csv__status {
@@ -179,7 +180,7 @@ const strings = {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .csv__msg {

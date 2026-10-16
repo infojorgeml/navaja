@@ -31,13 +31,13 @@ const year = new Date().getFullYear();
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-2xs) var(--spacing-m);
-    padding-block: var(--spacing-m);
+    padding-block: var(--spacing-l);
   }
 
   .footer__left,
   .footer__right {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     color: var(--muted-foreground);
   }
 
@@ -52,7 +52,7 @@ const year = new Date().getFullYear();
   }
 
   .footer__version {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
   }
 

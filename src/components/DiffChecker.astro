@@ -12,9 +12,9 @@ const strings = {
 };
 ---
 
-<div class="diff flow" data-i18n={JSON.stringify(strings)}>
+<div class="diff stack" data-i18n={JSON.stringify(strings)}>
   <div class="diff__panels">
-    <div class="diff__field flow">
+    <div class="diff__field stack stack--field">
       <label class="diff__label" for="diff-a">{t('diff.original')}</label>
       <textarea
         id="diff-a"
@@ -25,7 +25,7 @@ const strings = {
         spellcheck="false"></textarea>
     </div>
 
-    <div class="diff__field flow">
+    <div class="diff__field stack stack--field">
       <label class="diff__label" for="diff-b">{t('diff.modified')}</label>
       <textarea
         id="diff-b"
@@ -39,7 +39,7 @@ const strings = {
 
   <p class="diff__status" data-status>{t('diff.hint')}</p>
 
-  <div class="diff__result flow" data-result hidden>
+  <div class="diff__result stack" data-result hidden>
     <ul class="diff__output" data-output role="list" aria-label={t('tool.diff.label')}></ul>
 
     <div class="diff__actions">
@@ -50,16 +50,11 @@ const strings = {
 </div>
 
 <style>
-  /* Tonos de diff: verde/rojo de la paleta de producto (openai.design.md §Syntax).
-     Único sitio de la app donde aparecen — son semánticos, no de marca. */
+  /* Tonos de diff: los semánticos del sistema (semantic-success / semantic-error
+     de cursor.design.md). Son de estado, no de marca. */
   .diff {
-    --diff-add: #027f41;
+    --diff-add: var(--success);
     --diff-del: var(--destructive);
-  }
-
-  :global(.dark) .diff {
-    --diff-add: #34c273; /* más luminoso para el lienzo oscuro */
-    --diff-del: #ff5c73;
   }
 
   .diff__panels {
@@ -68,9 +63,6 @@ const strings = {
     gap: var(--spacing-m);
   }
 
-  .diff__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .diff__label {
     display: block;
@@ -82,7 +74,7 @@ const strings = {
     inline-size: 100%;
     min-block-size: 12rem;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
@@ -101,7 +93,7 @@ const strings = {
   .diff__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   .diff__status {
@@ -126,11 +118,11 @@ const strings = {
   .diff__output {
     list-style: none;
     margin: 0;
-    padding: var(--spacing-2xs) 0;
+    padding: var(--spacing-xs) 0;
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    border-radius: var(--radius-card);
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     overflow-x: auto;
@@ -176,7 +168,7 @@ const strings = {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .diff__msg {

@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Deftkit">
-  <rect width="32" height="32" rx="7" fill="#000000" />
-  <circle cx="14" cy="18.5" r="5.5" fill="none" stroke="#ffffff" stroke-width="3" />
-  <rect x="18" y="6" width="3" height="19.5" rx="1.5" fill="#ffffff" />
+<svg width="721" height="721" viewBox="0 0 721 721" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 100C0 44.7715 44.7715 0 100 0H621C676.228 0 721 44.7715 721 100V621C721 676.228 676.228 721 621 721H100C44.7715 721 0 676.228 0 621V100Z" fill="black"/>
+<path d="M137 340.498L496.513 86.1255V147.175L137 401.548V340.498Z" fill="white"/>
+<path d="M137 535.517L496.513 281.145V342.194L137 596.567V535.517Z" fill="white"/>
+<path d="M223.487 377.806L583 123.433V184.483L223.487 438.856V377.806Z" fill="white"/>
+<path d="M223.487 572.825L583 318.453V379.502L223.487 633.875V572.825Z" fill="white"/>
 </svg>

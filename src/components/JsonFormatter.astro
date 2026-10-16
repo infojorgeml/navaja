@@ -5,8 +5,8 @@ const t = useTranslations(getLocale(Astro));
 const strings = { valid: t('json.valid'), pos: t('json.pos') };
 ---
 
-<div class="json flow" data-i18n={JSON.stringify(strings)}>
-  <div class="json__field flow">
+<div class="json stack" data-i18n={JSON.stringify(strings)}>
+  <div class="json__field stack stack--field">
     <label class="json__label" for="json-input">JSON</label>
     <textarea
       id="json-input"
@@ -29,9 +29,6 @@ const strings = { valid: t('json.valid'), pos: t('json.pos') };
 </div>
 
 <style>
-  .json__field {
-    --flow-space: var(--spacing-2xs);
-  }
 
   .json__label {
     display: block;
@@ -43,7 +40,7 @@ const strings = { valid: t('json.valid'), pos: t('json.pos') };
     inline-size: 100%;
     min-block-size: 16rem;
     padding: var(--spacing-s);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: var(--text-sm);
     line-height: 1.6;
     color: var(--foreground);
@@ -62,7 +59,7 @@ const strings = { valid: t('json.valid'), pos: t('json.pos') };
   .json__area:focus-visible {
     outline: none;
     border-color: var(--ring);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    box-shadow: var(--focus-halo);
   }
 
   /* Borde en tinta de error cuando el JSON no parsea */
@@ -84,7 +81,7 @@ const strings = { valid: t('json.valid'), pos: t('json.pos') };
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
   .json__msg {
