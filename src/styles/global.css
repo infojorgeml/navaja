@@ -98,7 +98,7 @@
 
   /* Modo oscuro = misma disciplina de OpenAI, invertida: tinta clara sobre
      lienzo casi negro, botón blanco. (El marketing de OpenAI es solo claro;
-     esto extiende su lógica al toggle de Navaja.) */
+     esto extiende su lógica al toggle de Deftkit.) */
   --background: #0a0a0a;          /* canvas oscuro */
   --foreground: #f5f5f5;          /* tinta clara */
   --card: #161616;

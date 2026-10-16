@@ -15,9 +15,9 @@ const es: Dict = {
   'chrome.langAria': 'Idioma',
 
   // Home
-  'home.metaTitle': 'Navaja — Utilidades de texto',
-  'home.metaDesc': 'Una colección de utilidades de texto, rápidas y sin distracciones.',
-  'home.eyebrow': '{n} utilidades de texto · sin distracciones',
+  'home.metaTitle': 'Deftkit — Herramientas online rápidas y privadas',
+  'home.metaDesc': 'Herramientas de texto, desarrollo, diseño e imagen que funcionan en tu navegador: rápidas, sin distracciones y sin subir nada.',
+  'home.eyebrow': '{n} herramientas · sin distracciones',
   'home.title': '¿Qué necesitas hacer?',
   'home.launch': 'Busca una herramienta…',
   'home.launchAria': 'Buscar una herramienta',
@@ -28,7 +28,7 @@ const es: Dict = {
   'cmdk.empty': 'Sin resultados',
 
   // Footer
-  'footer.rights': '© {year} Navaja. Todos los derechos reservados.',
+  'footer.rights': '© {year} Deftkit. Todos los derechos reservados.',
   'footer.os': 'Open source',
   'footer.by': 'Creado por',
 
@@ -191,7 +191,7 @@ const es: Dict = {
   'diff.removed': 'eliminadas',
 
   // JSON
-  'json.ph': '{"nombre": "Navaja", "modulos": 15}',
+  'json.ph': '{"nombre": "Deftkit", "modulos": 15}',
   'json.format': 'Formatear',
   'json.minify': 'Minificar',
   'json.valid': 'JSON válido',
@@ -348,7 +348,7 @@ const es: Dict = {
   'regex.empty': 'Escribe una expresión para empezar',
   'regex.defaultPattern': '(?<usuario>[\\w.+-]+)@(?<dominio>[\\w.-]+\\.\\w+)',
   'regex.defaultText':
-    'Escribe a ana.garcia@example.com o a soporte@navaja.es.\nPublicado el 2026-07-09 y actualizado el 2026-08-01.',
+    'Escribe a ana.garcia@example.com o a soporte@deftkit.app.\nPublicado el 2026-07-09 y actualizado el 2026-08-01.',
 
   // Timestamp (tarjeta, página y componente)
   'tool.timestamp.label': 'Timestamp',
@@ -623,9 +623,9 @@ const en: Dict = {
   'chrome.langAria': 'Language',
 
   // Home
-  'home.metaTitle': 'Navaja — Text utilities',
-  'home.metaDesc': 'A collection of fast, no-nonsense text utilities.',
-  'home.eyebrow': '{n} text utilities · no distractions',
+  'home.metaTitle': 'Deftkit — Fast, private online tools',
+  'home.metaDesc': 'Text, developer, design and image tools that run in your browser: fast, no distractions, nothing uploaded.',
+  'home.eyebrow': '{n} tools · no distractions',
   'home.title': 'What do you need to do?',
   'home.launch': 'Search for a tool…',
   'home.launchAria': 'Search for a tool',
@@ -636,7 +636,7 @@ const en: Dict = {
   'cmdk.empty': 'No results',
 
   // Footer
-  'footer.rights': '© {year} Navaja. All rights reserved.',
+  'footer.rights': '© {year} Deftkit. All rights reserved.',
   'footer.os': 'Open source',
   'footer.by': 'Built by',
 
@@ -799,7 +799,7 @@ const en: Dict = {
   'diff.removed': 'removed',
 
   // JSON
-  'json.ph': '{"name": "Navaja", "tools": 15}',
+  'json.ph': '{"name": "Deftkit", "tools": 15}',
   'json.format': 'Format',
   'json.minify': 'Minify',
   'json.valid': 'Valid JSON',
@@ -956,7 +956,7 @@ const en: Dict = {
   'regex.empty': 'Type a pattern to start',
   'regex.defaultPattern': '(?<user>[\\w.+-]+)@(?<domain>[\\w.-]+\\.\\w+)',
   'regex.defaultText':
-    'Write to ana.garcia@example.com or soporte@navaja.es.\nPublished on 2026-07-09 and updated on 2026-08-01.',
+    'Write to ana.garcia@example.com or soporte@deftkit.app.\nPublished on 2026-07-09 and updated on 2026-08-01.',
 
   // Timestamp (card, page and component)
   'tool.timestamp.label': 'Timestamp',

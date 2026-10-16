@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Contador">
-  <rect width="32" height="32" rx="7" fill="#0b0b0c" />
-  <text x="16" y="21" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">123</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Deftkit">
+  <rect width="32" height="32" rx="7" fill="#000000" />
+  <circle cx="14" cy="18.5" r="5.5" fill="none" stroke="#ffffff" stroke-width="3" />
+  <rect x="18" y="6" width="3" height="19.5" rx="1.5" fill="#ffffff" />
 </svg>

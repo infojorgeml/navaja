@@ -9,6 +9,9 @@ interface Props {
   description: string;
 }
 const { title, description } = Astro.props;
+// Las páginas de herramienta llevan la marca al final; la home ya la lleva delante.
+const SITE_NAME = 'Deftkit';
+const fullTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
 const locale = getLocale(Astro);
 // `Astro.site` solo existe si defines `site` en astro.config.mjs (ver base-astro.md §3).
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
@@ -28,7 +31,7 @@ const ogLocale = locale === 'en' ? 'en_US' : 'es_ES';
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<title>{title}</title>
+<title>{fullTitle}</title>
 <meta name="description" content={description} />
 {canonical && <link rel="canonical" href={canonical} />}
 {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
@@ -40,5 +43,6 @@ const ogLocale = locale === 'en' ? 'en_US' : 'es_ES';
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE_NAME} />
 <meta property="og:locale" content={ogLocale} />
 {canonical && <meta property="og:url" content={canonical} />}

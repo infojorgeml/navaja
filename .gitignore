@@ -21,7 +21,7 @@ pnpm-debug.log*
 # macOS
 .DS_Store
 
-# Notas de trabajo personales (no forman parte del producto Navaja)
+# Notas de trabajo personales (no forman parte del producto Deftkit)
 /rol/
 /base-astro.md
 /Builder.md
