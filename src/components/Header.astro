@@ -34,8 +34,8 @@ const brandUrl = getRelativeLocaleUrl(locale, '');
       </button>
 
       <div class="lang" role="group" aria-label={t('chrome.langAria')}>
-        <a class="lang__opt" href={esUrl} aria-current={locale === 'es' ? 'true' : 'false'} hreflang="es">ES</a>
         <a class="lang__opt" href={enUrl} aria-current={locale === 'en' ? 'true' : 'false'} hreflang="en">EN</a>
+        <a class="lang__opt" href={esUrl} aria-current={locale === 'es' ? 'true' : 'false'} hreflang="es">ES</a>
       </div>
 
       <ThemeToggle />

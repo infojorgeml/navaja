@@ -1,8 +1,8 @@
 // src/i18n/ui.ts — diccionarios de UI (es/en) + helpers de traducción e i18n.
-// Español es el idioma por defecto (sin prefijo); inglés vive en /en/.
+// Inglés es el idioma por defecto (sin prefijo); español vive en /es/.
 
-export const defaultLocale = 'es';
-export const locales = ['es', 'en'] as const;
+export const defaultLocale = 'en';
+export const locales = ['en', 'es'] as const;
 export type Locale = (typeof locales)[number];
 
 type Dict = Record<string, string>;
@@ -1227,7 +1227,7 @@ export const ui: Record<Locale, Dict> = { es, en };
 
 export function getLocale(astro: { currentLocale?: string }): Locale {
   const l = astro.currentLocale;
-  return l === 'en' ? 'en' : 'es';
+  return l === 'es' ? 'es' : 'en';
 }
 
 export function useTranslations(locale: Locale) {
@@ -1242,9 +1242,9 @@ export function useTranslations(locale: Locale) {
   };
 }
 
-// Ruta base sin prefijo de idioma ni barras: '/en/contador/' → 'contador', '/' → ''.
+// Ruta base sin prefijo de idioma ni barras: '/es/contador/' → 'contador', '/' → ''.
 export function basePath(pathname: string): string {
   const seg = pathname.replace(/\/+$/, '').split('/').filter(Boolean);
-  if (seg[0] === 'en') seg.shift();
+  if (seg[0] === 'es') seg.shift();
   return seg.join('/');
 }

@@ -12,11 +12,11 @@ export default defineConfig({
   // URL provisional de Vercel; sustituir por el dominio definitivo cuando lo haya.
   site: 'https://navaja-ochre.vercel.app',
 
-  // Bilingüe: español por defecto en la raíz (/contador) e inglés en /en/.
-  // `prefixDefaultLocale: false` mantiene intactas las URLs españolas ya indexadas.
+  // Bilingüe: inglés por defecto en la raíz (/contador) y español en /es/.
+  // `prefixDefaultLocale: false`: el idioma por defecto va sin prefijo.
   i18n: {
-    locales: ['es', 'en'],
-    defaultLocale: 'es',
+    locales: ['en', 'es'],
+    defaultLocale: 'en',
     routing: { prefixDefaultLocale: false },
   },
 
@@ -25,8 +25,8 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: {
-        defaultLocale: 'es',
-        locales: { es: 'es-ES', en: 'en-US' },
+        defaultLocale: 'en',
+        locales: { en: 'en-US', es: 'es-ES' },
       },
     }),
   ],

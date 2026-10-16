@@ -464,7 +464,7 @@ const strings = {
     if (!root) return;
 
     const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
-    const lang = document.documentElement.lang || 'es';
+    const lang = document.documentElement.lang || 'en';
     const q = <E extends Element = HTMLElement>(sel: string) => root.querySelector<E>(sel)!;
     const input = (id: string) => document.getElementById(`pixel-${id}`) as HTMLInputElement;
 

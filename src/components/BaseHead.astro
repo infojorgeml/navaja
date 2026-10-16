@@ -16,13 +16,13 @@ const locale = getLocale(Astro);
 // `Astro.site` solo existe si defines `site` en astro.config.mjs (ver base-astro.md §3).
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
 
-// hreflang: la misma página en cada idioma (+ x-default → español).
+// hreflang: la misma página en cada idioma (+ x-default → inglés).
 const base = basePath(Astro.url.pathname);
 const alternates = Astro.site
   ? [
-      { hreflang: 'es', href: getAbsoluteLocaleUrl('es', base) },
       { hreflang: 'en', href: getAbsoluteLocaleUrl('en', base) },
-      { hreflang: 'x-default', href: getAbsoluteLocaleUrl('es', base) },
+      { hreflang: 'es', href: getAbsoluteLocaleUrl('es', base) },
+      { hreflang: 'x-default', href: getAbsoluteLocaleUrl('en', base) },
     ]
   : [];
 const ogLocale = locale === 'en' ? 'en_US' : 'es_ES';
