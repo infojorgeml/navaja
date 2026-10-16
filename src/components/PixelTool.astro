@@ -1,0 +1,685 @@
+---
+// src/components/PixelTool.astro — imagen → pixel art (isla cliente). Portado de Pixelacer.
+import { getLocale, useTranslations } from '../i18n/ui';
+import { palettes } from '../lib/pixel';
+const t = useTranslations(getLocale(Astro));
+const paletteList = Object.entries(palettes);
+const strings = {
+  fit: t('pixel.fit'),
+  imageMeta: t('pixel.imageMeta'),
+  pixelMeta: t('pixel.pixelMeta'),
+};
+---
+
+<div class="pixel" data-i18n={JSON.stringify(strings)}>
+  <div class="pixel__bar">
+    <button type="button" class="btn btn--secondary" data-action="open">{t('pixel.open')}</button>
+    <input type="file" accept="image/*" hidden data-file />
+    <span class="pixel__hint">{t('pixel.hint')}</span>
+    <button type="button" class="pixel__ghost" data-action="reset">↺ {t('pixel.reset')}</button>
+  </div>
+
+  <div class="pixel__grid">
+    <div class="pixel__work">
+      <div class="pixel__stage" data-stage data-drop={t('pixel.drop')}>
+        <div class="pixel__empty" data-empty>
+          <p class="pixel__empty-title">{t('pixel.emptyTitle')}</p>
+          <p class="pixel__empty-hint">{t('pixel.emptyHint')}</p>
+          <button type="button" class="btn" data-action="open">{t('pixel.choose')}</button>
+          <small>{t('pixel.emptyFormats')}</small>
+        </div>
+        <div class="pixel__canvas" data-wrap hidden>
+          <canvas data-canvas aria-label={t('pixel.canvasAria')}></canvas>
+        </div>
+      </div>
+      <div class="pixel__foot">
+        <span data-pixel-meta>{t('pixel.waiting')}</span>
+        <div class="pixel__zoom">
+          <button type="button" class="pixel__zbtn" data-action="zout" aria-label={t('pixel.zoomOut')}>−</button>
+          <span class="pixel__zlabel" data-zoom-label>{t('pixel.fit')}</span>
+          <button type="button" class="pixel__zbtn" data-action="zin" aria-label={t('pixel.zoomIn')}>+</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="pixel__panel">
+      <section class="pixel__group">
+        <h2 class="pixel__title">{t('pixel.controls')}</h2>
+        <div class="pixel__row">
+          <label for="pixel-size">{t('pixel.size')}</label><output data-out="size">12 px</output>
+          <input type="range" id="pixel-size" class="pixel__range" min="2" max="48" value="12" />
+          <span class="pixel__ends"><span>{t('pixel.fine')}</span><span>{t('pixel.chunky')}</span></span>
+        </div>
+        <div class="pixel__row">
+          <label for="pixel-brightness">{t('pixel.brightness')}</label><output data-out="brightness">0</output>
+          <input type="range" id="pixel-brightness" class="pixel__range" min="-100" max="100" value="0" />
+        </div>
+        <div class="pixel__row">
+          <label for="pixel-contrast">{t('pixel.contrast')}</label><output data-out="contrast">0</output>
+          <input type="range" id="pixel-contrast" class="pixel__range" min="-100" max="100" value="0" />
+        </div>
+        <div class="pixel__row">
+          <label for="pixel-saturation">{t('pixel.saturation')}</label><output data-out="saturation">0</output>
+          <input type="range" id="pixel-saturation" class="pixel__range" min="-100" max="100" value="0" />
+        </div>
+      </section>
+
+      <section class="pixel__group">
+        <h2 class="pixel__title">{t('pixel.palette')}</h2>
+        <label class="pixel__check"><input type="checkbox" id="pixel-palette-on" /> {t('pixel.paletteOn')}</label>
+        <div class="pixel__palettes" role="group" aria-label={t('pixel.paletteAria')} data-palettes>
+          {
+            paletteList.map(([name, colors], i) => (
+              <button type="button" class="pixel__palette" data-palette={name} aria-pressed={i === 0 ? 'true' : 'false'}>
+                <span class="pixel__palette-name">{name}</span>
+                <span class="pixel__swatches" aria-hidden="true">
+                  {colors.map((c) => <i style={`background:${c}`} />)}
+                </span>
+              </button>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="pixel__group">
+        <h2 class="pixel__title">{t('pixel.grid')}</h2>
+        <label class="pixel__check"><input type="checkbox" id="pixel-grid-on" /> {t('pixel.gridOn')}</label>
+        <div class="pixel__color">
+          <input type="color" id="pixel-grid-picker" class="pixel__swatch" value="#1a1a1a" aria-label={t('pixel.gridColor')} />
+          <input type="text" id="pixel-grid-hex" class="pixel__hex" value="#1A1A1A" maxlength="7" spellcheck="false" autocomplete="off" aria-label={t('pixel.gridColor')} />
+        </div>
+      </section>
+
+      <section class="pixel__group pixel__export">
+        <h2 class="pixel__title">{t('pixel.export')}</h2>
+        <button type="button" class="btn" data-action="large" disabled>{t('pixel.large')}</button>
+        <button type="button" class="btn btn--secondary" data-action="small" disabled>{t('pixel.small')}</button>
+        <small class="pixel__note">{t('pixel.exportHint')}</small>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<style>
+  .pixel {
+    display: grid;
+    gap: var(--spacing-s);
+  }
+
+  .pixel__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-2xs) var(--spacing-s);
+  }
+
+  .pixel__hint {
+    flex: 1;
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  .pixel__ghost,
+  .pixel__zbtn {
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .pixel__ghost {
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-s);
+  }
+
+  .pixel__ghost:hover,
+  .pixel__zbtn:hover {
+    border-color: var(--foreground);
+  }
+
+  .pixel__ghost:focus-visible,
+  .pixel__zbtn:focus-visible,
+  .pixel__palette:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* ---- Mesa + panel (mismo esquema que Calco) ---- */
+  .pixel__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: var(--spacing-m);
+    align-items: start;
+  }
+
+  @media (max-width: 48rem) {
+    .pixel__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .pixel__work {
+    display: grid;
+    gap: var(--spacing-2xs);
+    min-inline-size: 0;
+  }
+
+  .pixel__stage {
+    position: relative;
+    display: grid;
+    block-size: clamp(20rem, 60vh, 36rem);
+    overflow: hidden;
+    background: repeating-conic-gradient(var(--muted) 0 25%, var(--background) 0 50%) 0 0 / 18px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .pixel__stage.is-over::after {
+    content: attr(data-drop);
+    position: absolute;
+    inset: var(--spacing-2xs);
+    display: grid;
+    place-items: center;
+    font-weight: 500;
+    color: var(--foreground);
+    background-color: color-mix(in srgb, var(--muted) 85%, transparent);
+    border: 2px dashed var(--foreground);
+    border-radius: var(--radius);
+  }
+
+  .pixel__empty {
+    place-self: center;
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-2xs);
+    max-inline-size: 22rem;
+    padding: var(--spacing-m);
+    text-align: center;
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .pixel__empty[hidden],
+  .pixel__canvas[hidden] {
+    display: none;
+  }
+
+  .pixel__empty p {
+    margin: 0;
+  }
+
+  .pixel__empty-title {
+    font-size: var(--text-lg);
+    font-weight: 500;
+  }
+
+  .pixel__empty-hint,
+  .pixel__empty small {
+    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+  }
+
+  /* Ajustado: el canvas cabe en la mesa. Con zoom: tamaño fijo y la mesa hace scroll. */
+  .pixel__canvas {
+    display: grid;
+    place-items: center;
+    min-block-size: 0;
+    padding: var(--spacing-s);
+    overflow: auto;
+  }
+
+  .pixel__canvas.is-zoomed {
+    place-items: start;
+  }
+
+  .pixel__canvas canvas {
+    display: block;
+    max-inline-size: 100%;
+    max-block-size: 100%;
+    image-rendering: pixelated;
+  }
+
+  .pixel__canvas.is-zoomed canvas {
+    max-inline-size: none;
+    max-block-size: none;
+    margin: auto;
+  }
+
+  .pixel__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-2xs) var(--spacing-s);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+  }
+
+  .pixel__zoom {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3xs);
+  }
+
+  .pixel__zbtn {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    font-size: var(--text-lg);
+    line-height: 1;
+  }
+
+  .pixel__zlabel {
+    min-inline-size: 3.5rem;
+    text-align: center;
+    color: var(--foreground);
+  }
+
+  /* ---- Panel ---- */
+  .pixel__panel {
+    display: grid;
+    gap: var(--spacing-m);
+    min-inline-size: 0;
+  }
+
+  .pixel__group {
+    display: grid;
+    gap: var(--spacing-xs);
+  }
+
+  .pixel__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+  }
+
+  .pixel__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.125rem var(--spacing-2xs);
+    align-items: baseline;
+    font-size: var(--text-sm);
+  }
+
+  .pixel__row label {
+    font-weight: 500;
+  }
+
+  .pixel__row output {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-foreground);
+  }
+
+  .pixel__range {
+    grid-column: 1 / -1;
+    inline-size: 100%;
+    margin: var(--spacing-3xs) 0 0;
+    accent-color: var(--primary);
+  }
+
+  .pixel__ends {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+
+  .pixel__check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .pixel__check input {
+    accent-color: var(--primary);
+    inline-size: 1rem;
+    block-size: 1rem;
+    margin: 0;
+  }
+
+  .pixel__palettes {
+    display: grid;
+    gap: var(--spacing-3xs);
+  }
+
+  .pixel__palettes.is-off {
+    opacity: 0.5;
+  }
+
+  .pixel__palette {
+    display: grid;
+    gap: var(--spacing-3xs);
+    padding: var(--spacing-2xs);
+    font: inherit;
+    font-size: var(--text-sm);
+    text-align: start;
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .pixel__palette:hover {
+    border-color: var(--foreground);
+  }
+
+  .pixel__palette[aria-pressed='true'] {
+    border-color: var(--foreground);
+    box-shadow: inset 0 0 0 1px var(--foreground);
+  }
+
+  .pixel__swatches {
+    display: flex;
+    block-size: 0.75rem;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  .pixel__swatches i {
+    flex: 1;
+  }
+
+  .pixel__color {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2xs);
+  }
+
+  /* Selector de color en pill, mismo trato que Gradientes y Calco. */
+  .pixel__swatch {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .pixel__swatch::-webkit-color-swatch-wrapper {
+    padding: 3px;
+  }
+
+  .pixel__swatch::-webkit-color-swatch {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .pixel__swatch::-moz-color-swatch {
+    border: none;
+    border-radius: 9999px;
+  }
+
+  .pixel__hex {
+    inline-size: 7rem;
+    padding-block: var(--spacing-3xs);
+    padding-inline: var(--spacing-2xs);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    color: var(--foreground);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .pixel__export .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .pixel__note {
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+  }
+</style>
+
+<script>
+  import { createArtwork, type PixelOptions, type PixelResolution } from '../lib/pixel';
+
+  const DEFAULTS = {
+    size: 12,
+    brightness: 0,
+    contrast: 0,
+    saturation: 0,
+    paletteOn: false,
+    palette: 'Pico-8',
+    gridOn: false,
+    grid: '#1A1A1A',
+  };
+
+  function initPixel() {
+    const root = document.querySelector<HTMLElement>('.pixel');
+    if (!root) return;
+
+    const T = JSON.parse(root.dataset.i18n || '{}') as Record<string, string>;
+    const lang = document.documentElement.lang || 'es';
+    const q = <E extends Element = HTMLElement>(sel: string) => root.querySelector<E>(sel)!;
+    const input = (id: string) => document.getElementById(`pixel-${id}`) as HTMLInputElement;
+
+    const stage = q('[data-stage]');
+    const wrap = q('[data-wrap]');
+    const canvas = q<HTMLCanvasElement>('[data-canvas]');
+    const fileEl = q<HTMLInputElement>('[data-file]');
+    const palettesEl = q('[data-palettes]');
+
+    const state = { ...DEFAULTS, image: null as HTMLImageElement | null, name: '', url: '', zoom: 1 };
+    let frame = 0;
+
+    const ac = new AbortController();
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        ac.abort();
+        if (state.url) URL.revokeObjectURL(state.url);
+      },
+      { once: true }
+    );
+
+    const options = (): PixelOptions => ({
+      pixelSize: state.size,
+      brightness: state.brightness,
+      contrast: state.contrast,
+      saturation: state.saturation,
+      palette: state.paletteOn ? state.palette : null,
+      grid: state.gridOn ? state.grid : null,
+    });
+
+    /* ---------- pintado ---------- */
+    function render() {
+      if (!state.image) return;
+      const art = createArtwork(state.image, options(), 'preview');
+      canvas.width = art.canvas.width;
+      canvas.height = art.canvas.height;
+      canvas.getContext('2d')!.drawImage(art.canvas, 0, 0);
+      applyZoom();
+      const fmt = (n: number) => n.toLocaleString(lang);
+      q('[data-pixel-meta]').textContent =
+        T.imageMeta.replace('{w}', fmt(art.width)).replace('{h}', fmt(art.height)) +
+        ' · ' +
+        T.pixelMeta
+          .replace('{w}', fmt(art.pixelWidth))
+          .replace('{h}', fmt(art.pixelHeight))
+          .replace('{n}', String(state.size));
+    }
+
+    // Con los sliders se pinta como mucho una vez por fotograma.
+    function schedule() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(render);
+    }
+
+    function applyZoom() {
+      const fit = state.zoom === 1;
+      wrap.classList.toggle('is-zoomed', !fit);
+      canvas.style.width = fit ? '' : `${Math.round(canvas.width * state.zoom)}px`;
+      canvas.style.height = fit ? '' : `${Math.round(canvas.height * state.zoom)}px`;
+      q('[data-zoom-label]').textContent = fit ? T.fit : `${Math.round(state.zoom * 100)} %`;
+    }
+
+    /* ---------- controles ---------- */
+    const fmtOut = (key: string, v: number) => (key === 'size' ? `${v} px` : v > 0 ? `+${v}` : String(v));
+    const ranges = ['size', 'brightness', 'contrast', 'saturation'] as const;
+
+    function syncControls() {
+      for (const key of ranges) {
+        input(key).value = String(state[key]);
+        q(`[data-out="${key}"]`).textContent = fmtOut(key, state[key]);
+      }
+      input('palette-on').checked = state.paletteOn;
+      input('grid-on').checked = state.gridOn;
+      input('grid-picker').value = state.grid.toLowerCase();
+      input('grid-hex').value = state.grid;
+      syncPalettes();
+    }
+
+    function syncPalettes() {
+      palettesEl.classList.toggle('is-off', !state.paletteOn);
+      for (const b of palettesEl.querySelectorAll<HTMLElement>('[data-palette]'))
+        b.setAttribute('aria-pressed', String(b.dataset.palette === state.palette));
+    }
+
+    for (const key of ranges) {
+      input(key).addEventListener('input', () => {
+        state[key] = Number(input(key).value);
+        q(`[data-out="${key}"]`).textContent = fmtOut(key, state[key]);
+        schedule();
+      });
+    }
+
+    input('palette-on').addEventListener('change', () => {
+      state.paletteOn = input('palette-on').checked;
+      syncPalettes();
+      render();
+    });
+
+    // Elegir una paleta la activa: es lo que se espera al pulsarla.
+    palettesEl.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-palette]');
+      if (!b) return;
+      state.palette = b.dataset.palette!;
+      state.paletteOn = true;
+      input('palette-on').checked = true;
+      syncPalettes();
+      render();
+    });
+
+    input('grid-on').addEventListener('change', () => {
+      state.gridOn = input('grid-on').checked;
+      render();
+    });
+
+    function setGrid(value: string) {
+      const v = value.trim().toUpperCase();
+      if (!/^#[0-9A-F]{6}$/.test(v)) return false;
+      state.grid = v;
+      input('grid-hex').value = v;
+      input('grid-picker').value = v.toLowerCase();
+      if (state.gridOn) schedule();
+      return true;
+    }
+    input('grid-picker').addEventListener('input', () => setGrid(input('grid-picker').value));
+    input('grid-hex').addEventListener('input', () => setGrid(input('grid-hex').value));
+    input('grid-hex').addEventListener('change', () => {
+      if (!setGrid(input('grid-hex').value)) input('grid-hex').value = state.grid;
+    });
+
+    /* ---------- imagen ---------- */
+    function loadFile(file?: File | null) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        if (state.url) URL.revokeObjectURL(state.url);
+        Object.assign(state, { image, url, name: file.name.replace(/\.[^/.]+$/, ''), zoom: 1 });
+        q('[data-empty]').hidden = true;
+        wrap.hidden = false;
+        for (const b of root!.querySelectorAll<HTMLButtonElement>('[data-action="small"], [data-action="large"]'))
+          b.disabled = false;
+        render();
+      };
+      image.onerror = () => URL.revokeObjectURL(url);
+      image.src = url;
+    }
+
+    fileEl.addEventListener('change', () => {
+      loadFile(fileEl.files?.[0]);
+      fileEl.value = '';
+    });
+    stage.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      stage.classList.add('is-over');
+    });
+    stage.addEventListener('dragleave', (e) => {
+      if (!stage.contains(e.relatedTarget as Node)) stage.classList.remove('is-over');
+    });
+    stage.addEventListener('drop', (e) => {
+      e.preventDefault();
+      stage.classList.remove('is-over');
+      loadFile(e.dataTransfer?.files[0]);
+    });
+    window.addEventListener('dragover', (e) => e.preventDefault(), { signal: ac.signal });
+    window.addEventListener('drop', (e) => e.preventDefault(), { signal: ac.signal });
+    window.addEventListener(
+      'paste',
+      (e) => {
+        const it = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith('image/'));
+        if (it) {
+          e.preventDefault();
+          loadFile(it.getAsFile());
+        }
+      },
+      { signal: ac.signal }
+    );
+
+    /* ---------- acciones ---------- */
+    function download(size: PixelResolution) {
+      if (!state.image) return;
+      const art = createArtwork(state.image, options(), size);
+      art.canvas.toBlob((blob) => {
+        if (!blob) return;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${state.name || 'pixel-art'}-${size}.png`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }, 'image/png');
+    }
+
+    root.addEventListener('click', (e) => {
+      const action = (e.target as HTMLElement).closest<HTMLElement>('[data-action]')?.dataset.action;
+      if (action === 'open') return fileEl.click();
+      if (action === 'reset') {
+        Object.assign(state, DEFAULTS);
+        syncControls();
+        return render();
+      }
+      if (!state.image) return;
+      if (action === 'zin') {
+        state.zoom = Math.min(3, state.zoom === 1 ? 1.25 : state.zoom + 0.25);
+        applyZoom();
+      } else if (action === 'zout') {
+        state.zoom = Math.max(0.5, state.zoom === 1 ? 0.75 : state.zoom - 0.25);
+        applyZoom();
+      } else if (action === 'small' || action === 'large') {
+        download(action);
+      }
+    });
+
+    syncControls();
+  }
+
+  // Con View Transitions, re-inicializar en cada carga/navegación.
+  document.addEventListener('astro:page-load', initPixel);
+</script>

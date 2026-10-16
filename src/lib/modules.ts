@@ -35,4 +35,5 @@ export const modules: ModuleEntry[] = [
   { slug: 'units', keywords: ['unidades', 'units', 'convertir', 'convert', 'longitud', 'length', 'peso', 'weight', 'masa', 'mass', 'temperatura', 'temperature', 'almacenamiento', 'storage', 'km', 'kg', 'celsius', 'fahrenheit'] },
   { slug: 'calco', keywords: ['calco', 'calcar', 'vectorizar', 'vector', 'svg', 'imagen', 'logo', 'potrace', 'illustrator', 'png', 'jpg', 'bitmap', 'trace', 'tracing', 'vectorize', 'image', 'colores', 'colors'] },
   { slug: 'eps', keywords: ['eps', 'svg', 'convertir', 'convert', 'postscript', 'ps', 'epsf', 'vector', 'vectorial', 'illustrator', 'cmyk', 'logo', 'archivo', 'file', 'exportar', 'export'] },
+  { slug: 'pixel', keywords: ['pixel', 'pixel art', 'pixelar', 'pixelate', 'pixelacer', 'retro', '8 bits', '8-bit', 'imagen', 'image', 'paleta', 'palette', 'pico-8', 'rejilla', 'grid', 'png', 'mosaico', 'mosaic'] },
 ];

@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Page from '../../components/Page.astro';
+import PixelTool from '../../components/PixelTool.astro';
+import { getLocale, useTranslations } from '../../i18n/ui';
+const t = useTranslations(getLocale(Astro));
+---
+
+<BaseLayout title={t('tool.pixel.title')} description={t('tool.pixel.lead')}>
+  <Page title={t('tool.pixel.title')} lead={t('tool.pixel.lead')} size="wide">
+    <PixelTool />
+  </Page>
+</BaseLayout>

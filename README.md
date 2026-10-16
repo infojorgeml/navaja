@@ -14,6 +14,7 @@ Hecha con **Astro + Tailwind CSS v4**.
 - **Slug** — convierte texto en slugs limpios para URLs.
 - **Calco** — vectoriza una imagen a SVG, a una tinta o a varios colores (port de Potrace, en un Web Worker).
 - **EPS a SVG** — convierte archivos EPS en SVG con un intérprete PostScript propio (CMYK, recortes, texto simple).
+- **Pixel art** — convierte una imagen en pixel art con paletas y rejilla, y la exporta en PNG (basado en Pixelacer).
 
 Busca cualquier herramienta al instante con **⌘K / Ctrl+K**.
 
